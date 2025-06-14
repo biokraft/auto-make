@@ -223,7 +223,7 @@ class TestCIPipeline:
         steps = security_job["steps"]
         step_names = [step.get("name", "") for step in steps]
 
-        assert "Run safety check" in step_names, "Should run security checks"
+        assert "Run pip-audit security scan" in step_names, "Should run security checks"
 
     def test_workflow_name(self) -> None:
         """Test that the workflow has the correct name."""

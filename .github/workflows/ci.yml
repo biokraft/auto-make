@@ -110,7 +110,7 @@ jobs:
     - name: Run pip-audit security scan
       run: |
         uv run --with pip-audit pip-audit --format=json --output=security-report.json || true
-        uv run --with pip-audit pip-audit --format=text || true
+        uv run --with pip-audit pip-audit || true
 
     - name: Upload security report
       uses: actions/upload-artifact@v4
