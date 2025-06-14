@@ -4,11 +4,11 @@ This module implements the smolagent responsible for interpreting natural langua
 commands and translating them into Makefile targets using Ollama LLM.
 """
 
-import io
+import builtins
 import json
 import logging
 import warnings
-from contextlib import redirect_stderr, redirect_stdout
+from contextlib import contextmanager
 
 import ollama
 from smolagents import CodeAgent, LiteLLMModel
@@ -31,6 +31,22 @@ warnings.filterwarnings(
 )
 
 logger = logging.getLogger(__name__)
+
+
+@contextmanager
+def suppress_print():
+    """Context manager to suppress print statements but allow Rich console output."""
+    original_print = builtins.print
+
+    def silent_print(*args, **kwargs):
+        # Suppress all print statements
+        pass
+
+    builtins.print = silent_print
+    try:
+        yield
+    finally:
+        builtins.print = original_print
 
 
 class CommandInterpretationError(Exception):
@@ -201,8 +217,8 @@ class MakefileCommandAgent:
             # Create the prompt for command interpretation
             prompt = self._create_interpretation_prompt(user_command, makefile_targets)
 
-            # Use the agent to interpret the command with output suppression
-            with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+            # Use the agent to interpret the command with selective output suppression
+            with suppress_print():
                 result = self.agent.run(prompt)
 
             # Parse the result as JSON

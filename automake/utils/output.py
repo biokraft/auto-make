@@ -252,16 +252,16 @@ class OutputFormatter:
                 expand=False,
             )
 
-            # Use Rich Live display for smooth animation
+            # Use Rich Live display for smooth animation (without transient)
             with Live(
-                panel, console=self.console, refresh_per_second=2, transient=True
+                panel, console=self.console, refresh_per_second=3, transient=False
             ) as live:
                 while not stop_event.is_set():
                     pattern_index = (pattern_index + 1) % len(patterns)
                     dots = patterns[pattern_index]
 
-                    # Create new panel with updated dots
-                    new_panel = Panel(
+                    # Update the panel with new dots
+                    updated_panel = Panel(
                         f"[dim]{dots}[/dim]",
                         title="AI Reasoning",
                         title_align="left",
@@ -269,13 +269,18 @@ class OutputFormatter:
                         padding=(0, 1),
                         expand=False,
                     )
+                    live.update(updated_panel)
 
-                    # Update the live display
-                    live.update(new_panel)
-                    time.sleep(0.5)
+                    # Wait for next frame or stop signal
+                    if stop_event.wait(0.5):  # 500ms between frames
+                        break
 
         thread = threading.Thread(target=animate, daemon=True)
         thread.start()
+
+        # Give the animation a moment to start displaying
+        time.sleep(0.1)
+
         return stop_event, thread
 
     def stop_ai_thinking_animation(
@@ -284,12 +289,14 @@ class OutputFormatter:
         """Stop the AI thinking animation.
 
         Args:
-            stop_event: The event to signal the animation to stop
-            thread: The animation thread to wait for
+            stop_event: The event to signal the animation to stop.
+            thread: The animation thread to wait for.
         """
         stop_event.set()
-        thread.join(timeout=1.0)  # Wait up to 1 second for thread to finish
-        # The Live display with transient=True will automatically clean up
+        thread.join(timeout=1.0)  # Wait up to 1 second for clean shutdown
+
+        # Clear the animation by printing a newline
+        self.console.print()
 
 
 # Global formatter instance for convenience
