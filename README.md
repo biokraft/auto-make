@@ -1,7 +1,7 @@
 # 🤖 auto-make
 *Makefiles without writing Makefiles.*
 
-[![CI/CD Pipeline](https://github.com/seanbaufeld/auto-make/actions/workflows/main.yml/badge.svg)](https://github.com/seanbaufeld/auto-make/actions/workflows/main.yml)
+[![CI/CD Pipeline](https://github.com/seanbaufeld/auto-make/actions/workflows/ci.yml/badge.svg)](https://github.com/seanbaufeld/auto-make/actions/workflows/ci.yml)
 [![PyPI version](https://badge.fury.io/py/automake-cli.svg)](https://badge.fury.io/py/automake-cli)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
