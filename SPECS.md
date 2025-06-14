@@ -33,7 +33,7 @@ The following table outlines the granular steps to implement the AutoMake tool b
 | Phase | Focus Area | Key Deliverables | Related Specs | Status |
 | :--- | :--- | :--- | :--- | :--- |
 | 1 | Project Setup | Initialize project structure, `pyproject.toml` with `uv`, and pre-commit hooks. | `specs/03-architecture-and-tech-stack.md` | ✅ DONE |
-| 2 | Config & Logging Setup | Implement logic to create/read `config.toml` and set up file-based logging. | `specs/04-configuration-management.md`, `specs/06-logging-strategy.md` | TBD |
+| 2 | Config & Logging Setup | Implement logic to create/read `config.toml` and set up file-based logging. | `specs/04-configuration-management.md`, `specs/06-logging-strategy.md` | ✅ DONE |
 | 3 | CLI Scaffolding | Create the basic `Typer` application, argument parsing, and help text. | `specs/02-cli-and-ux.md` | ✅ DONE |
 | 4 | Makefile Reader | Implement the logic to find and read the `Makefile` from the current directory. | `specs/01-core-functionality.md` | ✅ DONE |
 | 5 | Ollama Integration | Create a module to handle communication with the local Ollama server, using settings from `config.toml`. | `specs/01-core-functionality.md`, `specs/04-configuration-management.md` | TBD |

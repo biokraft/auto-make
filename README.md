@@ -85,7 +85,7 @@ This project is actively developed. Here is the current implementation status ba
 | Phase | Focus Area | Key Deliverables | Status |
 | :--- | :--- | :--- | :--- |
 | 1 | Project Setup | Initialize project structure, `pyproject.toml` with `uv`, and pre-commit hooks. | ✅ DONE |
-| 2 | Config & Logging Setup | Implement logic to create/read `config.toml` and set up file-based logging. | TBD |
+| 2 | Config & Logging Setup | Implement logic to create/read `config.toml` and set up file-based logging. | ✅ DONE |
 | 3 | CLI Scaffolding | Create the basic `Typer` application, argument parsing, and help text. | ✅ DONE |
 | 4 | Makefile Reader | Implement the logic to find and read the `Makefile` from the current directory. | ✅ DONE |
 | 5 | Ollama Integration | Create a module to handle communication with the local Ollama server. | TBD |

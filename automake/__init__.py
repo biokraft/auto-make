@@ -7,8 +7,19 @@ natural language commands and execute corresponding Makefile targets.
 import tomllib  # noqa: UP036
 from pathlib import Path
 
+# Configuration and logging exports
+from automake.config import Config, ConfigError, get_config
+
 # Core functionality exports
 from automake.core.makefile_reader import MakefileNotFoundError, MakefileReader
+from automake.logging_setup import (
+    LoggingSetupError,
+    get_logger,
+    log_command_execution,
+    log_config_info,
+    log_error,
+    setup_logging,
+)
 from automake.utils.output import MessageType, OutputFormatter, get_formatter
 
 
@@ -46,4 +57,13 @@ __all__ = [
     "MessageType",
     "OutputFormatter",
     "get_formatter",
+    "Config",
+    "ConfigError",
+    "get_config",
+    "LoggingSetupError",
+    "setup_logging",
+    "get_logger",
+    "log_config_info",
+    "log_command_execution",
+    "log_error",
 ]
