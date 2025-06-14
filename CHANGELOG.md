@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.3.1 - Enhanced User Experience & Configuration Management
+
+### ✨ Added
+- 🎬 Loading animations during AI command processing for better user feedback
+- ⚙️ Configuration management commands for easier settings control
+- 📦 LiveBox component for real-time output display
+- 🔧 Ollama manager for improved model handling
+
+### 🛠️ Improved
+- 🎨 ASCII art display timing and visual experience
+- 🤖 AI command interpretation with better JSON response handling
+- 🔇 Cleaner output by suppressing unnecessary logs during AI processing
+- 📋 Enhanced dependency management with tomli-w support
+- 🎯 Updated default model to qwen3:0.6b for better performance
+
+### 🔧 Fixed
+- ⚡ Animation frame rates and cleanup processes
+- 🔕 Pydantic serialization warnings suppression
+
 ## v0.3.0 - AI Core Implementation & Interactive Features
 
 ### ✨ Added
@@ -70,6 +89,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Pre-commit hook compatibility issues
 - 📏 Code formatting and linting compliance
 
+[0.3.1]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.3.1
 [0.3.0]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.3.0
 [0.2.1]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.2.1
 [0.2.0]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.2.0
