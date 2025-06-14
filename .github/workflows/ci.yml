@@ -107,9 +107,17 @@ jobs:
     - name: Install dependencies
       run: uv sync --dev
 
-    - name: Run safety check
+    - name: Run pip-audit security scan
       run: |
-        uv run --with safety safety scan --json || true
+        uv run --with pip-audit pip-audit --format=json --output=security-report.json || true
+        uv run --with pip-audit pip-audit --format=text || true
+
+    - name: Upload security report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: security-report
+        path: security-report.json
 
   build:
     name: Build Package
