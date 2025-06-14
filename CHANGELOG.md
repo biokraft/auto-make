@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.2.1 - Documentation & Structure Improvements
+
+### 🛠️ Improved
+- 📊 Enhanced Codecov badge visibility and accuracy in README
+- 🏗️ Refactored project structure with improved CLI entry point
+- 📚 Updated documentation and CI configuration for better coverage reporting
+- 🎨 Added welcome message with improved usage information
+
+### 🔧 Fixed
+- 🔗 Codecov integration and badge formatting issues
+- 📈 Coverage reporting accuracy and token configuration
+
 ## v0.2.0 - Core Functionality & Enhanced Documentation
 
 ### ✨ Added
@@ -38,5 +50,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Pre-commit hook compatibility issues
 - 📏 Code formatting and linting compliance
 
+[0.2.1]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.2.1
 [0.2.0]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.2.0
 [0.1.0]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.1.0
