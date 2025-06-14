@@ -301,9 +301,11 @@ Given the user command: "{user_command}"
 Available Makefile targets:
 {targets_list}
 
-Your task is to analyze the user command and create a JSON response. Use the final_answer() function to return your result.
+Your task is to analyze the user command and write Python code that returns a JSON response using the final_answer() function.
 
-Write Python code that creates a JSON response with this structure:
+IMPORTANT: You must write Python code in a code block starting with ```py
+
+The JSON response should have this structure:
 {{
     "reasoning": "Brief explanation of why this command was chosen",
     "command": "most_appropriate_target_name_or_null",
@@ -318,8 +320,9 @@ Rules:
 4. Consider semantic similarity, not just exact matches
 5. Use final_answer() to return the JSON string
 
-Example code structure:
-```python
+You must follow this exact format:
+
+```py
 import json
 
 # Analyze the command and targets
@@ -334,7 +337,7 @@ response = {{
 final_answer(json.dumps(response))
 ```
 
-Now analyze the command and provide your response:"""  # noqa: E501
+Now analyze the command and provide your Python code:"""  # noqa: E501
 
 
 def create_ai_agent(config: Config) -> tuple[MakefileCommandAgent, bool]:
