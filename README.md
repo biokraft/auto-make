@@ -1,16 +1,5 @@
 # 🤖 auto-make
 *Makefiles without writing Makefiles.*
-```bash
-   ___       __                  __
-  / _ |__ __/ /____  __ _  ___ _/ /_____
- / __ / // / __/ _ \/  ' \/ _ `/  '_/ -_)
-/_/ |_\_,_/\__/\___/_/_/_/\_,_/_/\_\\__/
-
-
-╭─ Welcome ───────────────────────────────────────────╮
-│ Run "automake help" for detailed usage information. │
-╰─────────────────────────────────────────────────────╯
-```
 
 [![Latest Version](https://img.shields.io/pypi/v/automake-cli?label=latest&logo=pypi&logoColor=white)](https://pypi.org/project/automake-cli/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
@@ -24,6 +13,10 @@
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-black.svg)](https://github.com/astral-sh/ruff)
 [![tested with pytest](https://img.shields.io/badge/tested%20with-pytest-0A9B7B.svg?logo=pytest)](https://pytest.org)
+
+---
+
+![AutoMake Help Command](./docs/help_cmd.png)
 
 ---
 
@@ -60,6 +53,16 @@ Install `auto-make` using `uvx` (the `uv` equivalent of `npx`):
 uvx automake-cli
 ```
 This command temporarily installs and runs the `automake` CLI tool in an isolated environment.
+
+### First-Time Setup
+After installation, run the initialization command once to set up Ollama and download the required model:
+```bash
+automake init
+```
+This command will:
+- Verify that Ollama is installed and running
+- Download the configured LLM model if not already available
+- Ensure everything is ready for natural language command interpretation
 
 ## ✍️ Usage
 To use `auto-make`, simply pass your command as a string argument:
