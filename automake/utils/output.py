@@ -4,9 +4,12 @@ This module provides consistent, beautiful console output formatting
 that matches the style of Typer's error boxes.
 """
 
+import threading
+import time
 from enum import Enum
 
 from rich.console import Console
+from rich.live import Live
 from rich.panel import Panel
 
 
@@ -217,6 +220,76 @@ class OutputFormatter:
             MessageType.INFO,
             "Execution",
         )
+
+    def print_loading_indicator(self) -> None:
+        """Print a loading indicator with three dots that build up and down."""
+        self.console.print("[dim]Loading...[/dim]")
+        for _ in range(3):
+            self.console.print(".", end="", flush=True)
+            time.sleep(0.5)
+            self.console.print("\b", end="", flush=True)
+        self.console.print("\n")
+
+    def start_ai_thinking_animation(self) -> tuple[threading.Event, threading.Thread]:
+        """Start an animated loading indicator for AI thinking.
+
+        Returns:
+            A tuple of (stop_event, thread) to control the animation.
+        """
+        stop_event = threading.Event()
+
+        def animate():
+            patterns = [".", "..", "...", "..", "."]
+            pattern_index = 0
+
+            # Create initial panel
+            panel = Panel(
+                f"[dim]{patterns[pattern_index]}[/dim]",
+                title="AI Reasoning",
+                title_align="left",
+                border_style="dim",
+                padding=(0, 1),
+                expand=False,
+            )
+
+            # Use Rich Live display for smooth animation
+            with Live(
+                panel, console=self.console, refresh_per_second=2, transient=True
+            ) as live:
+                while not stop_event.is_set():
+                    pattern_index = (pattern_index + 1) % len(patterns)
+                    dots = patterns[pattern_index]
+
+                    # Create new panel with updated dots
+                    new_panel = Panel(
+                        f"[dim]{dots}[/dim]",
+                        title="AI Reasoning",
+                        title_align="left",
+                        border_style="dim",
+                        padding=(0, 1),
+                        expand=False,
+                    )
+
+                    # Update the live display
+                    live.update(new_panel)
+                    time.sleep(0.5)
+
+        thread = threading.Thread(target=animate, daemon=True)
+        thread.start()
+        return stop_event, thread
+
+    def stop_ai_thinking_animation(
+        self, stop_event: threading.Event, thread: threading.Thread
+    ) -> None:
+        """Stop the AI thinking animation.
+
+        Args:
+            stop_event: The event to signal the animation to stop
+            thread: The animation thread to wait for
+        """
+        stop_event.set()
+        thread.join(timeout=1.0)  # Wait up to 1 second for thread to finish
+        # The Live display with transient=True will automatically clean up
 
 
 # Global formatter instance for convenience

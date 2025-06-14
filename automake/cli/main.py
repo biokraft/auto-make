@@ -323,7 +323,15 @@ def _execute_main_logic(command: str) -> None:
         )
 
         output.print_status("Interpreting your command...", MessageType.INFO, "AI Core")
-        response = agent.interpret_command(command, reader.targets)
+
+        # Start the AI thinking animation
+        stop_event, animation_thread = output.start_ai_thinking_animation()
+
+        try:
+            response = agent.interpret_command(command, reader.targets)
+        finally:
+            # Stop the animation regardless of success or failure
+            output.stop_ai_thinking_animation(stop_event, animation_thread)
 
         output.print_ai_reasoning(response.reasoning, response.confidence)
 
