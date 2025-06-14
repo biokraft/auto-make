@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.2.0 - Core Functionality & Enhanced Documentation
+
+### ✨ Added
+- 🎨 Welcome message functionality with ASCII art display
+- 📁 Makefile reading functionality for target discovery
+- 📋 Model Context Protocol specification documentation
+- 🎯 Enhanced project documentation with ASCII art branding
+
+### 🛠️ Improved
+- 🔒 CI/CD security scanning (replaced Safety CLI with pip-audit)
+- 🪝 Pre-commit hooks updated to version 5.0.0
+- 📚 README and SPECS documentation enhancements
+- 🧪 Expanded test coverage for new functionality
+
+### 🔧 Fixed
+- ✅ CI workflow authentication issues
+- 📊 Test assertions and pipeline stability
+
 ## v0.1.0 - AI-Powered Makefile Assistant
 
 ### ✨ Added
@@ -20,4 +38,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Pre-commit hook compatibility issues
 - 📏 Code formatting and linting compliance
 
+[0.2.0]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.2.0
 [0.1.0]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.1.0
