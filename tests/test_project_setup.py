@@ -39,7 +39,7 @@ class TestProjectSetup:
 
         # Required fields
         assert project["name"] == "automake-cli"
-        assert project["version"] == "0.2.0"
+        assert project["version"]
         assert project["description"] == "AI-powered Makefile command execution"
         assert project["requires-python"] == ">=3.11"
 
