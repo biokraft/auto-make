@@ -15,7 +15,7 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com/biokraft/auto-make)
 [![Build Status](https://github.com/biokraft/auto-make/actions/workflows/ci.yml/badge.svg)](https://github.com/biokraft/auto-make/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/biokraft/auto-make/graph/badge.svg)](https://codecov.io/gh/biokraft/auto-make)
+[![codecov](https://img.shields.io/codecov/c/github/biokraft/auto-make.svg)](https://codecov.io/gh/biokraft/auto-make)
 [![PyPI version](https://badge.fury.io/py/automake-cli.svg)](https://badge.fury.io/py/automake-cli)
 
 

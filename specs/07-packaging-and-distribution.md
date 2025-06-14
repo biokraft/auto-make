@@ -33,13 +33,13 @@ Repository = "https://github.com/your-repo/automake" # To be updated
 
 # This section is critical for creating the CLI command
 [project.scripts]
-automake = "automake.main:app"
+automake = "automake.cli.main:app"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 ```
-*Note: The `automake = "automake.main:app"` line assumes the `Typer` app object is named `app` inside a `main.py` file within the `src/automake` directory.*
+*Note: The `automake = "automake.cli.main:app"` line assumes the `Typer` app object is named `app` inside a `main.py` file within the `src/automake` directory.*
 
 ## 4. Installation and Execution
 With the `pyproject.toml` configured correctly, users can install and run the tool as follows.

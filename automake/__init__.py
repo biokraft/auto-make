@@ -4,8 +4,21 @@ A command-line tool that leverages a local Large Language Model (LLM) to interpr
 natural language commands and execute corresponding Makefile targets.
 """
 
-__version__ = "0.1.0"
-__author__ = "AutoMake Contributors"
-__email__ = "contact@example.com"
+__version__ = "0.2.0"  # Match version in pyproject.toml
+__author__ = "Sean Baufeld"
+__email__ = "sean.baufeld@protonmail.com"
 
-__all__ = ["__version__", "__author__", "__email__"]
+# Core functionality exports
+from automake.core.makefile_reader import MakefileNotFoundError, MakefileReader
+from automake.utils.output import MessageType, OutputFormatter, get_formatter
+
+__all__ = [
+    "__version__",
+    "__author__",
+    "__email__",
+    "MakefileReader",
+    "MakefileNotFoundError",
+    "MessageType",
+    "OutputFormatter",
+    "get_formatter",
+]

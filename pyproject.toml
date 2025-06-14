@@ -51,7 +51,7 @@ Repository = "https://github.com/seanbaufeld/auto-make"
 Issues = "https://github.com/seanbaufeld/auto-make/issues"
 
 [project.scripts]
-automake = "automake.main:app"
+automake = "automake.cli.main:app"
 
 [tool.hatch.build.targets.wheel]
 packages = ["automake"]

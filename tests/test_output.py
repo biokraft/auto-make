@@ -6,7 +6,7 @@ from unittest.mock import patch
 import pytest
 from rich.console import Console
 
-from automake.output import (
+from automake.utils.output import (
     MessageType,
     OutputFormatter,
     get_formatter,
@@ -219,16 +219,16 @@ class TestGlobalFormatter:
         console = Console()
 
         # Reset global formatter to test fresh initialization
-        import automake.output
+        import automake.utils.output
 
-        automake.output._global_formatter = None
+        automake.utils.output._global_formatter = None
 
         formatter = get_formatter(console)
         assert formatter.console is console
 
     def test_print_box_convenience_function(self) -> None:
         """Test print_box convenience function."""
-        with patch("automake.output.get_formatter") as mock_get_formatter:
+        with patch("automake.utils.output.get_formatter") as mock_get_formatter:
             mock_formatter = mock_get_formatter.return_value
 
             print_box("Test message", MessageType.ERROR, "Custom Title")
@@ -239,7 +239,7 @@ class TestGlobalFormatter:
 
     def test_print_error_box_convenience_function(self) -> None:
         """Test print_error_box convenience function."""
-        with patch("automake.output.get_formatter") as mock_get_formatter:
+        with patch("automake.utils.output.get_formatter") as mock_get_formatter:
             mock_formatter = mock_get_formatter.return_value
 
             print_error_box("Error message", "Hint message")
@@ -250,7 +250,7 @@ class TestGlobalFormatter:
 
     def test_print_status_convenience_function(self) -> None:
         """Test print_status convenience function."""
-        with patch("automake.output.get_formatter") as mock_get_formatter:
+        with patch("automake.utils.output.get_formatter") as mock_get_formatter:
             mock_formatter = mock_get_formatter.return_value
 
             print_status("Status message", MessageType.WARNING, "Custom")

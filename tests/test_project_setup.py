@@ -59,7 +59,7 @@ class TestProjectSetup:
         assert "scripts" in config["project"]
         scripts = config["project"]["scripts"]
         assert "automake" in scripts
-        assert scripts["automake"] == "automake.main:app"
+        assert scripts["automake"] == "automake.cli.main:app"
 
     def test_pyproject_dev_dependencies(self) -> None:
         """Test that development dependencies are configured."""

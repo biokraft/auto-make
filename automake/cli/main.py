@@ -6,8 +6,8 @@ import typer
 from rich.console import Console
 
 from automake import __version__
-from automake.makefile_reader import MakefileNotFoundError, MakefileReader
-from automake.output import MessageType, get_formatter
+from automake.core.makefile_reader import MakefileNotFoundError, MakefileReader
+from automake.utils.output import MessageType, get_formatter
 
 app = typer.Typer(
     name="automake",

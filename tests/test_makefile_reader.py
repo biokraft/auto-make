@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 
-from automake.makefile_reader import (
+from automake.core.makefile_reader import (
     MakefileNotFoundError,
     MakefileReader,
     read_makefile_from_directory,
@@ -288,7 +288,9 @@ class TestConvenienceFunction:
             makefile_path = temp_path / "Makefile"
             makefile_path.write_text("all:\n\techo 'test'")
 
-            with patch("automake.makefile_reader.Path.cwd", return_value=temp_path):
+            with patch(
+                "automake.core.makefile_reader.Path.cwd", return_value=temp_path
+            ):
                 content = read_makefile_from_directory()
                 assert "echo 'test'" in content
 

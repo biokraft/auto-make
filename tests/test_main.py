@@ -9,7 +9,7 @@ import typer
 from typer.testing import CliRunner
 
 from automake import __version__
-from automake.main import app, read_ascii_art
+from automake.cli.main import app, read_ascii_art
 
 
 class TestMainCLI:
@@ -109,7 +109,9 @@ deploy:
             makefile_path.write_text(makefile_content)
 
             # Mock the current working directory to point to our temp directory
-            with patch("automake.makefile_reader.Path.cwd", return_value=temp_path):
+            with patch(
+                "automake.core.makefile_reader.Path.cwd", return_value=temp_path
+            ):
                 result = self.runner.invoke(app, [test_command])
 
             assert result.exit_code == 0
@@ -131,7 +133,9 @@ deploy:
             temp_path = Path(temp_dir)
 
             # Mock the current working directory to point to our empty temp directory
-            with patch("automake.makefile_reader.Path.cwd", return_value=temp_path):
+            with patch(
+                "automake.core.makefile_reader.Path.cwd", return_value=temp_path
+            ):
                 result = self.runner.invoke(app, [test_command])
 
             assert result.exit_code == 1
@@ -152,7 +156,9 @@ deploy:
             makefile_path = temp_path / "Makefile"
             makefile_path.write_text(makefile_content)
 
-            with patch("automake.makefile_reader.Path.cwd", return_value=temp_path):
+            with patch(
+                "automake.core.makefile_reader.Path.cwd", return_value=temp_path
+            ):
                 result = self.runner.invoke(app, [test_command])
 
             assert result.exit_code == 0
@@ -169,7 +175,9 @@ deploy:
             makefile_path = temp_path / "Makefile"
             makefile_path.write_text(makefile_content)
 
-            with patch("automake.makefile_reader.Path.cwd", return_value=temp_path):
+            with patch(
+                "automake.core.makefile_reader.Path.cwd", return_value=temp_path
+            ):
                 result = self.runner.invoke(app, [test_command])
 
             assert result.exit_code == 0
@@ -192,7 +200,9 @@ deploy:
             makefile_path = temp_path / "Makefile"
             makefile_path.write_text(makefile_content)
 
-            with patch("automake.makefile_reader.Path.cwd", return_value=temp_path):
+            with patch(
+                "automake.core.makefile_reader.Path.cwd", return_value=temp_path
+            ):
                 result = self.runner.invoke(app, [""])
 
             assert result.exit_code == 0
@@ -216,7 +226,9 @@ deploy:
             makefile_path = temp_path / "Makefile"
             makefile_path.write_text(makefile_content)
 
-            with patch("automake.makefile_reader.Path.cwd", return_value=temp_path):
+            with patch(
+                "automake.core.makefile_reader.Path.cwd", return_value=temp_path
+            ):
                 result = self.runner.invoke(app, [command])
 
             assert result.exit_code == 0
@@ -234,7 +246,9 @@ deploy:
             makefile_path = temp_path / "Makefile"
             makefile_path.write_text(makefile_content)
 
-            with patch("automake.makefile_reader.Path.cwd", return_value=temp_path):
+            with patch(
+                "automake.core.makefile_reader.Path.cwd", return_value=temp_path
+            ):
                 result = self.runner.invoke(app, ["test command"])
 
             assert result.exit_code == 0
@@ -257,7 +271,9 @@ VARIABLE = value
             makefile_path = temp_path / "Makefile"
             makefile_path.write_text(makefile_content)
 
-            with patch("automake.makefile_reader.Path.cwd", return_value=temp_path):
+            with patch(
+                "automake.core.makefile_reader.Path.cwd", return_value=temp_path
+            ):
                 result = self.runner.invoke(app, ["test command"])
 
             assert result.exit_code == 0
@@ -272,7 +288,7 @@ VARIABLE = value
             makefile_path.write_text("all:\n\techo 'test'")
 
             # Mock MakefileReader to raise OSError
-            with patch("automake.main.MakefileReader") as mock_reader:
+            with patch("automake.cli.main.MakefileReader") as mock_reader:
                 mock_instance = mock_reader.return_value
                 mock_instance.get_makefile_info.side_effect = OSError(
                     "Permission denied"
@@ -292,7 +308,7 @@ VARIABLE = value
             makefile_path.write_text("all:\n\techo 'test'")
 
             # Mock MakefileReader to raise unexpected error
-            with patch("automake.main.MakefileReader") as mock_reader:
+            with patch("automake.cli.main.MakefileReader") as mock_reader:
                 mock_instance = mock_reader.return_value
                 mock_instance.get_makefile_info.side_effect = RuntimeError(
                     "Unexpected error"
@@ -311,7 +327,7 @@ class TestVersionCallback:
 
     def test_version_callback_true(self) -> None:
         """Test version callback with True value."""
-        from automake.main import version_callback
+        from automake.cli.main import version_callback
 
         with pytest.raises((SystemExit, typer.Exit)):
             # Typer.Exit can raise different exceptions depending on context
@@ -319,7 +335,7 @@ class TestVersionCallback:
 
     def test_version_callback_false(self) -> None:
         """Test version callback with False value."""
-        from automake.main import version_callback
+        from automake.cli.main import version_callback
 
         # Should not raise any exception
         result = version_callback(False)
@@ -327,7 +343,7 @@ class TestVersionCallback:
 
     def test_version_callback_none(self) -> None:
         """Test version callback with None value."""
-        from automake.main import version_callback
+        from automake.cli.main import version_callback
 
         # Should not raise any exception
         result = version_callback(None)
