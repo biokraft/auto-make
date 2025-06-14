@@ -14,7 +14,8 @@
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com/biokraft/auto-make)
-[![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?logo=github-actions&logoColor=white)](https://github.com/biokraft/auto-make/actions/workflows/ci.yml)
+[![Build Status](https://github.com/biokraft/auto-make/actions/workflows/ci.yml/badge.svg)](https://github.com/biokraft/auto-make/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/biokraft/auto-make/graph/badge.svg?token=YOUR_TOKEN_HERE)](https://codecov.io/gh/biokraft/auto-make)
 [![PyPI version](https://badge.fury.io/py/automake-cli.svg)](https://badge.fury.io/py/automake-cli)
 
 
@@ -86,7 +87,7 @@ This project is actively developed. Here is the current implementation status ba
 | 1 | Project Setup | Initialize project structure, `pyproject.toml` with `uv`, and pre-commit hooks. | ✅ DONE |
 | 2 | Config & Logging Setup | Implement logic to create/read `config.toml` and set up file-based logging. | TBD |
 | 3 | CLI Scaffolding | Create the basic `Typer` application, argument parsing, and help text. | ✅ DONE |
-| 4 | Makefile Reader | Implement the logic to find and read the `Makefile` from the current directory. | TBD |
+| 4 | Makefile Reader | Implement the logic to find and read the `Makefile` from the current directory. | ✅ DONE |
 | 5 | Ollama Integration | Create a module to handle communication with the local Ollama server. | TBD |
 | 6 | Smolagent Core | Develop the `smolagent` with a precise prompt for reliable command interpretation. | TBD |
 | 7 | Execution Engine | Implement the subprocess logic to run the `make` command and stream output. | TBD |
@@ -94,4 +95,5 @@ This project is actively developed. Here is the current implementation status ba
 | 9 | Unit & Integration Tests | Write tests for all core components and interactions. | ✅ DONE |
 | 10 | CI/CD Pipeline | Implement GitHub Actions workflow for automated testing and coverage. | ✅ DONE |
 | 11 | Packaging & Distribution | Configure `pyproject.toml` for `uvx` distribution. | ✅ DONE |
-| 12 | Documentation | Write comprehensive `
+| 12 | Documentation | Write a comprehensive `README.md` with installation, configuration, and usage instructions. | TBD |
+| 13 | MCP Integration | Implement the MCP-compliant interface for autonomous tool use. | TBD |
