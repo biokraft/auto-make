@@ -28,11 +28,12 @@ classifiers = [
 
 dependencies = [
     "typer>=0.9.0",
-    "rich>=13.0.0",  # For rich output support
+    "rich>=13.0.0", # For rich output support
     "smolagents>=0.1.0",
     "requests>=2.31.0",
     "tomli>=2.0.1; python_version < '3.11'",
     "appdirs>=1.4.4",
+    "ollama>=0.5.1",
 ]
 
 [project.optional-dependencies]
