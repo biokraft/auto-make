@@ -42,6 +42,7 @@ dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
     "pytest-mock>=3.11.0",
+    "pyyaml>=6.0.0",
 ]
 
 [project.urls]
@@ -122,4 +123,12 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "class .*\\bProtocol\\):",
     "@(abc\\.)?abstractmethod",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.0",
+    "pytest-cov>=6.2.1",
+    "pytest-mock>=3.14.1",
+    "pyyaml>=6.0.2",
 ]
