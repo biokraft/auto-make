@@ -17,10 +17,10 @@ The following table links to the detailed specifications for each domain and tec
 | `specs/07-packaging-and-distribution.md`             | Details the `pyproject.toml` setup for `uvx` installation and distribution. |
 | `specs/08-cicd-pipeline.md`                          | Defines the GitHub Actions CI pipeline for automated testing and coverage reporting. |
 | `specs/09-model-context-protocol.md`                 | Describes the integration with Anthropic's Model Context Protocol (MCP) for autonomous use by LLMs. |
+| `specs/10-interactive-sessions.md`                   | Specifies the interactive session for resolving ambiguous commands based on LLM confidence scores. |
 
 ## 3. Future Work
 This section captures features and ideas that are currently out of scope but are being considered for future versions:
-- **Ambiguity Resolution**: When a command is unclear, prompt the user with the top 3 most likely `make` targets to choose from.
 - **Dry-Run Mode**: Add a flag (e.g., `--dry-run`) to display the interpreted command without executing it.
 - **Failure Detection**: Implement logic to detect when the LLM fails to return a valid command or when the executed command fails.
 - **Configuration File**: Allow users to configure the LLM model and other settings via a project-level configuration file.
@@ -36,13 +36,13 @@ The following table outlines the granular steps to implement the AutoMake tool b
 | 2 | Config & Logging Setup | Implement logic to create/read `config.toml` and set up file-based logging. | `specs/04-configuration-management.md`, `specs/06-logging-strategy.md` | ✅ DONE |
 | 3 | CLI Scaffolding | Create the basic `Typer` application, argument parsing, and help text. | `specs/02-cli-and-ux.md` | ✅ DONE |
 | 4 | Makefile Reader | Implement the logic to find and read the `Makefile` from the current directory. | `specs/01-core-functionality.md` | ✅ DONE |
-| 5 | Ollama Integration | Create a module to handle communication with the local Ollama server, using settings from `config.toml`. | `specs/01-core-functionality.md`, `specs/04-configuration-management.md` | TBD |
+| 5 | Ollama Integration | Create a module to handle communication with the local Ollama server, using settings from `config.toml`. | `specs/01-core-functionality.md`, `specs/04-configuration-management.md` | ✅ DONE |
 | 6 | Smolagent Core | Develop the `smolagent` with the prompt defined in the prompting spec. | `specs/01-core-functionality.md`, `specs/05-ai-prompting.md` | TBD |
 | 7 | Execution Engine | Implement the subprocess logic to run the `make` command and stream output. | `specs/01-core-functionality.md` | TBD |
-| 8 | End-to-End Wiring | Integrate all components: CLI -> Config -> Logging -> Makefile Reader -> Agent -> Ollama -> Execution. | All | TBD |
-| 9 | Unit & Integration Tests | Write tests for CLI, config, logging, execution, and mocked agent/Ollama interactions. | `specs/03-architecture-and-tech-stack.md` | ✅ DONE |
-| 10 | CI/CD Pipeline | Implement GitHub Actions workflow for tests, coverage, and reporting. | `specs/08-cicd-pipeline.md` | ✅ DONE |
-| 11 | Packaging & Distribution | Configure `pyproject.toml` with dependencies and script entry points for `uvx` distribution. | `specs/07-packaging-and-distribution.md` | ✅ DONE |
-| 12 | Documentation | Write a `README.md` with installation, configuration, and usage instructions, including CI status badges. | All, `specs/08-cicd-pipeline.md` | TBD |
-| 13 | MCP Integration | Implement the MCP-compliant interface for autonomous tool use. | `specs/09-model-context-protocol.md` | TBD |
-A
+| 8 | Interactive Sessions | Implement the interactive command selection UI using `questionary` for low-confidence results. | `specs/10-interactive-sessions.md` | TBD |
+| 9 | End-to-End Wiring | Integrate all components: CLI -> Config -> Logging -> Makefile Reader -> Agent -> Ollama -> Execution. | All | TBD |
+| 10 | Unit & Integration Tests | Write tests for CLI, config, logging, execution, and mocked agent/Ollama interactions. | `specs/03-architecture-and-tech-stack.md` | ✅ DONE |
+| 11 | CI/CD Pipeline | Implement GitHub Actions workflow for tests, coverage, and reporting. | `specs/08-cicd-pipeline.md` | ✅ DONE |
+| 12 | Packaging & Distribution | Configure `pyproject.toml` with dependencies and script entry points for `uvx` distribution. | `specs/07-packaging-and-distribution.md` | ✅ DONE |
+| 13 | Documentation | Write a `README.md` with installation, configuration, and usage instructions, including CI status badges. | All, `specs/08-cicd-pipeline.md` | TBD |
+| 14 | MCP Integration | Implement the MCP-compliant interface for autonomous tool use. | `specs/09-model-context-protocol.md` | TBD |

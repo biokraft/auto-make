@@ -12,15 +12,20 @@ This document specifies the core AI-driven functionality of AutoMake, which is t
 
 ## 3. Non-functional Requirements / Constraints
 - **Model Flexibility**: The specific LLM used for interpretation will be configurable, but the system will be developed and tested with a default model (to be determined). The connection to the LLM will be managed through a local Ollama server instance.
-- **Immediate Execution**: For the initial version, the translated command will be executed immediately without a user confirmation step.
-- **No State**: The tool is stateless. Each invocation is independent and has no memory of previous commands.
+- **Conditional Execution**: Commands are executed immediately only if the LLM's confidence is high. Low-confidence interpretations will trigger an interactive user confirmation step.
+- **Transient State**: The tool is primarily stateless between invocations. A transient state exists only during a single run to manage an interactive command-selection session when required.
 
 ## 4. Architecture & Data Flow
 1. **Input**: The user provides a string via the `automake` CLI (e.g., `automake "deploy the app to staging"`).
 2. **Contextualization**: The tool reads the contents of the `Makefile` in the current directory.
 3. **Agent Invocation**: The natural language input and the `Makefile` contents are passed to a `smolagent`.
-4. **Interpretation**: The agent's task is to determine the single most appropriate `Makefile` command that corresponds to the user's request. The output must be only the command itself (e.g., `deploy-staging`).
-5. **Execution**: The CLI receives the command from the agent and executes it using the system's `make` utility (e.g., runs `make deploy-staging`).
+4. **Interpretation**: The agent's task is to determine the single most appropriate `Makefile` command that corresponds to the user's request. The agent's response must be a JSON object containing the command, a confidence score, and a list of alternative commands. See `specs/10-interactive-sessions.md`.
+5. **Confidence Check & Execution**:
+    - The CLI receives the JSON object from the agent.
+    - It checks the `confidence` score against a configured threshold.
+    - **If confidence is high**: The command is executed directly.
+    - **If confidence is low (or command is null with alternatives)**: An interactive session is triggered. The selected command is then executed. See `specs/10-interactive-sessions.md`.
+    - **If no command or alternatives are found**: The tool prints a help message and exits, as defined in `specs/02-cli-and-ux.md`.
 6. **Output**: The standard output and standard error from the `make` command execution are streamed directly to the user's terminal.
 
 ## 5. Ollama Integration Details
@@ -106,13 +111,11 @@ agent = CodeAgent(
 - Support for both local and remote Ollama instances
 
 ## 7. Out of Scope
-- User confirmation before execution.
-- Handling of ambiguous commands (e.g., prompting the user with choices).
+- User confirmation before execution (beyond the new interactive selection for low-confidence results).
 - Failure detection and recovery if a command is misinterpreted or fails.
 - Interactive chat or conversational features.
 
 ## 8. Future Considerations
-- A mechanism to handle ambiguity by presenting the user with the top N interpreted commands.
 - A "dry run" mode to show the command without executing it.
 - Caching strategies to speed up interpretation for repeated commands.
 - Support for fine-tuned models specific to Makefile interpretation.

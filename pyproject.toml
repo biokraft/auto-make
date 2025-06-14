@@ -44,6 +44,7 @@ dev = [
     "pytest-cov>=4.1.0",
     "pytest-mock>=3.11.0",
     "pyyaml>=6.0.0",
+    "pytest-asyncio>=1.0.0",
 ]
 
 [project.urls]
@@ -102,6 +103,7 @@ addopts = [
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
+    "asyncio: marks tests as async tests",
 ]
 
 [tool.coverage.run]

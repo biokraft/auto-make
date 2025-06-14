@@ -29,6 +29,7 @@ automake "run all the unit tests"
 ## 5. Error Handling
 - If the user does not provide a command string, the CLI should exit gracefully with a clear error message and usage instructions.
 - If no `Makefile` is found in the current directory, the tool should exit with a clear error message.
+- If the LLM is unable to interpret the user's command (i.e., it returns no primary command and no alternatives), the CLI will display the standard help/usage message and exit gracefully.
 
 ## 6. Out of Scope
 - Interactive prompts.

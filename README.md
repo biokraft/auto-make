@@ -85,20 +85,4 @@ model = "gemma3:4b" # Specify the Ollama model you want to use
 ```
 
 ## 🗺️ Project Roadmap
-This project is actively developed. Here is the current implementation status based on our defined specifications:
-
-| Phase | Focus Area | Key Deliverables | Status |
-| :--- | :--- | :--- | :--- |
-| 1 | Project Setup | Initialize project structure, `pyproject.toml` with `uv`, and pre-commit hooks. | ✅ DONE |
-| 2 | Config & Logging Setup | Implement logic to create/read `config.toml` and set up file-based logging. | ✅ DONE |
-| 3 | CLI Scaffolding | Create the basic `Typer` application, argument parsing, and help text. | ✅ DONE |
-| 4 | Makefile Reader | Implement the logic to find and read the `Makefile` from the current directory. | ✅ DONE |
-| 5 | Ollama Integration | Create a module to handle communication with the local Ollama server. | TBD |
-| 6 | Smolagent Core | Develop the `smolagent` with a precise prompt for reliable command interpretation. | TBD |
-| 7 | Execution Engine | Implement the subprocess logic to run the `make` command and stream output. | TBD |
-| 8 | End-to-End Wiring | Integrate all components into a seamless workflow. | TBD |
-| 9 | Unit & Integration Tests | Write tests for all core components and interactions. | ✅ DONE |
-| 10 | CI/CD Pipeline | Implement GitHub Actions workflow for automated testing and coverage. | ✅ DONE |
-| 11 | Packaging & Distribution | Configure `pyproject.toml` for `uvx` distribution. | ✅ DONE |
-| 12 | Documentation | Write a comprehensive `README.md` with installation, configuration, and usage instructions. | TBD |
-| 13 | MCP Integration | Implement the MCP-compliant interface for autonomous tool use. | TBD |
+For a detailed breakdown of the project roadmap, implementation phases, and technical specifications, see [SPECS.md](SPECS.md).
