@@ -176,13 +176,12 @@ deploy:
             assert "Command Received" in result.stdout
             assert test_command in result.stdout
 
-    def test_no_arguments_shows_help(self) -> None:
-        """Test that running without arguments shows help."""
+    def test_no_arguments_shows_welcome(self) -> None:
+        """Test that running without arguments shows welcome message."""
         result = self.runner.invoke(app, [])
-        assert result.exit_code == 0  # Should show help and exit cleanly
-        assert "Usage" in result.stdout
-        assert "automake [OPTIONS] COMMAND" in result.stdout
-        assert "Examples" in result.stdout
+        assert result.exit_code == 0  # Should show welcome and exit cleanly
+        assert "Welcome" in result.stdout
+        assert 'Run "automake help" for detailed usage information.' in result.stdout
 
     def test_empty_command_argument(self) -> None:
         """Test behavior with empty command argument."""

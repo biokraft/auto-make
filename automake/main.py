@@ -36,6 +36,19 @@ def read_ascii_art() -> str:
     return ""
 
 
+def print_welcome() -> None:
+    """Print ASCII art and simple usage info."""
+    # Print ASCII art first
+    ascii_art = read_ascii_art()
+    if ascii_art:
+        output.print_ascii_art(ascii_art)
+        console.print()  # Add blank line after ASCII art
+
+    # Print simple usage info
+    usage_info = 'Run "automake help" for detailed usage information.'
+    output.print_box(usage_info, MessageType.INFO, "Welcome")
+
+
 def print_help_with_ascii() -> None:
     """Print ASCII art followed by help information."""
     # Print ASCII art first
@@ -127,8 +140,8 @@ def main(
     """
     # Handle special cases
     if command is None:
-        # No command provided - show help with ASCII art
-        print_help_with_ascii()
+        # No command provided - show welcome with ASCII art
+        print_welcome()
         raise typer.Exit()
 
     if command.lower() == "help":
