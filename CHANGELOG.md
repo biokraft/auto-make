@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.3.0 - AI Core Implementation & Interactive Features
+
+### ✨ Added
+- 🤖 Complete AI agent implementation with Ollama integration for command interpretation
+- 🎯 Interactive command selection with confidence-based prompting using questionary
+- ⚙️ Comprehensive configuration management system with TOML support
+- 📝 Advanced logging framework with file rotation and configurable levels
+- 🏃 Command execution engine with real-time output streaming
+- 🧪 Extensive test suite covering all core functionality
+
+### 🛠️ Improved
+- 📚 Enhanced project specifications with detailed implementation guidance
+- 🔧 Dynamic version retrieval from pyproject.toml
+- 📋 Makefile reading capabilities with better error handling
+- 🎨 CLI interface with improved user experience and help system
+
+### 🔧 Fixed
+- ✅ Test coverage and linting compliance across all modules
+- 🔗 Dependency management and lock file updates
+
 ## v0.2.1 - Documentation & Structure Improvements
 
 ### 🛠️ Improved
@@ -50,6 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Pre-commit hook compatibility issues
 - 📏 Code formatting and linting compliance
 
+[0.3.0]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.3.0
 [0.2.1]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.2.1
 [0.2.0]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.2.0
 [0.1.0]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.1.0
