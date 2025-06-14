@@ -1,9 +1,16 @@
 # 🤖 auto-make
 *Makefiles without writing Makefiles.*
 
-[![CI/CD Pipeline](https://github.com/seanbaufeld/auto-make/actions/workflows/ci.yml/badge.svg)](https://github.com/seanbaufeld/auto-make/actions/workflows/ci.yml)
-[![PyPI version](https://badge.fury.io/py/automake-cli.svg)](https://badge.fury.io/py/automake-cli)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com/biokraft/auto-make)
+[![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?logo=github-actions&logoColor=white)](https://github.com/biokraft/auto-make/actions/workflows/ci.yml)
+[![PyPI version](https://badge.fury.io/py/automake-cli.svg)](https://badge.fury.io/py/automake-cli)
+
+
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/downloads/)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-black.svg)](https://github.com/astral-sh/ruff)
+[![tested with pytest](https://img.shields.io/badge/tested%20with-pytest-0A9B7B.svg?logo=pytest)](https://pytest.org)
 
 ---
 
@@ -73,20 +80,7 @@ This project is actively developed. Here is the current implementation status ba
 | 6 | Smolagent Core | Develop the `smolagent` with a precise prompt for reliable command interpretation. | TBD |
 | 7 | Execution Engine | Implement the subprocess logic to run the `make` command and stream output. | TBD |
 | 8 | End-to-End Wiring | Integrate all components into a seamless workflow. | TBD |
-| 9 | Unit & Integration Tests | Write tests for all core components and interactions. | 🔄 IN PROGRESS |
-| 10 | CI/CD Pipeline | Implement GitHub Actions workflow for automated testing and coverage. | TBD |
+| 9 | Unit & Integration Tests | Write tests for all core components and interactions. | ✅ DONE |
+| 10 | CI/CD Pipeline | Implement GitHub Actions workflow for automated testing and coverage. | ✅ DONE |
 | 11 | Packaging & Distribution | Configure `pyproject.toml` for `uvx` distribution. | ✅ DONE |
-| 12 | Documentation | Write comprehensive `README.md` and user guides. | 🔄 IN PROGRESS |
-
-## 🔮 Future Work
-We have many exciting features planned for future releases:
-
-- **Ambiguity Resolution**: Prompt the user with the top 3 likely targets when a command is unclear.
-- **Dry-Run Mode**: Add a `--dry-run` flag to show the interpreted command without executing it.
-- **Failure Detection**: Intelligently detect when the LLM or the executed command fails.
-- **Makefile Generation**: Add `automake makefile` to intelligently scan a repo and generate a `Makefile`.
-- **Multi-Provider LLM Support**: Add support for OpenAI, Anthropic, and other major LLM providers.
-
----
-
-Made with ❤️ by [Sean Baufeld](https://github.com/seanbaufeld).
+| 12 | Documentation | Write comprehensive `
