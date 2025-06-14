@@ -32,17 +32,25 @@ The following table outlines the granular steps to implement the AutoMake tool b
 
 | Phase | Focus Area | Key Deliverables | Related Specs | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| 1 | Project Setup | Initialize project structure, `pyproject.toml` with `uv`, and pre-commit hooks. | `specs/03-architecture-and-tech-stack.md` | ✅ DONE |
-| 2 | Config & Logging Setup | Implement logic to create/read `config.toml` and set up file-based logging. | `specs/04-configuration-management.md`, `specs/06-logging-strategy.md` | ✅ DONE |
-| 3 | CLI Scaffolding | Create the basic `Typer` application, argument parsing, and help text. | `specs/02-cli-and-ux.md` | ✅ DONE |
-| 4 | Makefile Reader | Implement the logic to find and read the `Makefile` from the current directory. | `specs/01-core-functionality.md` | ✅ DONE |
-| 5 | Ollama Integration | Create a module to handle communication with the local Ollama server, using settings from `config.toml`. | `specs/01-core-functionality.md`, `specs/04-configuration-management.md` | ✅ DONE |
-| 6 | Smolagent Core | Develop the `smolagent` with the prompt defined in the prompting spec. | `specs/01-core-functionality.md`, `specs/05-ai-prompting.md` | TBD |
-| 7 | Execution Engine | Implement the subprocess logic to run the `make` command and stream output. | `specs/01-core-functionality.md` | TBD |
-| 8 | Interactive Sessions | Implement the interactive command selection UI using `questionary` for low-confidence results. | `specs/10-interactive-sessions.md` | TBD |
-| 9 | End-to-End Wiring | Integrate all components: CLI -> Config -> Logging -> Makefile Reader -> Agent -> Ollama -> Execution. | All | TBD |
-| 10 | Unit & Integration Tests | Write tests for CLI, config, logging, execution, and mocked agent/Ollama interactions. | `specs/03-architecture-and-tech-stack.md` | ✅ DONE |
-| 11 | CI/CD Pipeline | Implement GitHub Actions workflow for tests, coverage, and reporting. | `specs/08-cicd-pipeline.md` | ✅ DONE |
-| 12 | Packaging & Distribution | Configure `pyproject.toml` with dependencies and script entry points for `uvx` distribution. | `specs/07-packaging-and-distribution.md` | ✅ DONE |
-| 13 | Documentation | Write a `README.md` with installation, configuration, and usage instructions, including CI status badges. | All, `specs/08-cicd-pipeline.md` | TBD |
-| 14 | MCP Integration | Implement the MCP-compliant interface for autonomous tool use. | `specs/09-model-context-protocol.md` | TBD |
+| 1 | **Foundation & Setup** | **Project Scaffolding** | `specs/03-architecture-and-tech-stack.md` | ✅ DONE |
+| | | Initialize project with `src/automake` layout, `pyproject.toml`, and `uv`. | `specs/03-architecture-and-tech-stack.md` | ✅ DONE |
+| | | Set up pre-commit hooks for `black` and `ruff`. | `specs/03-architecture-and-tech-stack.md` | ✅ DONE |
+| | **Configuration & Logging** | Implement `config.toml` creation and reading logic. | `specs/04-configuration-management.md` | ✅ DONE |
+| | | Implement file-based logging with rotation and `config.toml` level setting. | `specs/06-logging-strategy.md` | ✅ DONE |
+| | **Packaging Configuration** | Configure `pyproject.toml` with dependencies and script entry points for `uvx`. | `specs/07-packaging-and-distribution.md` | ✅ DONE |
+| 2 | **Core Engine** | **Makefile Reader** | Implement a robust function to find and read the `Makefile` in the current directory. | `specs/01-core-functionality.md` | ✅ DONE |
+| | **Ollama Client** | Create `ollama_client.py` to manage connection, model selection, and API calls. | `specs/01-core-functionality.md` | ✅ DONE |
+| | **AI Core (`smolagent`)** | Implement the `smolagent` responsible for command interpretation. | `specs/01-core-functionality.md`, `specs/05-ai-prompting.md` | TBD |
+| | | Integrate system and user prompts with dynamic content (`Makefile`, user command). | `specs/05-ai-prompting.md` | TBD |
+| | | Implement robust JSON parsing and validation for the LLM's response. | `specs/05-ai-prompting.md` | TBD |
+| | **Execution Engine** | Implement subprocess logic to run the selected `make` command and stream its output. | `specs/01-core-functionality.md` | TBD |
+| 3 | **User Interface** | **CLI Scaffolding** | Create the `Typer` app with the primary command argument and basic usage text. | `specs/02-cli-and-ux.md` | ✅ DONE |
+| | **Interactive Sessions** | Integrate `questionary` for the interactive command selection UI. | `specs/10-interactive-sessions.md` | TBD |
+| | | Implement the confidence check logic to trigger the interactive session. | `specs/10-interactive-sessions.md` | TBD |
+| | **End-to-End Wiring** | Integrate all components: CLI -> Config -> Logging -> Makefile -> AI Core -> Execution/Interaction. | All | TBD |
+| 4 | **Quality & Automation** | **Testing** | Write unit tests for config, logging, CLI parsing, and execution. | `specs/03-architecture-and-tech-stack.md` | ✅ DONE |
+| | | Write integration tests for the AI Core with a mocked Ollama client. | `specs/03-architecture-and-tech-stack.md` | TBD |
+| | **CI/CD Pipeline** | Implement GitHub Actions workflow for automated testing and coverage checks. | `specs/08-cicd-pipeline.md` | ✅ DONE |
+| | **Documentation** | Write a comprehensive `README.md` with setup, usage, and configuration instructions. | All | TBD |
+| | | Add CI status and coverage badges to `README.md`. | `specs/08-cicd-pipeline.md` | TBD |
+| 5 | **Advanced Features** | **MCP Integration** | Implement the MCP-compliant interface for autonomous tool discovery and use. | `specs/09-model-context-protocol.md` | TBD |
