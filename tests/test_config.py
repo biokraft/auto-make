@@ -38,7 +38,7 @@ class TestConfig:
                     mock_tomllib_load.return_value = {
                         "ollama": {
                             "base_url": "http://localhost:11434",
-                            "model": "gemma3:4b",
+                            "model": "qwen3:0.6b",
                         },
                         "logging": {"level": "INFO"},
                     }
@@ -58,7 +58,7 @@ class TestConfig:
 
         # Check default values
         expected_config = {
-            "ollama": {"base_url": "http://localhost:11434", "model": "gemma3:4b"},
+            "ollama": {"base_url": "http://localhost:11434", "model": "qwen3:0.6b"},
             "logging": {"level": "INFO"},
             "ai": {"interactive_threshold": 80},
         }
@@ -108,7 +108,7 @@ base_url = "http://custom:8080"
         # Should have custom value
         assert config.ollama_base_url == "http://custom:8080"
         # Should have default values for missing keys
-        assert config.ollama_model == "gemma3:4b"
+        assert config.ollama_model == "qwen3:0.6b"
         assert config.log_level == "INFO"
 
     def test_invalid_toml_file(self, tmp_path):
@@ -164,7 +164,7 @@ level = "DEBUG"
         # Test with defaults
         config_default = Config(tmp_path / "default")
         assert config_default.ollama_base_url == "http://localhost:11434"
-        assert config_default.ollama_model == "gemma3:4b"
+        assert config_default.ollama_model == "qwen3:0.6b"
         assert config_default.log_level == "INFO"
 
     def test_get_method(self, tmp_path):
@@ -173,7 +173,7 @@ level = "DEBUG"
 
         # Test existing values
         assert config.get("ollama", "base_url") == "http://localhost:11434"
-        assert config.get("ollama", "model") == "gemma3:4b"
+        assert config.get("ollama", "model") == "qwen3:0.6b"
         assert config.get("logging", "level") == "INFO"
 
         # Test non-existing values with defaults
@@ -186,7 +186,7 @@ level = "DEBUG"
         config = Config(config_dir)
 
         # Initial state
-        assert config.ollama_model == "gemma3:4b"
+        assert config.ollama_model == "qwen3:0.6b"
 
         # Modify config file
         new_config = """[ollama]
@@ -201,6 +201,94 @@ level = "INFO"
         # Reload and check
         config.reload()
         assert config.ollama_model == "new-model"
+
+    def test_set_config_value(self, tmp_path):
+        """Test setting a configuration value."""
+        config = Config(tmp_path / "config")
+
+        # Set a value in existing section
+        config.set("ollama", "model", "new-model")
+
+        # Verify the value was set
+        assert config.get("ollama", "model") == "new-model"
+
+        # Verify it was saved to file
+        config_reloaded = Config(tmp_path / "config")
+        assert config_reloaded.get("ollama", "model") == "new-model"
+
+    def test_set_config_value_new_section(self, tmp_path):
+        """Test setting a configuration value in a new section."""
+        config = Config(tmp_path / "config")
+
+        # Set a value in new section
+        config.set("new_section", "new_key", "new_value")
+
+        # Verify the value was set
+        assert config.get("new_section", "new_key") == "new_value"
+
+        # Verify it was saved to file
+        config_reloaded = Config(tmp_path / "config")
+        assert config_reloaded.get("new_section", "new_key") == "new_value"
+
+    def test_reset_to_defaults(self, tmp_path):
+        """Test resetting configuration to defaults."""
+        config = Config(tmp_path / "config")
+
+        # Modify some values
+        config.set("ollama", "model", "custom-model")
+        config.set("logging", "level", "DEBUG")
+
+        # Reset to defaults
+        config.reset_to_defaults()
+
+        # Verify defaults are restored
+        assert config.get("ollama", "model") == "qwen3:0.6b"
+        assert config.get("logging", "level") == "INFO"
+
+        # Verify it was saved to file
+        config_reloaded = Config(tmp_path / "config")
+        assert config_reloaded.get("ollama", "model") == "qwen3:0.6b"
+        assert config_reloaded.get("logging", "level") == "INFO"
+
+    def test_get_all_sections(self, tmp_path):
+        """Test getting all configuration sections."""
+        config = Config(tmp_path / "config")
+
+        result = config.get_all_sections()
+
+        expected = {
+            "ollama": {"base_url": "http://localhost:11434", "model": "qwen3:0.6b"},
+            "logging": {"level": "INFO"},
+            "ai": {"interactive_threshold": 80},
+        }
+
+        assert result == expected
+        # Should return a copy, not the original
+        assert result is not config._config_data
+
+    def test_save_config_import_error(self, tmp_path):
+        """Test config saving when tomli-w is not available."""
+        config = Config(tmp_path / "config")
+
+        # Mock the import statement inside _save_config
+        original_import = __builtins__["__import__"]
+
+        def mock_import(name, *args, **kwargs):
+            if name == "tomli_w":
+                raise ImportError("No module named 'tomli_w'")
+            return original_import(name, *args, **kwargs)
+
+        with patch("builtins.__import__", side_effect=mock_import):
+            with pytest.raises(ConfigError, match="tomli-w package is required"):
+                config.set("test", "key", "value")
+
+    def test_save_config_os_error(self, tmp_path):
+        """Test config saving when file operation fails."""
+        config = Config(tmp_path / "config")
+
+        with patch("builtins.open", side_effect=OSError("Permission denied")):
+            with pytest.raises(ConfigError, match="Failed to save config"):
+                config.set("test", "key", "value")
 
     def test_config_directory_creation_failure(self, tmp_path):
         """Test handling of config directory creation failure."""
@@ -255,7 +343,7 @@ class TestGetConfig:
                 mock_tomllib_load.return_value = {
                     "ollama": {
                         "base_url": "http://localhost:11434",
-                        "model": "gemma3:4b",
+                        "model": "qwen3:0.6b",
                     },
                     "logging": {"level": "INFO"},
                 }
@@ -276,7 +364,7 @@ class TestConfigIntegration:
         # 1. Create new config (should create default)
         config = Config(config_dir)
         assert config.config_file_path.exists()
-        assert config.ollama_model == "gemma3:4b"
+        assert config.ollama_model == "qwen3:0.6b"
 
         # 2. Modify config file externally
         new_content = """[ollama]
@@ -300,11 +388,11 @@ level = "DEBUG"
 
         # Create first instance
         config1 = Config(config_dir)
-        assert config1.ollama_model == "gemma3:4b"
+        assert config1.ollama_model == "qwen3:0.6b"
 
         # Create second instance (should read existing file)
         config2 = Config(config_dir)
-        assert config2.ollama_model == "gemma3:4b"
+        assert config2.ollama_model == "qwen3:0.6b"
 
         # Both should have same values
         assert config1.ollama_base_url == config2.ollama_base_url

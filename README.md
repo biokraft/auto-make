@@ -52,7 +52,7 @@ Tired of `grep "deploy" Makefile`? Just run `automake "deploy the app to staging
 ### Prerequisites
 - Python 3.11+
 - [uv](https://github.com/astral-sh/uv) (recommended for installation)
-- An active [Ollama](https://ollama.ai/) server with a running model (e.g., `ollama run gemma3:4b`).
+- An active [Ollama](https://ollama.ai/) server with a running model (e.g., `ollama run qwen3:0.6b`).
 
 ### Installation
 Install `auto-make` using `uvx` (the `uv` equivalent of `npx`):
@@ -82,7 +82,7 @@ Example `config.toml`:
 ```toml
 # Default configuration for auto-make
 [ollama]
-model = "gemma3:4b" # Specify the Ollama model you want to use
+model = "qwen3:0.6b" # Specify the Ollama model you want to use
 ```
 
 ## 🗺️ Project Roadmap

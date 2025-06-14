@@ -31,6 +31,11 @@ from automake.core.makefile_reader import (  # noqa: E402
     MakefileNotFoundError,
     MakefileReader,
 )
+from automake.utils.ollama_manager import (  # noqa: E402
+    OllamaManagerError,
+    ensure_model_available,
+    get_available_models,
+)
 from automake.utils.output import MessageType, get_formatter  # noqa: E402
 
 app = typer.Typer(
@@ -48,6 +53,15 @@ logs_app = typer.Typer(
     no_args_is_help=True,  # Show help when no subcommand is provided
 )
 app.add_typer(logs_app, name="logs")
+
+# Create a subcommand group for config operations
+config_app = typer.Typer(
+    name="config",
+    help="Manage AutoMake configuration",
+    add_completion=False,
+    no_args_is_help=True,  # Show help when no subcommand is provided
+)
+app.add_typer(config_app, name="config")
 
 console = Console()
 output = get_formatter(console)
@@ -107,6 +121,227 @@ def logs_config() -> None:
     show_log_config(console, output)
 
 
+# Config subcommands
+@config_app.command("show")
+def config_show(
+    section: str = typer.Option(
+        None,
+        "--section",
+        "-s",
+        help="Show only a specific section",
+    ),
+) -> None:
+    """Show current configuration."""
+    try:
+        config = get_config()
+
+        if section:
+            # Show specific section
+            section_data = config.get_all_sections().get(section)
+            if section_data is None:
+                output.print_error_box(
+                    f"Section '{section}' not found in configuration.",
+                    hint="Use 'automake config show' to see all available sections.",
+                )
+                raise typer.Exit(1)
+
+            # Format section data
+            content = f"\\[{section}]\n"
+            for key, value in section_data.items():
+                if isinstance(value, str):
+                    content += f'{key} = "{value}"\n'
+                else:
+                    content += f"{key} = {value}\n"
+
+            output.print_status(
+                content.strip(),
+                MessageType.INFO,
+                f"Configuration - {section}",
+            )
+        else:
+            # Show all configuration
+            all_config = config.get_all_sections()
+            content = ""
+
+            for section_name, section_data in all_config.items():
+                content += f"\\[{section_name}]\n"
+                for key, value in section_data.items():
+                    if isinstance(value, str):
+                        content += f'{key} = "{value}"\n'
+                    else:
+                        content += f"{key} = {value}\n"
+                content += "\n"
+
+            output.print_status(content.strip(), MessageType.INFO, "Configuration")
+
+        # Show config file location
+        output.print_status(
+            f"Config file: {config.config_file_path}", MessageType.INFO, "Location"
+        )
+
+    except Exception as e:
+        output.print_error_box(f"Failed to show configuration: {e}")
+        raise typer.Exit(1) from e
+
+
+@config_app.command("set")
+def config_set(
+    section: str = typer.Argument(
+        ..., help="Configuration section (e.g., 'ollama', 'logging')"
+    ),
+    key: str = typer.Argument(..., help="Configuration key (e.g., 'model', 'level')"),
+    value: str = typer.Argument(..., help="Value to set"),
+) -> None:
+    """Set a configuration value."""
+    try:
+        config = get_config()
+
+        # Convert value to appropriate type
+        converted_value = _convert_config_value(value)
+
+        # Set the value
+        config.set(section, key, converted_value)
+
+        # Show updated section
+        section_data = config.get_all_sections().get(section, {})
+        content = f"\\[{section}]\n"
+        for k, v in section_data.items():
+            if isinstance(v, str):
+                content += f'{k} = "{v}"\n'
+            else:
+                content += f"{k} = {v}\n"
+
+        output.print_status(
+            content.strip(), MessageType.INFO, f"Updated Section - {section}"
+        )
+
+    except Exception as e:
+        output.print_error_box(f"Failed to set configuration: {e}")
+        raise typer.Exit(1) from e
+
+
+@config_app.command("reset")
+def config_reset(
+    yes: bool = typer.Option(
+        False,
+        "--yes",
+        "-y",
+        help="Skip confirmation prompt",
+    ),
+) -> None:
+    """Reset configuration to defaults."""
+    try:
+        if not yes:
+            import questionary
+
+            confirm = questionary.confirm(
+                "Are you sure you want to reset all configuration to defaults? "
+                "This cannot be undone."
+            ).ask()
+
+            if not confirm:
+                output.print_status(
+                    "Configuration reset cancelled.", MessageType.INFO, "Cancelled"
+                )
+                return
+
+        config = get_config()
+        config.reset_to_defaults()
+
+        output.print_status(
+            "Configuration has been reset to defaults.",
+            MessageType.SUCCESS,
+            "Reset Complete",
+        )
+
+        # Show config file location
+        output.print_status(
+            f"Config file: {config.config_file_path}",
+            MessageType.INFO,
+            "Location",
+        )
+
+    except Exception as e:
+        output.print_error_box(f"Failed to reset configuration: {e}")
+        raise typer.Exit(1) from e
+
+
+@config_app.command("edit")
+def config_edit() -> None:
+    """Open configuration file in default editor."""
+    try:
+        config = get_config()
+        config_path = config.config_file_path
+
+        # Try to open with system default editor
+        import os
+        import platform
+        import subprocess
+
+        editor = os.environ.get("EDITOR", "vim")
+
+        try:
+            subprocess.run([editor, str(config_path)], check=True)
+            output.print_status(
+                f"Configuration file opened with {editor}.",
+                MessageType.SUCCESS,
+                "Editor",
+            )
+            return
+        except subprocess.CalledProcessError:
+            # Fallback to system default open command
+            try:
+                if platform.system() == "Darwin":  # macOS
+                    subprocess.run(["open", str(config_path)], check=True)
+                elif platform.system() == "Windows":  # Windows
+                    subprocess.run(["start", str(config_path)], shell=True, check=True)
+                else:  # Linux and others
+                    subprocess.run(["xdg-open", str(config_path)], check=True)
+
+                output.print_status(
+                    "Configuration file opened with system default application.",
+                    MessageType.SUCCESS,
+                    "Editor",
+                )
+                return
+            except subprocess.CalledProcessError:
+                pass
+
+            output.print_error_box(
+                f"Could not open configuration file with editor '{editor}' "
+                "or system default.",
+                hint=f"You can manually edit the file at: {config_path}",
+            )
+            raise typer.Exit(1) from None
+
+    except Exception as e:
+        output.print_error_box(f"Failed to edit configuration: {e}")
+        raise typer.Exit(1) from e
+
+
+def _convert_config_value(value: str) -> str | int | bool:
+    """Convert string value to appropriate type for configuration.
+
+    Args:
+        value: String value to convert
+
+    Returns:
+        Converted value (str, int, or bool)
+    """
+    # Try to convert to boolean
+    if value.lower() in ("true", "false"):
+        return value.lower() == "true"
+
+    # Try to convert to integer
+    try:
+        return int(value)
+    except ValueError:
+        pass
+
+    # Return as string
+    return value
+
+
 def read_ascii_art() -> str:
     """Read ASCII art from file.
 
@@ -128,7 +363,7 @@ def print_welcome() -> None:
     # Print ASCII art first
     ascii_art = read_ascii_art()
     if ascii_art:
-        output.print_ascii_art(ascii_art)
+        output.print_rainbow_ascii_art(ascii_art)
         console.print()  # Add blank line after ASCII art
 
     # Print simple usage info
@@ -141,7 +376,7 @@ def print_help_with_ascii() -> None:
     # Print ASCII art first
     ascii_art = read_ascii_art()
     if ascii_art:
-        output.print_ascii_art(ascii_art)
+        output.print_rainbow_ascii_art(ascii_art)
         console.print()  # Add blank line after ASCII art
 
     # Create help content
@@ -170,6 +405,8 @@ def print_help_with_ascii() -> None:
     # Print commands
     commands_content = (
         "run                  Execute natural language commands\n"
+        "init                 Initialize AutoMake and ensure model is ready\n"
+        "config               Manage AutoMake configuration\n"
         "help                 Show this help information\n"
         "logs                 Manage AutoMake logs"
     )
@@ -181,6 +418,15 @@ def print_help_with_ascii() -> None:
         "--help     -h        Show this message and exit."
     )
     output.print_box(options_content, MessageType.INFO, "Options")
+
+    # Print config subcommands
+    config_subcommands_content = (
+        "config show          Show current configuration\n"
+        "config set           Set a configuration value\n"
+        "config reset         Reset configuration to defaults\n"
+        "config edit          Open configuration file in editor"
+    )
+    output.print_box(config_subcommands_content, MessageType.INFO, "Config Commands")
 
     # Print log subcommands
     log_subcommands_content = (
@@ -261,6 +507,109 @@ def run(
 
 
 # Help command
+@app.command()
+def init() -> None:
+    """Initialize AutoMake by ensuring Ollama and the configured model are ready."""
+    try:
+        # Load configuration
+        config = get_config()
+
+        output.print_status(
+            f"Initializing AutoMake with model: {config.ollama_model}",
+            MessageType.INFO,
+            "Initialization",
+        )
+
+        # Check if Ollama is installed by trying to run ollama --version
+        try:
+            import subprocess
+
+            result = subprocess.run(
+                ["ollama", "--version"], capture_output=True, text=True, timeout=10
+            )
+            if result.returncode != 0:
+                raise FileNotFoundError("Ollama command failed")
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            output.print_error_box(
+                "Ollama is not installed or not available in your PATH.",
+                hint="Please install Ollama from https://ollama.ai/ and ensure "
+                "it's in your PATH.",
+            )
+            raise typer.Exit(1) from None
+
+        # Ensure model is available
+        try:
+            is_available, was_pulled = ensure_model_available(config)
+
+            if was_pulled:
+                output.print_status(
+                    f"Model '{config.ollama_model}' has been pulled and is now ready.",
+                    MessageType.SUCCESS,
+                    "Model Ready",
+                )
+            else:
+                output.print_status(
+                    f"Model '{config.ollama_model}' is already available and ready.",
+                    MessageType.SUCCESS,
+                    "Model Ready",
+                )
+
+            # Show available models
+            try:
+                available_models = get_available_models(config.ollama_base_url)
+                if available_models:
+                    models_text = "\n".join(
+                        f"• {model}" for model in available_models[:10]
+                    )
+                    if len(available_models) > 10:
+                        models_text += f"\n... and {len(available_models) - 10} more"
+
+                    output.print_status(
+                        models_text, MessageType.INFO, "Available Models"
+                    )
+            except OllamaManagerError:
+                # Don't fail if we can't list models, the main goal is achieved
+                pass
+
+            output.print_status(
+                "AutoMake is ready to use! Try running: "
+                'automake run "your command here"',
+                MessageType.SUCCESS,
+                "Ready",
+            )
+
+        except OllamaManagerError as e:
+            if "Ollama command not found" in str(e):
+                output.print_error_box(
+                    "Ollama is not installed or not available in your PATH.",
+                    hint="Please install Ollama from https://ollama.ai/ and ensure "
+                    "it's in your PATH.",
+                )
+            elif "Connection" in str(e) or "connect" in str(e).lower():
+                output.print_error_box(
+                    f"Could not connect to Ollama server at {config.ollama_base_url}.",
+                    hint="Make sure Ollama is running. Try: ollama serve",
+                )
+            elif "pull" in str(e).lower() or "model" in str(e).lower():
+                output.print_error_box(
+                    f"Failed to pull model '{config.ollama_model}': {e}",
+                    hint=f"Check if '{config.ollama_model}' is a valid model name. "
+                    f"You can see available models at https://ollama.ai/library",
+                )
+            else:
+                output.print_error_box(
+                    f"Initialization failed: {e}",
+                    hint="Check your Ollama setup and configuration.",
+                )
+            raise typer.Exit(1) from e
+
+    except Exception as e:
+        output.print_error_box(
+            f"An unexpected error occurred during initialization: {e}"
+        )
+        raise typer.Exit(1) from e
+
+
 @app.command("help")
 def help_command() -> None:
     """Show help information with ASCII art."""
@@ -277,29 +626,9 @@ def _execute_main_logic(command: str) -> None:
 
     # Phase 4: Makefile Reader Implementation
     try:
-        output.print_status(
-            "Reading Makefile from current directory...", MessageType.INFO, "Scanning"
-        )
         reader = MakefileReader()
-        makefile_info = reader.get_makefile_info()
-        makefile_content = reader.read_makefile()
-
-        output.print_makefile_found(makefile_info["name"], makefile_info["size"])
-
-        # Show a preview of the Makefile content (first few lines with targets)
-        lines = makefile_content.split("\n")
-        target_lines = [
-            line
-            for line in lines[:20]
-            if line.strip()
-            and not line.startswith("#")
-            and ":" in line
-            and not line.startswith("\t")
-        ]
-
-        if target_lines:
-            target_names = [line.split(":")[0].strip() for line in target_lines[:5]]
-            output.print_targets_preview(target_names, len(target_lines))
+        reader.get_makefile_info()  # Validate makefile exists and is readable
+        reader.read_makefile()  # Validate makefile content
 
     except MakefileNotFoundError as e:
         output.print_error_box(
@@ -315,14 +644,16 @@ def _execute_main_logic(command: str) -> None:
 
     # Phase 2: AI Core
     try:
-        output.print_status("Initializing AI agent...", MessageType.INFO, "AI Setup")
         config = get_config()
-        agent = create_ai_agent(config)
-        output.print_status(
-            "AI agent initialized successfully.", MessageType.SUCCESS, "AI Setup"
-        )
+        agent, ollama_was_started = create_ai_agent(config)
 
-        output.print_status("Interpreting your command...", MessageType.INFO, "AI Core")
+        # Show notice if Ollama was started automatically
+        if ollama_was_started:
+            output.print_status(
+                "Ollama server was not running and has been started automatically.",
+                MessageType.INFO,
+                "Notice",
+            )
 
         # Start the AI thinking animation
         stop_event, animation_thread = output.start_ai_thinking_animation()
@@ -333,7 +664,8 @@ def _execute_main_logic(command: str) -> None:
             # Stop the animation regardless of success or failure
             output.stop_ai_thinking_animation(stop_event, animation_thread)
 
-        output.print_ai_reasoning(response.reasoning, response.confidence)
+        # Show which command was chosen
+        output.print_command_chosen(response.command, response.confidence)
 
         final_command = response.command
         # Phase 3: Interactive session
@@ -368,7 +700,6 @@ def _execute_main_logic(command: str) -> None:
 
         # Phase 2: Execution Engine
         runner = CommandRunner()
-        output.print_command_execution(final_command)
         runner.run(final_command)
 
     except CommandInterpretationError as e:

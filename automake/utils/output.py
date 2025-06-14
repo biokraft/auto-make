@@ -6,6 +6,7 @@ that matches the style of Typer's error boxes.
 
 import threading
 import time
+from colorsys import hsv_to_rgb
 from enum import Enum
 
 from rich.console import Console
@@ -193,6 +194,90 @@ class OutputFormatter:
         if art_content.strip():
             self.console.print(art_content)
 
+    def print_rainbow_ascii_art(self, art_content: str, duration: float = 3.0) -> None:
+        """Print ASCII art with animated rainbow colors.
+
+        Args:
+            art_content: The ASCII art content to display
+            duration: Duration in seconds to show the animation
+        """
+        if not art_content.strip():
+            return
+
+        # Split art into lines for processing
+        lines = art_content.strip().split("\n")
+
+        # Animation parameters
+        frame_rate = 60  # FPS (increased for smoother animation)
+        frame_time = 1.0 / frame_rate
+        total_frames = int(duration * frame_rate)
+
+        def create_rainbow_frame(hue_offset: float):
+            """Create a single frame of rainbow-colored ASCII art.
+
+            Args:
+                hue_offset: Offset for the hue cycle (0.0 to 1.0)
+
+            Returns:
+                Rich Text object with rainbow colors
+            """
+            from rich.text import Text
+
+            # Create a Text object to hold the entire ASCII art
+            rainbow_text = Text()
+
+            for line_idx, line in enumerate(lines):
+                if line_idx > 0:
+                    rainbow_text.append("\n")
+
+                for char_idx, char in enumerate(line):
+                    if char.strip():  # Only color non-whitespace characters
+                        # Calculate hue based on position and time offset
+                        # This creates a rainbow effect that moves across the art
+                        position_factor = (
+                            char_idx + line_idx * 0.5
+                        ) / 20.0  # Adjust for rainbow spread
+                        hue = (position_factor + hue_offset) % 1.0
+
+                        # Convert HSV to RGB (reduced saturation for readability)
+                        r, g, b = hsv_to_rgb(hue, 0.8, 1.0)
+
+                        # Convert to 0-255 range
+                        r_int = int(r * 255)
+                        g_int = int(g * 255)
+                        b_int = int(b * 255)
+
+                        # Add character with RGB color
+                        rainbow_text.append(char, style=f"rgb({r_int},{g_int},{b_int})")
+                    else:
+                        # Add whitespace without color
+                        rainbow_text.append(char)
+
+            return rainbow_text
+
+        # Create and run the animation
+        try:
+            with Live(
+                create_rainbow_frame(0.0),
+                console=self.console,
+                refresh_per_second=frame_rate,
+                transient=False,  # Keep the final frame visible
+            ) as live:
+                for frame in range(total_frames):
+                    # Calculate hue offset for this frame (cycles through 0-1)
+                    # Multiply by 2 for faster color cycling
+                    hue_offset = (frame / total_frames * 2) % 1.0
+
+                    # Update the display with new rainbow frame
+                    live.update(create_rainbow_frame(hue_offset))
+
+                    # Wait for next frame
+                    time.sleep(frame_time)
+
+        except KeyboardInterrupt:
+            # Allow graceful exit if user interrupts
+            pass
+
     def print_ai_reasoning(self, reasoning: str, confidence: int | None = None) -> None:
         """Print AI reasoning in a formatted box.
 
@@ -208,6 +293,26 @@ class OutputFormatter:
             content = reasoning
 
         self.print_box(content, MessageType.INFO, title)
+
+    def print_command_chosen(self, command: str | None, confidence: int) -> None:
+        """Print the chosen command with confidence.
+
+        Args:
+            command: The chosen make command
+            confidence: Confidence percentage
+        """
+        if command:
+            self.print_box(
+                f"[bold green]make {command}[/bold green] (confidence: {confidence}%)",
+                MessageType.SUCCESS,
+                "Command Selected",
+            )
+        else:
+            self.print_box(
+                f"No suitable command found (confidence: {confidence}%)",
+                MessageType.WARNING,
+                "Command Selected",
+            )
 
     def print_command_execution(self, command: str) -> None:
         """Print command execution message.
@@ -237,42 +342,51 @@ class OutputFormatter:
             A tuple of (stop_event, thread) to control the animation.
         """
         stop_event = threading.Event()
+        start_time = time.time()
 
         def animate():
-            patterns = [".", "..", "...", "..", "."]
-            pattern_index = 0
+            min_display_time = 0.5  # Minimum time to show animation
+            frame_time = 0.3  # Time between frames
 
-            # Create initial panel
-            panel = Panel(
-                f"[dim]{patterns[pattern_index]}[/dim]",
-                title="AI Reasoning",
-                title_align="left",
-                border_style="dim",
-                padding=(0, 1),
-                expand=False,
-            )
+            frames = [
+                "🤔 Thinking",
+                "🤔 Thinking.",
+                "🤔 Thinking..",
+                "🤔 Thinking...",
+            ]
+            frame_index = 0
 
-            # Use Rich Live display for smooth animation (without transient)
+            # Create the panel that will be updated
+            def create_panel(frame_text: str) -> Panel:
+                return Panel(
+                    f"[dim]{frame_text}[/dim]",
+                    title="AI Processing",
+                    title_align="left",
+                    border_style="blue",
+                    padding=(0, 1),
+                    expand=False,
+                )
+
+            # Use Live display for smooth animation
             with Live(
-                panel, console=self.console, refresh_per_second=3, transient=False
+                create_panel(frames[0]),
+                console=self.console,
+                refresh_per_second=10,
+                transient=True,  # Remove when done
             ) as live:
-                while not stop_event.is_set():
-                    pattern_index = (pattern_index + 1) % len(patterns)
-                    dots = patterns[pattern_index]
+                while True:
+                    # Update the display with current frame
+                    live.update(create_panel(frames[frame_index]))
 
-                    # Update the panel with new dots
-                    updated_panel = Panel(
-                        f"[dim]{dots}[/dim]",
-                        title="AI Reasoning",
-                        title_align="left",
-                        border_style="dim",
-                        padding=(0, 1),
-                        expand=False,
-                    )
-                    live.update(updated_panel)
+                    # Move to next frame
+                    frame_index = (frame_index + 1) % len(frames)
 
-                    # Wait for next frame or stop signal
-                    if stop_event.wait(0.5):  # 500ms between frames
+                    # Wait for frame time
+                    time.sleep(frame_time)
+
+                    # Check if minimum time has passed AND we've been asked to stop
+                    elapsed = time.time() - start_time
+                    if elapsed >= min_display_time and stop_event.is_set():
                         break
 
         thread = threading.Thread(target=animate, daemon=True)
@@ -293,10 +407,7 @@ class OutputFormatter:
             thread: The animation thread to wait for.
         """
         stop_event.set()
-        thread.join(timeout=1.0)  # Wait up to 1 second for clean shutdown
-
-        # Clear the animation by printing a newline
-        self.console.print()
+        thread.join(timeout=3.0)  # Wait longer for animation to complete
 
 
 # Global formatter instance for convenience

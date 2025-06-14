@@ -323,10 +323,42 @@ class TestLogsCLI:
         assert result.exit_code == 2
 
     def test_main_command_logs_with_text_hint(self):
-        """Test that 'automake logs something' shows hint."""
-        result = self.runner.invoke(app, ["run", "logs show me the logs"])
-        assert result.exit_code == 0
-        assert "Log Commands" in result.stdout
+        """Test that 'automake logs something' executes successfully."""
+        with (
+            # Mock the makefile reader to avoid needing a real Makefile
+            patch("automake.cli.main.MakefileReader") as mock_reader_class,
+            # Mock the AI agent creation and response
+            patch("automake.cli.main.create_ai_agent") as mock_create_agent,
+            # Mock the command runner
+            patch("automake.cli.main.CommandRunner") as mock_runner_class,
+            # Mock the config
+            patch("automake.cli.main.get_config") as mock_get_config,
+        ):
+            # Set up mock makefile reader
+            mock_reader = Mock()
+            mock_reader.targets = ["logs", "show", "view"]
+            mock_reader_class.return_value = mock_reader
+
+            # Set up mock config
+            mock_config = Mock()
+            mock_config.interactive_threshold = 80
+            mock_get_config.return_value = mock_config
+
+            # Set up mock AI agent
+            mock_agent = Mock()
+            mock_response = Mock()
+            mock_response.command = "logs view"
+            mock_response.confidence = 95
+            mock_response.alternatives = []
+            mock_agent.interpret_command.return_value = mock_response
+            mock_create_agent.return_value = (mock_agent, False)
+
+            # Set up mock command runner
+            mock_runner = Mock()
+            mock_runner_class.return_value = mock_runner
+
+            result = self.runner.invoke(app, ["run", "logs show me the logs"])
+            assert result.exit_code == 0
 
     def test_help_includes_subcommands(self):
         """Test that main help includes subcommand information."""

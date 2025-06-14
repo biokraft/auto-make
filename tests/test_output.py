@@ -306,3 +306,19 @@ class TestOutputFormatterIntegration:
         # Should not print anything for empty content
         formatter.print_ascii_art("")
         formatter.print_ascii_art("   ")  # Only whitespace
+
+    def test_print_rainbow_ascii_art_with_content(self) -> None:
+        """Test print_rainbow_ascii_art with content."""
+        formatter = OutputFormatter()
+        art_content = "ASCII ART\nLINE 2"
+
+        # Should not raise any exceptions (using very short duration for testing)
+        formatter.print_rainbow_ascii_art(art_content, duration=0.1)
+
+    def test_print_rainbow_ascii_art_empty_content(self) -> None:
+        """Test print_rainbow_ascii_art with empty content."""
+        formatter = OutputFormatter()
+
+        # Should not print anything for empty content
+        formatter.print_rainbow_ascii_art("")
+        formatter.print_rainbow_ascii_art("   ")  # Only whitespace

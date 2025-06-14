@@ -5,15 +5,17 @@ commands and translating them into Makefile targets using Ollama LLM.
 """
 
 import builtins
+import io
 import json
 import logging
 import warnings
-from contextlib import contextmanager
+from contextlib import contextmanager, redirect_stderr, redirect_stdout
 
 import ollama
 from smolagents import CodeAgent, LiteLLMModel
 
 from ..config import Config
+from ..utils.ollama_manager import OllamaManagerError, ensure_ollama_running
 
 # Suppress Pydantic serialization warnings from LiteLLM
 warnings.filterwarnings(
@@ -34,17 +36,23 @@ logger = logging.getLogger(__name__)
 
 
 @contextmanager
-def suppress_print():
-    """Context manager to suppress print statements but allow Rich console output."""
+def suppress_agent_output():
+    """Context manager to completely suppress all output from the agent."""
+    # Capture both stdout and stderr
+    stdout_capture = io.StringIO()
+    stderr_capture = io.StringIO()
+
+    # Also suppress print statements
     original_print = builtins.print
 
     def silent_print(*args, **kwargs):
-        # Suppress all print statements
         pass
 
     builtins.print = silent_print
+
     try:
-        yield
+        with redirect_stdout(stdout_capture), redirect_stderr(stderr_capture):
+            yield
     finally:
         builtins.print = original_print
 
@@ -156,9 +164,23 @@ class CommandResponse:
             )
 
         except json.JSONDecodeError as e:
-            raise CommandInterpretationError(f"Invalid JSON response: {e}") from e
+            # Include the actual response content for debugging
+            truncated_response = (
+                json_str[:500] + "..." if len(json_str) > 500 else json_str
+            )
+            raise CommandInterpretationError(
+                f"Invalid JSON response: {e}\n\n"
+                f"Actual response received:\n{truncated_response}"
+            ) from e
         except (KeyError, TypeError) as e:
-            raise CommandInterpretationError(f"Invalid response format: {e}") from e
+            # Include the actual response content for debugging
+            truncated_response = (
+                json_str[:500] + "..." if len(json_str) > 500 else json_str
+            )
+            raise CommandInterpretationError(
+                f"Invalid response format: {e}\n\n"
+                f"Actual response received:\n{truncated_response}"
+            ) from e
 
 
 class MakefileCommandAgent:
@@ -218,7 +240,7 @@ class MakefileCommandAgent:
             prompt = self._create_interpretation_prompt(user_command, makefile_targets)
 
             # Use the agent to interpret the command with selective output suppression
-            with suppress_print():
+            with suppress_agent_output():
                 result = self.agent.run(prompt)
 
             # Parse the result as JSON
@@ -233,9 +255,30 @@ class MakefileCommandAgent:
 
             return response
 
+        except CommandInterpretationError:
+            # Re-raise CommandInterpretationError as-is (it already has debugging info)
+            raise
         except Exception as e:
             logger.error("Failed to interpret command '%s': %s", user_command, e)
-            raise CommandInterpretationError(f"Failed to interpret command: {e}") from e
+            # Try to include the raw AI response if available
+            try:
+                raw_response = (
+                    str(result) if "result" in locals() else "No response captured"
+                )
+                truncated_response = (
+                    raw_response[:500] + "..."
+                    if len(raw_response) > 500
+                    else raw_response
+                )
+                raise CommandInterpretationError(
+                    f"Failed to interpret command: {e}\n\n"
+                    f"Raw AI response:\n{truncated_response}"
+                ) from e
+            except Exception:  # noqa: BLE001
+                # Fallback if we can't access the result
+                raise CommandInterpretationError(
+                    f"Failed to interpret command: {e}"
+                ) from e
 
     def _create_interpretation_prompt(
         self, user_command: str, makefile_targets: list[str]
@@ -294,20 +337,26 @@ final_answer(json.dumps(response))
 Now analyze the command and provide your response:"""  # noqa: E501
 
 
-def create_ai_agent(config: Config) -> MakefileCommandAgent:
+def create_ai_agent(config: Config) -> tuple[MakefileCommandAgent, bool]:
     """Create and initialize an AI agent.
 
     Args:
         config: Configuration object
 
     Returns:
-        Initialized MakefileCommandAgent
+        Tuple of (initialized MakefileCommandAgent, was_ollama_started_automatically)
 
     Raises:
         CommandInterpretationError: If agent creation fails
     """
     try:
-        # Verify Ollama connection
+        # Ensure Ollama is running, starting it automatically if needed
+        try:
+            is_running, was_started = ensure_ollama_running(config)
+        except OllamaManagerError as e:
+            raise CommandInterpretationError(f"Failed to start Ollama: {e}") from e
+
+        # Verify Ollama connection and model availability
         client = ollama.Client(host=config.ollama_base_url)
         models_response = client.list()
 
@@ -355,7 +404,7 @@ def create_ai_agent(config: Config) -> MakefileCommandAgent:
             "Ollama connection verified, model '%s' is available", config.ollama_model
         )
 
-        return MakefileCommandAgent(config)
+        return MakefileCommandAgent(config), was_started
 
     except Exception as e:
         if "ollama" in str(type(e)).lower() or "response" in str(type(e)).lower():

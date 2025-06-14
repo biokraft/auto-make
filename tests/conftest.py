@@ -10,6 +10,6 @@ def mock_config():
     """Fixture for a mock Config object."""
     config = MagicMock()
     config.ollama_base_url = "http://localhost:11434"
-    config.ollama_model = "test-model"
+    config.ollama_model = "qwen3:0.6b"
     config.interactive_threshold = 90
     return config

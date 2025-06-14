@@ -32,6 +32,7 @@ dependencies = [
     "smolagents[litellm]>=0.1.0",
     "requests>=2.31.0",
     "tomli>=2.0.1; python_version < '3.11'",
+    "tomli-w>=1.0.0", # For writing TOML files
     "appdirs>=1.4.4",
     "ollama>=0.5.1",
     "questionary>=2.0.1",

@@ -38,7 +38,7 @@ class Config:
     def _get_default_config(self) -> dict[str, Any]:
         """Get default configuration values."""
         return {
-            "ollama": {"base_url": "http://localhost:11434", "model": "gemma3:4b"},
+            "ollama": {"base_url": "http://localhost:11434", "model": "qwen3:0.6b"},
             "logging": {"level": "INFO"},
             "ai": {"interactive_threshold": 80},
         }
@@ -57,7 +57,7 @@ base_url = "http://localhost:11434"
 
 # The model to use for interpreting commands.
 # The user must ensure this model is available on their Ollama server.
-model = "gemma3:4b"
+model = "qwen3:0.6b"
 
 [logging]
 # Set log level to "DEBUG" for verbose output for troubleshooting.
@@ -137,6 +137,63 @@ interactive_threshold = 80
     def reload(self) -> None:
         """Reload configuration from file."""
         self._load_config()
+
+    def set(self, section: str, key: str, value: Any) -> None:
+        """Set a configuration value and save to file.
+
+        Args:
+            section: Configuration section name
+            key: Configuration key name
+            value: Value to set
+
+        Raises:
+            ConfigError: If unable to save configuration
+        """
+        # Ensure section exists
+        if section not in self._config_data:
+            self._config_data[section] = {}
+
+        # Set the value
+        self._config_data[section][key] = value
+
+        # Save to file
+        self._save_config()
+
+    def _save_config(self) -> None:
+        """Save current configuration to file."""
+        try:
+            import tomli_w
+
+            # Ensure config directory exists
+            self.config_dir.mkdir(parents=True, exist_ok=True)
+
+            # Write the config file
+            with open(self.config_file, "wb") as f:
+                tomli_w.dump(self._config_data, f)
+
+        except (OSError, ImportError) as e:
+            if isinstance(e, ImportError):
+                raise ConfigError(
+                    "tomli-w package is required for writing configuration. "
+                    "Please install it with: pip install tomli-w"
+                ) from e
+            else:
+                raise ConfigError(
+                    f"Failed to save config to {self.config_file}: {e}"
+                ) from e
+
+    def reset_to_defaults(self) -> None:
+        """Reset configuration to default values and save to file."""
+        self._config_data = self._get_default_config()
+        self._save_config()
+
+    def get_all_sections(self) -> dict[str, dict[str, Any]]:
+        """Get all configuration sections and their values.
+
+        Returns:
+            Dictionary containing all configuration sections
+        """
+        return self._config_data.copy()
 
 
 def get_config(config_dir: Path | None = None) -> Config:

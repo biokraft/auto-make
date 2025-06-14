@@ -18,6 +18,7 @@ The following table links to the detailed specifications for each domain and tec
 | `specs/08-cicd-pipeline.md`                          | Defines the GitHub Actions CI pipeline for automated testing and coverage reporting. |
 | `specs/09-model-context-protocol.md`                 | Describes the integration with Anthropic's Model Context Protocol (MCP) for autonomous use by LLMs. |
 | `specs/10-interactive-sessions.md`                   | Specifies the interactive session for resolving ambiguous commands based on LLM confidence scores. |
+| `specs/11-live-output-component.md`                  | Defines a real-time, updatable box for streaming content like AI model tokens. |
 
 ## 3. Future Work
 This section captures features and ideas that are currently out of scope but are being considered for future versions:
@@ -54,3 +55,5 @@ The following table outlines the granular steps to implement the AutoMake tool b
 | | **Documentation** | Write a comprehensive `README.md` with setup, usage, and configuration instructions. | All | TBD |
 | | | Add CI status and coverage badges to `README.md`. | `specs/08-cicd-pipeline.md` | TBD |
 | 5 | **Advanced Features** | **MCP Integration** | Implement the MCP-compliant interface for autonomous tool discovery and use. | `specs/09-model-context-protocol.md` | TBD |
+| 6 | **UI Enhancements** | **Live Output Component** | Implement a `LiveBox` component for real-time streaming output. | `specs/11-live-output-component.md` | TBD |
+| | | Integrate `LiveBox` for displaying AI model token streams. | `specs/11-live-output-component.md` | TBD |

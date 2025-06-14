@@ -122,7 +122,7 @@ deploy:
                 mock_response.confidence = 95
                 mock_response.alternatives = ["all"]
                 mock_agent.interpret_command.return_value = mock_response
-                mock_create_agent.return_value = mock_agent
+                mock_create_agent.return_value = (mock_agent, False)
 
                 # Mock command runner
                 mock_runner_instance = MagicMock()
@@ -137,13 +137,8 @@ deploy:
             assert result.exit_code == 0
             assert "Command Received" in result.stdout
             assert test_command in result.stdout
-            assert "Scanning" in result.stdout
-            assert "Found Makefile: Makefile" in result.stdout
-            assert "─ Available Targets " in result.stdout
-            assert "build" in result.stdout
-            assert "test" in result.stdout
-            assert "deploy" in result.stdout
-            assert "AI agent initialized successfully" in result.stdout
+            assert "Command Selected" in result.stdout
+            assert "make build" in result.stdout
 
     def test_main_command_no_makefile_error(self) -> None:
         """Test main command when no Makefile exists."""
@@ -189,7 +184,7 @@ deploy:
                 mock_response.confidence = 85
                 mock_response.alternatives = []
                 mock_agent.interpret_command.return_value = mock_response
-                mock_create_agent.return_value = mock_agent
+                mock_create_agent.return_value = (mock_agent, False)
 
                 # Mock command runner
                 mock_runner_instance = MagicMock()
@@ -224,7 +219,7 @@ deploy:
                 mock_response.confidence = 90
                 mock_response.alternatives = []
                 mock_agent.interpret_command.return_value = mock_response
-                mock_create_agent.return_value = mock_agent
+                mock_create_agent.return_value = (mock_agent, False)
 
                 # Mock command runner
                 mock_runner_instance = MagicMock()
@@ -265,7 +260,7 @@ deploy:
                 mock_response.confidence = 85  # High enough to avoid interactive mode
                 mock_response.alternatives = []
                 mock_agent.interpret_command.return_value = mock_response
-                mock_create_agent.return_value = mock_agent
+                mock_create_agent.return_value = (mock_agent, False)
 
                 # Mock command runner
                 mock_runner_instance = MagicMock()
@@ -307,7 +302,7 @@ deploy:
                 mock_response.confidence = 85
                 mock_response.alternatives = []
                 mock_agent.interpret_command.return_value = mock_response
-                mock_create_agent.return_value = mock_agent
+                mock_create_agent.return_value = (mock_agent, False)
 
                 # Mock command runner
                 mock_runner_instance = MagicMock()
@@ -343,7 +338,7 @@ deploy:
                 mock_response.confidence = 80
                 mock_response.alternatives = ["target1", "target2"]
                 mock_agent.interpret_command.return_value = mock_response
-                mock_create_agent.return_value = mock_agent
+                mock_create_agent.return_value = (mock_agent, False)
 
                 # Mock command runner
                 mock_runner_instance = MagicMock()
@@ -352,12 +347,9 @@ deploy:
                 result = self.runner.invoke(app, ["run", "test command"])
 
             assert result.exit_code == 0
-            assert "─ Available Targets " in result.stdout
-            # Should show first 5 targets
-            for i in range(5):
-                assert f"target{i}" in result.stdout
-            # Should indicate there are more (the exact number depends on parsing logic)
-            assert "more targets" in result.stdout
+            assert "Command Received" in result.stdout
+            assert "Command Selected" in result.stdout
+            assert "make target0" in result.stdout
 
     def test_makefile_without_targets(self) -> None:
         """Test Makefile without clear targets."""
@@ -388,7 +380,7 @@ VARIABLE = value
                 )
                 mock_response.alternatives = []
                 mock_agent.interpret_command.return_value = mock_response
-                mock_create_agent.return_value = mock_agent
+                mock_create_agent.return_value = (mock_agent, False)
 
                 # Mock command runner
                 mock_runner_instance = MagicMock()
@@ -397,8 +389,9 @@ VARIABLE = value
                 result = self.runner.invoke(app, ["run", "test command"])
 
             assert result.exit_code == 0
-            # Should not show targets preview if no targets found
-            assert "─ Available Targets " not in result.stdout
+            assert "Command Received" in result.stdout
+            assert "Command Selected" in result.stdout
+            assert "make all" in result.stdout
 
     def test_makefile_read_error(self) -> None:
         """Test handling of Makefile read errors."""

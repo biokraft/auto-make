@@ -86,40 +86,95 @@ def test_command_response_from_json_invalid(invalid_json, error_message):
 
 
 # Test MakefileCommandAgent
+@patch("automake.core.ai_agent.ensure_ollama_running")
 @patch("automake.core.ai_agent.ollama")
 @patch("automake.core.ai_agent.LiteLLMModel")
-def test_create_ai_agent_success(mock_litellm, mock_ollama, mock_config):
+def test_create_ai_agent_success(
+    mock_litellm, mock_ollama, mock_ensure_ollama, mock_config
+):
     """Test successful creation of AI agent."""
+    # Mock Ollama management
+    mock_ensure_ollama.return_value = (
+        True,
+        False,
+    )  # Running, not started automatically
+
     # Mock validation methods to succeed
     mock_ollama.Client.return_value.list.return_value = {
-        "models": [{"name": "test-model"}]
+        "models": [{"name": "qwen3:0.6b"}]
     }
 
-    agent = create_ai_agent(mock_config)
+    agent, was_started = create_ai_agent(mock_config)
     assert isinstance(agent, MakefileCommandAgent)
+    assert was_started is False
     mock_litellm.assert_called_once()
 
 
+@patch("automake.core.ai_agent.ensure_ollama_running")
 @patch("automake.core.ai_agent.ollama")
 @patch("automake.core.ai_agent.LiteLLMModel")
-def test_create_ai_agent_connection_error(mock_litellm, mock_ollama, mock_config):
+def test_create_ai_agent_connection_error(
+    mock_litellm, mock_ollama, mock_ensure_ollama, mock_config
+):
     """Test connection error during agent creation."""
+    # Mock Ollama management to succeed
+    mock_ensure_ollama.return_value = (True, False)
+
     mock_ollama.Client.return_value.list.side_effect = Exception("Connection failed")
     with pytest.raises(CommandInterpretationError, match="Failed to create AI agent"):
         create_ai_agent(mock_config)
 
 
+@patch("automake.core.ai_agent.ensure_ollama_running")
 @patch("automake.core.ai_agent.ollama")
 @patch("automake.core.ai_agent.LiteLLMModel")
-def test_create_ai_agent_model_not_found(mock_litellm, mock_ollama, mock_config):
+def test_create_ai_agent_model_not_found(
+    mock_litellm, mock_ollama, mock_ensure_ollama, mock_config
+):
     """Test model not found error during agent creation."""
+    # Mock Ollama management to succeed
+    mock_ensure_ollama.return_value = (True, False)
+
     mock_ollama.Client.return_value.list.return_value = {
         "models": [{"name": "other-model"}]
     }
 
     with pytest.raises(
-        CommandInterpretationError, match="Model 'test-model' not found"
+        CommandInterpretationError, match="Model 'qwen3:0.6b' not found"
     ):
+        create_ai_agent(mock_config)
+
+
+@patch("automake.core.ai_agent.ensure_ollama_running")
+@patch("automake.core.ai_agent.ollama")
+@patch("automake.core.ai_agent.LiteLLMModel")
+def test_create_ai_agent_ollama_started_automatically(
+    mock_litellm, mock_ollama, mock_ensure_ollama, mock_config
+):
+    """Test that the function returns True when Ollama is started automatically."""
+    # Mock Ollama management to indicate it was started automatically
+    mock_ensure_ollama.return_value = (True, True)  # Running, started automatically
+
+    # Mock validation methods to succeed
+    mock_ollama.Client.return_value.list.return_value = {
+        "models": [{"name": "qwen3:0.6b"}]
+    }
+
+    agent, was_started = create_ai_agent(mock_config)
+    assert isinstance(agent, MakefileCommandAgent)
+    assert was_started is True
+    mock_litellm.assert_called_once()
+
+
+@patch("automake.core.ai_agent.ensure_ollama_running")
+def test_create_ai_agent_ollama_startup_failure(mock_ensure_ollama, mock_config):
+    """Test OllamaManagerError is properly converted to CommandInterpretationError."""
+    from automake.utils.ollama_manager import OllamaManagerError
+
+    # Mock Ollama management to fail
+    mock_ensure_ollama.side_effect = OllamaManagerError("Failed to start Ollama")
+
+    with pytest.raises(CommandInterpretationError, match="Failed to start Ollama"):
         create_ai_agent(mock_config)
 
 
