@@ -2,7 +2,7 @@
 
 import tempfile
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 import typer
@@ -108,12 +108,32 @@ deploy:
             makefile_path = temp_path / "Makefile"
             makefile_path.write_text(makefile_content)
 
-            # Mock the current working directory to point to our temp directory
-            with patch(
-                "automake.core.makefile_reader.Path.cwd", return_value=temp_path
+            # Mock the AI agent and command runner
+            with (
+                patch("automake.cli.main.create_ai_agent") as mock_create_agent,
+                patch("automake.cli.main.CommandRunner") as mock_runner,
+                patch("automake.core.makefile_reader.Path.cwd", return_value=temp_path),
             ):
+                # Mock AI agent response
+                mock_agent = MagicMock()
+                mock_response = MagicMock()
+                mock_response.reasoning = "The user wants to build the project"
+                mock_response.command = "build"
+                mock_response.confidence = 95
+                mock_response.alternatives = ["all"]
+                mock_agent.interpret_command.return_value = mock_response
+                mock_create_agent.return_value = mock_agent
+
+                # Mock command runner
+                mock_runner_instance = MagicMock()
+                mock_runner.return_value = mock_runner_instance
+
                 result = self.runner.invoke(app, ["run", test_command])
 
+            if result.exit_code != 0:
+                print(f"Exit code: {result.exit_code}")
+                print(f"Stdout: {result.stdout}")
+                print(f"Exception: {result.exception}")
             assert result.exit_code == 0
             assert "Command Received" in result.stdout
             assert test_command in result.stdout
@@ -123,7 +143,7 @@ deploy:
             assert "build" in result.stdout
             assert "test" in result.stdout
             assert "deploy" in result.stdout
-            assert "Phase 4 complete" in result.stdout
+            assert "AI agent initialized successfully" in result.stdout
 
     def test_main_command_no_makefile_error(self) -> None:
         """Test main command when no Makefile exists."""
@@ -156,9 +176,25 @@ deploy:
             makefile_path = temp_path / "Makefile"
             makefile_path.write_text(makefile_content)
 
-            with patch(
-                "automake.core.makefile_reader.Path.cwd", return_value=temp_path
+            with (
+                patch("automake.cli.main.create_ai_agent") as mock_create_agent,
+                patch("automake.cli.main.CommandRunner") as mock_runner,
+                patch("automake.core.makefile_reader.Path.cwd", return_value=temp_path),
             ):
+                # Mock AI agent response
+                mock_agent = MagicMock()
+                mock_response = MagicMock()
+                mock_response.reasoning = "The user wants to deploy"
+                mock_response.command = "all"
+                mock_response.confidence = 85
+                mock_response.alternatives = []
+                mock_agent.interpret_command.return_value = mock_response
+                mock_create_agent.return_value = mock_agent
+
+                # Mock command runner
+                mock_runner_instance = MagicMock()
+                mock_runner.return_value = mock_runner_instance
+
                 result = self.runner.invoke(app, ["run", test_command])
 
             assert result.exit_code == 0
@@ -175,9 +211,25 @@ deploy:
             makefile_path = temp_path / "Makefile"
             makefile_path.write_text(makefile_content)
 
-            with patch(
-                "automake.core.makefile_reader.Path.cwd", return_value=temp_path
+            with (
+                patch("automake.cli.main.create_ai_agent") as mock_create_agent,
+                patch("automake.cli.main.CommandRunner") as mock_runner,
+                patch("automake.core.makefile_reader.Path.cwd", return_value=temp_path),
             ):
+                # Mock AI agent response
+                mock_agent = MagicMock()
+                mock_response = MagicMock()
+                mock_response.reasoning = "The user wants to run tests"
+                mock_response.command = "test"
+                mock_response.confidence = 90
+                mock_response.alternatives = []
+                mock_agent.interpret_command.return_value = mock_response
+                mock_create_agent.return_value = mock_agent
+
+                # Mock command runner
+                mock_runner_instance = MagicMock()
+                mock_runner.return_value = mock_runner_instance
+
                 result = self.runner.invoke(app, ["run", test_command])
 
             assert result.exit_code == 0
@@ -200,9 +252,25 @@ deploy:
             makefile_path = temp_path / "Makefile"
             makefile_path.write_text(makefile_content)
 
-            with patch(
-                "automake.core.makefile_reader.Path.cwd", return_value=temp_path
+            with (
+                patch("automake.cli.main.create_ai_agent") as mock_create_agent,
+                patch("automake.cli.main.CommandRunner") as mock_runner,
+                patch("automake.core.makefile_reader.Path.cwd", return_value=temp_path),
             ):
+                # Mock AI agent response with high confidence to avoid interactive mode
+                mock_agent = MagicMock()
+                mock_response = MagicMock()
+                mock_response.reasoning = "Empty command provided, defaulting to all"
+                mock_response.command = "all"
+                mock_response.confidence = 85  # High enough to avoid interactive mode
+                mock_response.alternatives = []
+                mock_agent.interpret_command.return_value = mock_response
+                mock_create_agent.return_value = mock_agent
+
+                # Mock command runner
+                mock_runner_instance = MagicMock()
+                mock_runner.return_value = mock_runner_instance
+
                 result = self.runner.invoke(app, ["run", ""])
 
             assert result.exit_code == 0
@@ -226,9 +294,25 @@ deploy:
             makefile_path = temp_path / "Makefile"
             makefile_path.write_text(makefile_content)
 
-            with patch(
-                "automake.core.makefile_reader.Path.cwd", return_value=temp_path
+            with (
+                patch("automake.cli.main.create_ai_agent") as mock_create_agent,
+                patch("automake.cli.main.CommandRunner") as mock_runner,
+                patch("automake.core.makefile_reader.Path.cwd", return_value=temp_path),
             ):
+                # Mock AI agent response
+                mock_agent = MagicMock()
+                mock_response = MagicMock()
+                mock_response.reasoning = f"The user wants to execute: {command}"
+                mock_response.command = "all"
+                mock_response.confidence = 85
+                mock_response.alternatives = []
+                mock_agent.interpret_command.return_value = mock_response
+                mock_create_agent.return_value = mock_agent
+
+                # Mock command runner
+                mock_runner_instance = MagicMock()
+                mock_runner.return_value = mock_runner_instance
+
                 result = self.runner.invoke(app, ["run", command])
 
             assert result.exit_code == 0
@@ -246,9 +330,25 @@ deploy:
             makefile_path = temp_path / "Makefile"
             makefile_path.write_text(makefile_content)
 
-            with patch(
-                "automake.core.makefile_reader.Path.cwd", return_value=temp_path
+            with (
+                patch("automake.cli.main.create_ai_agent") as mock_create_agent,
+                patch("automake.cli.main.CommandRunner") as mock_runner,
+                patch("automake.core.makefile_reader.Path.cwd", return_value=temp_path),
             ):
+                # Mock AI agent response
+                mock_agent = MagicMock()
+                mock_response = MagicMock()
+                mock_response.reasoning = "The user wants to run a test command"
+                mock_response.command = "target0"
+                mock_response.confidence = 80
+                mock_response.alternatives = ["target1", "target2"]
+                mock_agent.interpret_command.return_value = mock_response
+                mock_create_agent.return_value = mock_agent
+
+                # Mock command runner
+                mock_runner_instance = MagicMock()
+                mock_runner.return_value = mock_runner_instance
+
                 result = self.runner.invoke(app, ["run", "test command"])
 
             assert result.exit_code == 0
@@ -271,9 +371,29 @@ VARIABLE = value
             makefile_path = temp_path / "Makefile"
             makefile_path.write_text(makefile_content)
 
-            with patch(
-                "automake.core.makefile_reader.Path.cwd", return_value=temp_path
+            with (
+                patch("automake.cli.main.create_ai_agent") as mock_create_agent,
+                patch("automake.cli.main.CommandRunner") as mock_runner,
+                patch("automake.core.makefile_reader.Path.cwd", return_value=temp_path),
             ):
+                # Mock AI agent response - provide a command even if no targets found
+                mock_agent = MagicMock()
+                mock_response = MagicMock()
+                mock_response.reasoning = (
+                    "No clear targets found, but providing a generic command"
+                )
+                mock_response.command = "all"  # Provide a command to avoid error path
+                mock_response.confidence = (
+                    85  # High confidence to avoid interactive mode
+                )
+                mock_response.alternatives = []
+                mock_agent.interpret_command.return_value = mock_response
+                mock_create_agent.return_value = mock_agent
+
+                # Mock command runner
+                mock_runner_instance = MagicMock()
+                mock_runner.return_value = mock_runner_instance
+
                 result = self.runner.invoke(app, ["run", "test command"])
 
             assert result.exit_code == 0

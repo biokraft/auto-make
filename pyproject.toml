@@ -34,6 +34,7 @@ dependencies = [
     "tomli>=2.0.1; python_version < '3.11'",
     "appdirs>=1.4.4",
     "ollama>=0.5.1",
+    "questionary>=2.0.1",
 ]
 
 [project.optional-dependencies]

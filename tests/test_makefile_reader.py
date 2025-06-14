@@ -264,6 +264,189 @@ deploy:
             with pytest.raises(MakefileNotFoundError):
                 reader.get_makefile_info()
 
+    @patch.object(MakefileReader, "find_makefile")
+    @patch("pathlib.Path.read_text")
+    def test_read_makefile_success_with_mocks(self, mock_read_text, mock_find):
+        """Test successful Makefile reading with mocks."""
+        mock_content = "all:\n\techo 'Hello World'"
+        mock_read_text.return_value = mock_content
+        mock_find.return_value = Path("Makefile")
+
+        reader = MakefileReader()
+        content = reader.read_makefile()
+
+        assert content == mock_content
+        mock_read_text.assert_called_once_with(encoding="utf-8")
+
+    @patch.object(MakefileReader, "find_makefile")
+    @patch("pathlib.Path.read_text")
+    def test_read_makefile_unicode_fallback(self, mock_read_text, mock_find):
+        """Test Makefile reading with unicode fallback."""
+        mock_content = "all:\n\techo 'Hello World'"
+        mock_read_text.side_effect = [
+            UnicodeDecodeError("utf-8", b"", 0, 1, "invalid"),
+            mock_content,
+        ]
+        mock_find.return_value = Path("Makefile")
+
+        reader = MakefileReader()
+        content = reader.read_makefile()
+
+        assert content == mock_content
+        assert mock_read_text.call_count == 2
+        mock_read_text.assert_any_call(encoding="utf-8")
+        mock_read_text.assert_any_call(encoding="latin-1")
+
+    @patch.object(MakefileReader, "find_makefile")
+    @patch("pathlib.Path.read_text")
+    def test_read_makefile_encoding_error_with_mocks(self, mock_read_text, mock_find):
+        """Test Makefile reading with encoding errors using mocks."""
+        mock_read_text.side_effect = UnicodeDecodeError("utf-8", b"", 0, 1, "invalid")
+        mock_find.return_value = Path("Makefile")
+
+        reader = MakefileReader()
+        with pytest.raises(OSError) as exc_info:
+            reader.read_makefile()
+
+        assert "Could not read Makefile" in str(exc_info.value)
+
+    @patch.object(MakefileReader, "find_makefile")
+    @patch("pathlib.Path.read_text")
+    def test_read_makefile_os_error(self, mock_read_text, mock_find):
+        """Test Makefile reading with OS errors."""
+        mock_read_text.side_effect = OSError("Permission denied")
+        mock_find.return_value = Path("Makefile")
+
+        reader = MakefileReader()
+        with pytest.raises(OSError) as exc_info:
+            reader.read_makefile()
+
+        assert "Could not read Makefile" in str(exc_info.value)
+
+    @patch.object(MakefileReader, "read_makefile")
+    def test_extract_targets_basic(self, mock_read):
+        """Test basic target extraction."""
+        mock_read.return_value = """
+all: build test
+\techo "Running all"
+
+build:
+\techo "Building"
+
+test: build
+\techo "Testing"
+
+clean:
+\techo "Cleaning"
+"""
+        reader = MakefileReader()
+        targets = reader.extract_targets()
+
+        assert targets == ["all", "build", "test", "clean"]
+
+    @patch.object(MakefileReader, "read_makefile")
+    def test_extract_targets_with_variables(self, mock_read):
+        """Test target extraction ignoring variables."""
+        mock_read.return_value = """
+CC = gcc
+CFLAGS = -Wall
+
+all: build
+\techo "Running all"
+
+build:
+\t$(CC) $(CFLAGS) -o app main.c
+
+.PHONY: clean
+clean:
+\trm -f app
+"""
+        reader = MakefileReader()
+        targets = reader.extract_targets()
+
+        # Should exclude variables (CC, CFLAGS) and special targets (.PHONY)
+        assert targets == ["all", "build", "clean"]
+
+    @patch.object(MakefileReader, "read_makefile")
+    def test_extract_targets_duplicates(self, mock_read):
+        """Test target extraction removes duplicates."""
+        mock_read.return_value = """
+all: build
+\techo "First all"
+
+build:
+\techo "Building"
+
+all: test
+\techo "Second all"
+"""
+        reader = MakefileReader()
+        targets = reader.extract_targets()
+
+        # Should only include 'all' once
+        assert targets == ["all", "build"]
+
+    @patch.object(MakefileReader, "read_makefile")
+    def test_extract_targets_complex_names(self, mock_read):
+        """Test target extraction with complex target names."""
+        mock_read.return_value = """
+build-debug: src/main.c
+\tgcc -g -o debug main.c
+
+test_unit:
+\tpython -m pytest tests/
+
+install.local:
+\tcp app /usr/local/bin/
+"""
+        reader = MakefileReader()
+        targets = reader.extract_targets()
+
+        assert targets == ["build-debug", "test_unit", "install.local"]
+
+    @patch.object(MakefileReader, "read_makefile")
+    def test_targets_property(self, mock_read):
+        """Test the targets property."""
+        mock_read.return_value = """
+all:
+\techo "all"
+
+build:
+\techo "build"
+"""
+        reader = MakefileReader()
+        targets = reader.targets
+
+        assert targets == ["all", "build"]
+        # Test caching - should not call read_makefile again
+        targets2 = reader.targets
+        assert targets2 == targets
+        mock_read.assert_called_once()
+
+    @patch.object(MakefileReader, "find_makefile")
+    @patch("pathlib.Path.stat")
+    def test_get_makefile_info(self, mock_stat, mock_find):
+        """Test getting Makefile information."""
+        mock_path = Path("/test/Makefile")
+        mock_find.return_value = mock_path
+
+        # Mock stat result
+        class MockStat:
+            st_size = 1024
+
+        mock_stat.return_value = MockStat()
+
+        reader = MakefileReader(Path("/test"))
+        info = reader.get_makefile_info()
+
+        expected_info = {
+            "path": "/test/Makefile",
+            "name": "Makefile",
+            "size": "1024",
+            "directory": "/test",
+        }
+        assert info == expected_info
+
 
 class TestConvenienceFunction:
     """Test cases for the convenience function."""

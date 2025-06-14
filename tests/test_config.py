@@ -38,7 +38,7 @@ class TestConfig:
                     mock_tomllib_load.return_value = {
                         "ollama": {
                             "base_url": "http://localhost:11434",
-                            "model": "llama3",
+                            "model": "gemma3:4b",
                         },
                         "logging": {"level": "INFO"},
                     }
@@ -60,6 +60,7 @@ class TestConfig:
         expected_config = {
             "ollama": {"base_url": "http://localhost:11434", "model": "gemma3:4b"},
             "logging": {"level": "INFO"},
+            "ai": {"interactive_threshold": 80},
         }
 
         # Read the config file directly to verify content
@@ -252,7 +253,10 @@ class TestGetConfig:
                 patch("tomllib.load") as mock_tomllib_load,
             ):
                 mock_tomllib_load.return_value = {
-                    "ollama": {"base_url": "http://localhost:11434", "model": "llama3"},
+                    "ollama": {
+                        "base_url": "http://localhost:11434",
+                        "model": "gemma3:4b",
+                    },
                     "logging": {"level": "INFO"},
                 }
 

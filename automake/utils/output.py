@@ -190,6 +190,34 @@ class OutputFormatter:
         if art_content.strip():
             self.console.print(art_content)
 
+    def print_ai_reasoning(self, reasoning: str, confidence: int | None = None) -> None:
+        """Print AI reasoning in a formatted box.
+
+        Args:
+            reasoning: The AI's reasoning or explanation
+            confidence: Optional confidence score to include in the display
+        """
+        if confidence is not None:
+            title = f"AI Reasoning (Confidence: {confidence}%)"
+            content = reasoning
+        else:
+            title = "AI Reasoning"
+            content = reasoning
+
+        self.print_box(content, MessageType.INFO, title)
+
+    def print_command_execution(self, command: str) -> None:
+        """Print command execution message.
+
+        Args:
+            command: The command that will be executed
+        """
+        self.print_box(
+            f"Executing: [bold cyan]make {command}[/bold cyan]",
+            MessageType.INFO,
+            "Execution",
+        )
+
 
 # Global formatter instance for convenience
 _global_formatter: OutputFormatter | None = None

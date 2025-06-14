@@ -55,7 +55,7 @@ class TestSetupLogging:
             mock_handler_instance = Mock()
             mock_handler.return_value = mock_handler_instance
             mock_tomllib_load.return_value = {
-                "ollama": {"base_url": "http://localhost:11434", "model": "llama3"},
+                "ollama": {"base_url": "http://localhost:11434", "model": "gemma3:4b"},
                 "logging": {"level": "INFO"},
             }
 
@@ -77,7 +77,7 @@ class TestSetupLogging:
 
         debug_config = """[ollama]
 base_url = "http://localhost:11434"
-model = "llama3"
+model = "gemma3:4b"
 
 [logging]
 level = "DEBUG"
@@ -101,7 +101,7 @@ level = "DEBUG"
 
         invalid_config = """[ollama]
 base_url = "http://localhost:11434"
-model = "llama3"
+model = "gemma3:4b"
 
 [logging]
 level = "INVALID_LEVEL"
@@ -205,7 +205,7 @@ level = "INVALID_LEVEL"
             mock_config_dir.return_value = "/mock/config"
             mock_data_dir.return_value = "/mock/data"
             mock_tomllib_load.return_value = {
-                "ollama": {"base_url": "http://localhost:11434", "model": "llama3"},
+                "ollama": {"base_url": "http://localhost:11434", "model": "gemma3:4b"},
                 "logging": {"level": "INFO"},
             }
 
@@ -360,7 +360,7 @@ class TestLoggingIntegration:
 
         warning_config = """[ollama]
 base_url = "http://localhost:11434"
-model = "llama3"
+model = "gemma3:4b"
 
 [logging]
 level = "WARNING"

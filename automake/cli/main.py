@@ -12,6 +12,13 @@ from automake.cli.logs import (
     show_logs_location,
     view_log_content,
 )
+from automake.config import get_config
+from automake.core.ai_agent import (
+    CommandInterpretationError,
+    create_ai_agent,
+)
+from automake.core.command_runner import CommandRunner
+from automake.core.interactive import select_command
 from automake.core.makefile_reader import MakefileNotFoundError, MakefileReader
 from automake.utils.output import MessageType, get_formatter
 
@@ -317,6 +324,65 @@ def _execute_main_logic(command: str) -> None:
         raise typer.Exit(1) from e
     except Exception as e:
         output.print_error_box(f"Unexpected error: {e}")
+        raise typer.Exit(1) from e
+
+    # Phase 2: AI Core
+    try:
+        output.print_status("Initializing AI agent...", MessageType.INFO, "AI Setup")
+        config = get_config()
+        agent = create_ai_agent(config)
+        output.print_status(
+            "AI agent initialized successfully.", MessageType.SUCCESS, "AI Setup"
+        )
+
+        output.print_status("Interpreting your command...", MessageType.INFO, "AI Core")
+        response = agent.interpret_command(command, reader.targets)
+
+        output.print_ai_reasoning(response.reasoning, response.confidence)
+
+        final_command = response.command
+        # Phase 3: Interactive session
+        if response.confidence < config.interactive_threshold:
+            output.print_status(
+                f"Confidence is below threshold ({config.interactive_threshold}%), "
+                "starting interactive session.",
+                MessageType.WARNING,
+                "Interaction",
+            )
+            command_options = (
+                [response.command] if response.command else []
+            ) + response.alternatives
+            if not command_options:
+                output.print_error_box(
+                    "AI could not determine a command and provided no alternatives.",
+                    hint="Try rephrasing your command or checking your Makefile.",
+                )
+                raise typer.Exit()
+
+            final_command = select_command(command_options)
+            if final_command is None:
+                output.print_status("Operation cancelled.", MessageType.INFO, "Abort")
+                raise typer.Exit()
+
+        if not final_command:
+            output.print_error_box(
+                "AI could not determine a command to run.",
+                hint="Try rephrasing your command.",
+            )
+            raise typer.Exit()
+
+        # Phase 2: Execution Engine
+        runner = CommandRunner()
+        output.print_command_execution(final_command)
+        runner.run(final_command)
+
+    except CommandInterpretationError as e:
+        output.print_error_box(
+            str(e), hint="Check your Ollama setup and configuration."
+        )
+        raise typer.Exit(1) from e
+    except Exception as e:
+        output.print_error_box(f"An unexpected error occurred in the AI core: {e}")
         raise typer.Exit(1) from e
 
 

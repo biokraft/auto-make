@@ -40,6 +40,7 @@ class Config:
         return {
             "ollama": {"base_url": "http://localhost:11434", "model": "gemma3:4b"},
             "logging": {"level": "INFO"},
+            "ai": {"interactive_threshold": 80},
         }
 
     def _create_default_config(self) -> None:
@@ -62,6 +63,11 @@ model = "gemma3:4b"
 # Set log level to "DEBUG" for verbose output for troubleshooting.
 # Accepted values: "INFO", "DEBUG", "WARNING", "ERROR"
 level = "INFO"
+
+[ai]
+# Confidence threshold for interactive mode (0-100)
+# If AI confidence is below this threshold, interactive mode will be triggered
+interactive_threshold = 80
 """
 
         # Write the config file
@@ -104,6 +110,11 @@ level = "INFO"
     def log_level(self) -> str:
         """Get logging level."""
         return self._config_data["logging"]["level"]
+
+    @property
+    def interactive_threshold(self) -> int:
+        """Get AI interactive threshold."""
+        return self._config_data["ai"]["interactive_threshold"]
 
     @property
     def config_file_path(self) -> Path:
