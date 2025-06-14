@@ -42,4 +42,4 @@ Logs should be structured to be easily parsable. A good default format is:
 
 ## 6. Out of Scope
 - Sending logs to a remote aggregation service (e.g., Datadog, Splunk).
-- A special CLI command for viewing or tailing logs. Users will access the files directly. 
+- A special CLI command for viewing or tailing logs. Users will access the files directly.

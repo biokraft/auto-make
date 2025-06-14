@@ -36,4 +36,4 @@ This document specifies the core AI-driven functionality of AutoMake, which is t
 ## 7. Future Considerations
 - A mechanism to handle ambiguity by presenting the user with the top N interpreted commands.
 - A "dry run" mode to show the command without executing it.
-- Caching strategies to speed up interpretation for repeated commands. 
+- Caching strategies to speed up interpretation for repeated commands.

@@ -66,4 +66,4 @@ automake "run all the tests"
 ## 5. Out of Scope
 - Publishing to PyPI (this can be a future consideration).
 - Creating binary packages for different operating systems (e.g., via PyInstaller).
-- Homebrew, `apt`, or other system-level package manager installations. 
+- Homebrew, `apt`, or other system-level package manager installations.

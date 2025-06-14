@@ -1,0 +1,125 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "automake-cli"
+version = "0.1.0"
+description = "AI-powered Makefile command execution"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+authors = [
+    { name = "Sean Baufeld", email = "sean.baufeld@protonmail.com" },
+]
+keywords = ["makefile", "ai", "cli", "automation", "llm"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Utilities",
+]
+
+dependencies = [
+    "typer>=0.9.0",
+    "rich>=13.0.0",  # For rich output support
+    "smolagents>=0.1.0",
+    "requests>=2.31.0",
+    "tomli>=2.0.1; python_version < '3.11'",
+    "appdirs>=1.4.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pre-commit>=4.2.0",
+    "ruff>=0.11.2",
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/seanbaufeld/auto-make"
+Repository = "https://github.com/seanbaufeld/auto-make"
+Issues = "https://github.com/seanbaufeld/auto-make/issues"
+
+[project.scripts]
+automake = "automake.main:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["automake"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+extend-include = ["*.ipynb"]
+fix = true
+
+[tool.ruff.lint]
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+select = [
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "UP",   # pyupgrade
+    "C4",   # flake8-comprehensions
+    "PT",   # flake8-pytest-style
+]
+ignore = [
+    "PT011",  # Ignore broad pytest.raises warnings
+]
+pydocstyle.convention = "google"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+docstring-code-format = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+    "--disable-warnings",
+    "--cov=automake",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+]
+
+[tool.coverage.run]
+source = ["automake"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]

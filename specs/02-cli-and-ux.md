@@ -33,4 +33,4 @@ automake "run all the unit tests"
 ## 6. Out of Scope
 - Interactive prompts.
 - Configuration via CLI flags (e.g., `--model`, `--verbose`). Configuration will be handled via a separate configuration file if needed.
-- Shell completions. 
+- Shell completions.

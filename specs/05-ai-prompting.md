@@ -43,4 +43,4 @@ User Request: "<USER_COMMAND>"
 
 ## 4. Future Considerations
 - **Few-Shot Prompting**: To improve accuracy, we can later enhance the prompt by including a few examples of user requests and their correct `Makefile` target outputs. This can be added to the system prompt.
-- **Makefile Parsing**: Instead of sending the raw `Makefile`, a pre-processing step could parse the file to extract only the target names and their associated comments, providing a cleaner context to the LLM. 
+- **Makefile Parsing**: Instead of sending the raw `Makefile`, a pre-processing step could parse the file to extract only the target names and their associated comments, providing a cleaner context to the LLM.

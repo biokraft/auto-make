@@ -33,4 +33,4 @@ The project will adhere to the structure defined in `.cursor/rules/python/02-pro
 ## 7. Out of Scope
 - Any web-based or API component.
 - A graphical user interface (GUI).
-- Persistent storage or databases. 
+- Persistent storage or databases.

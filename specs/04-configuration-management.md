@@ -39,4 +39,4 @@ model = "llama3"
 
 ## 6. Out of Scope
 - A CLI command to directly edit the configuration (e.g., `automake config set model=phi3`). Users will edit the file manually.
-- Per-project configuration files. The configuration is global for the user. 
+- Per-project configuration files. The configuration is global for the user.
