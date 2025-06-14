@@ -40,8 +40,8 @@ The following table outlines the granular steps to implement the AutoMake tool b
 | 6 | Smolagent Core | Develop the `smolagent` with the prompt defined in the prompting spec. | `specs/01-core-functionality.md`, `specs/05-ai-prompting.md` | TBD |
 | 7 | Execution Engine | Implement the subprocess logic to run the `make` command and stream output. | `specs/01-core-functionality.md` | TBD |
 | 8 | End-to-End Wiring | Integrate all components: CLI -> Config -> Logging -> Makefile Reader -> Agent -> Ollama -> Execution. | All | TBD |
-| 9 | Unit & Integration Tests | Write tests for CLI, config, logging, execution, and mocked agent/Ollama interactions. | `specs/03-architecture-and-tech-stack.md` | 🔄 IN PROGRESS |
-| 10 | CI/CD Pipeline | Implement GitHub Actions workflow for tests, coverage, and reporting. | `specs/08-cicd-pipeline.md` | TBD |
+| 9 | Unit & Integration Tests | Write tests for CLI, config, logging, execution, and mocked agent/Ollama interactions. | `specs/03-architecture-and-tech-stack.md` | ✅ DONE |
+| 10 | CI/CD Pipeline | Implement GitHub Actions workflow for tests, coverage, and reporting. | `specs/08-cicd-pipeline.md` | ✅ DONE |
 | 11 | Packaging & Distribution | Configure `pyproject.toml` with dependencies and script entry points for `uvx` distribution. | `specs/07-packaging-and-distribution.md` | ✅ DONE |
 | 12 | Documentation | Write a `README.md` with installation, configuration, and usage instructions, including CI status badges. | All, `specs/08-cicd-pipeline.md` | TBD |
 | 13 | MCP Integration | Implement the MCP-compliant interface for autonomous tool use. | `specs/09-model-context-protocol.md` | TBD |
