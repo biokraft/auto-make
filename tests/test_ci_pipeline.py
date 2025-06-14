@@ -188,7 +188,7 @@ class TestCIPipeline:
         assert "--cov-report=xml" in workflow_content, (
             "Should generate XML coverage report"
         )
-        assert "codecov/codecov-action@v4" in workflow_content, (
+        assert "codecov/codecov-action@v5" in workflow_content, (
             "Should upload to Codecov"
         )
 
