@@ -1,5 +1,11 @@
 # 🤖 auto-make
 *Makefiles without writing Makefiles.*
+```bash
+   ___       __                  __
+  / _ |__ __/ /____  __ _  ___ _/ /_____
+ / __ / // / __/ _ \/  ' \/ _ `/  '_/ -_)
+/_/ |_\_,_/\__/\___/_/_/_/\_,_/_/\_\\__/
+```
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com/biokraft/auto-make)
@@ -39,7 +45,7 @@ Tired of `grep "deploy" Makefile`? Just run `automake "deploy the app to staging
 ### Prerequisites
 - Python 3.11+
 - [uv](https://github.com/astral-sh/uv) (recommended for installation)
-- An active [Ollama](https://ollama.ai/) server with a running model (e.g., `ollama run llama3`).
+- An active [Ollama](https://ollama.ai/) server with a running model (e.g., `ollama run gemma3:12b`).
 
 ### Installation
 Install `auto-make` using `uvx` (the `uv` equivalent of `npx`):
@@ -64,7 +70,7 @@ Example `config.toml`:
 ```toml
 # Default configuration for auto-make
 [ollama]
-model = "llama3" # Specify the Ollama model you want to use
+model = "gemma3:12b" # Specify the Ollama model you want to use
 ```
 
 ## 🗺️ Project Roadmap

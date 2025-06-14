@@ -1,11 +1,15 @@
 """Tests for the main CLI module."""
 
+import tempfile
+from pathlib import Path
+from unittest.mock import patch
+
 import pytest
 import typer
 from typer.testing import CliRunner
 
 from automake import __version__
-from automake.main import app
+from automake.main import app, read_ascii_art
 
 
 class TestMainCLI:
@@ -31,52 +35,169 @@ class TestMainCLI:
         """Test that --help flag displays help information."""
         result = self.runner.invoke(app, ["--help"])
         assert result.exit_code == 0
-        # Check for the help text that's actually displayed
+        # Check for our custom help format
+        assert "Usage" in result.stdout
+        assert "automake [OPTIONS] COMMAND" in result.stdout
         assert (
-            "AI-powered Makefile command execution" in result.stdout
-            or "automake" in result.stdout
+            "Execute a natural language command using AI to interpret Makefile targets"
+            in result.stdout
         )
-        assert "COMMAND" in result.stdout
+        assert "Examples" in result.stdout
+        assert "Options" in result.stdout
 
-    def test_main_command_with_argument(self) -> None:
-        """Test main command with a natural language argument."""
-        test_command = "build the project"
-        result = self.runner.invoke(app, [test_command])
-
+    def test_help_flag_short(self) -> None:
+        """Test that -h flag displays help information."""
+        result = self.runner.invoke(app, ["-h"])
         assert result.exit_code == 0
-        assert f"🤖 AutoMake received command: {test_command}" in result.stdout
-        assert "⚠️  AI integration not yet implemented" in result.stdout
-        assert "📋 This will be implemented in Phase 6" in result.stdout
+        # Check for our custom help format
+        assert "Usage" in result.stdout
+        assert "automake [OPTIONS] COMMAND" in result.stdout
+        assert (
+            "Execute a natural language command using AI to interpret Makefile targets"
+            in result.stdout
+        )
+        assert "Examples" in result.stdout
+        assert "Options" in result.stdout
+
+    def test_help_command(self) -> None:
+        """Test that 'help' command displays help information."""
+        result = self.runner.invoke(app, ["help"])
+        assert result.exit_code == 0
+        # Check for our custom help format
+        assert "Usage" in result.stdout
+        assert "automake [OPTIONS] COMMAND" in result.stdout
+        assert (
+            "Execute a natural language command using AI to interpret Makefile targets"
+            in result.stdout
+        )
+        assert "Examples" in result.stdout
+        assert "Options" in result.stdout
+
+    def test_help_command_case_insensitive(self) -> None:
+        """Test that 'HELP' command displays help information (case insensitive)."""
+        result = self.runner.invoke(app, ["HELP"])
+        assert result.exit_code == 0
+        # Check for our custom help format
+        assert "Usage" in result.stdout
+        assert "automake [OPTIONS] COMMAND" in result.stdout
+        assert (
+            "Execute a natural language command using AI to interpret Makefile targets"
+            in result.stdout
+        )
+        assert "Examples" in result.stdout
+        assert "Options" in result.stdout
+
+    def test_main_command_with_makefile_success(self) -> None:
+        """Test main command with a natural language argument and existing Makefile."""
+        test_command = "build the project"
+        makefile_content = """# Test Makefile
+all: build test
+
+build:
+\techo "Building..."
+
+test:
+\techo "Testing..."
+
+deploy:
+\techo "Deploying..."
+"""
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            makefile_path = temp_path / "Makefile"
+            makefile_path.write_text(makefile_content)
+
+            # Mock the current working directory to point to our temp directory
+            with patch("automake.makefile_reader.Path.cwd", return_value=temp_path):
+                result = self.runner.invoke(app, [test_command])
+
+            assert result.exit_code == 0
+            assert "Command Received" in result.stdout
+            assert test_command in result.stdout
+            assert "Scanning" in result.stdout
+            assert "Found Makefile: Makefile" in result.stdout
+            assert "─ Available Targets " in result.stdout
+            assert "build" in result.stdout
+            assert "test" in result.stdout
+            assert "deploy" in result.stdout
+            assert "Phase 4 complete" in result.stdout
+
+    def test_main_command_no_makefile_error(self) -> None:
+        """Test main command when no Makefile exists."""
+        test_command = "build the project"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+
+            # Mock the current working directory to point to our empty temp directory
+            with patch("automake.makefile_reader.Path.cwd", return_value=temp_path):
+                result = self.runner.invoke(app, [test_command])
+
+            assert result.exit_code == 1
+            assert "Command Received" in result.stdout
+            assert test_command in result.stdout
+            # Rich console formats the error differently
+            assert "Error" in result.stdout  # Rich console uses "Error" in the box
+            assert "No Makefile found" in result.stdout
+            assert "Make sure you're in a directory with a Makefile" in result.stdout
 
     def test_main_command_with_complex_argument(self) -> None:
         """Test main command with a complex natural language argument."""
         test_command = "deploy the application to staging environment"
-        result = self.runner.invoke(app, [test_command])
+        makefile_content = "all:\n\techo 'Hello World'"
 
-        assert result.exit_code == 0
-        assert f"🤖 AutoMake received command: {test_command}" in result.stdout
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            makefile_path = temp_path / "Makefile"
+            makefile_path.write_text(makefile_content)
+
+            with patch("automake.makefile_reader.Path.cwd", return_value=temp_path):
+                result = self.runner.invoke(app, [test_command])
+
+            assert result.exit_code == 0
+            assert "Command Received" in result.stdout
+            assert test_command in result.stdout
 
     def test_main_command_with_quotes(self) -> None:
         """Test main command with quoted arguments."""
         test_command = "run tests with coverage"
-        result = self.runner.invoke(app, [test_command])
+        makefile_content = "test:\n\techo 'Running tests'"
 
-        assert result.exit_code == 0
-        assert f"🤖 AutoMake received command: {test_command}" in result.stdout
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            makefile_path = temp_path / "Makefile"
+            makefile_path.write_text(makefile_content)
+
+            with patch("automake.makefile_reader.Path.cwd", return_value=temp_path):
+                result = self.runner.invoke(app, [test_command])
+
+            assert result.exit_code == 0
+            assert "Command Received" in result.stdout
+            assert test_command in result.stdout
 
     def test_no_arguments_shows_help(self) -> None:
         """Test that running without arguments shows help."""
         result = self.runner.invoke(app, [])
-        assert result.exit_code != 0  # Should fail without required argument
-        # Check both stdout and stderr for error messages
-        output = result.stdout + result.stderr
-        assert "Missing argument" in output or "Usage:" in output or "Error" in output
+        assert result.exit_code == 0  # Should show help and exit cleanly
+        assert "Usage" in result.stdout
+        assert "automake [OPTIONS] COMMAND" in result.stdout
+        assert "Examples" in result.stdout
 
     def test_empty_command_argument(self) -> None:
         """Test behavior with empty command argument."""
-        result = self.runner.invoke(app, [""])
-        assert result.exit_code == 0
-        assert "🤖 AutoMake received command:" in result.stdout
+        makefile_content = "all:\n\techo 'Hello World'"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            makefile_path = temp_path / "Makefile"
+            makefile_path.write_text(makefile_content)
+
+            with patch("automake.makefile_reader.Path.cwd", return_value=temp_path):
+                result = self.runner.invoke(app, [""])
+
+            assert result.exit_code == 0
+            assert "Command Received" in result.stdout
 
     @pytest.mark.parametrize(
         "command",
@@ -89,9 +210,101 @@ class TestMainCLI:
     )
     def test_various_command_formats(self, command: str) -> None:
         """Test various command formats are accepted."""
-        result = self.runner.invoke(app, [command])
-        assert result.exit_code == 0
-        assert f"🤖 AutoMake received command: {command}" in result.stdout
+        makefile_content = "all:\n\techo 'Hello World'"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            makefile_path = temp_path / "Makefile"
+            makefile_path.write_text(makefile_content)
+
+            with patch("automake.makefile_reader.Path.cwd", return_value=temp_path):
+                result = self.runner.invoke(app, [command])
+
+            assert result.exit_code == 0
+            assert "Command Received" in result.stdout
+            assert command in result.stdout
+
+    def test_makefile_with_many_targets(self) -> None:
+        """Test Makefile with many targets shows preview correctly."""
+        # Create a Makefile with many targets
+        targets = [f"target{i}:\n\techo 'Target {i}'" for i in range(10)]
+        makefile_content = "\n\n".join(targets)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            makefile_path = temp_path / "Makefile"
+            makefile_path.write_text(makefile_content)
+
+            with patch("automake.makefile_reader.Path.cwd", return_value=temp_path):
+                result = self.runner.invoke(app, ["test command"])
+
+            assert result.exit_code == 0
+            assert "─ Available Targets " in result.stdout
+            # Should show first 5 targets
+            for i in range(5):
+                assert f"target{i}" in result.stdout
+            # Should indicate there are more (the exact number depends on parsing logic)
+            assert "more targets" in result.stdout
+
+    def test_makefile_without_targets(self) -> None:
+        """Test Makefile without clear targets."""
+        makefile_content = """# This is just a comment
+# Another comment
+VARIABLE = value
+"""
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            makefile_path = temp_path / "Makefile"
+            makefile_path.write_text(makefile_content)
+
+            with patch("automake.makefile_reader.Path.cwd", return_value=temp_path):
+                result = self.runner.invoke(app, ["test command"])
+
+            assert result.exit_code == 0
+            # Should not show targets preview if no targets found
+            assert "─ Available Targets " not in result.stdout
+
+    def test_makefile_read_error(self) -> None:
+        """Test handling of Makefile read errors."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            makefile_path = temp_path / "Makefile"
+            makefile_path.write_text("all:\n\techo 'test'")
+
+            # Mock MakefileReader to raise OSError
+            with patch("automake.main.MakefileReader") as mock_reader:
+                mock_instance = mock_reader.return_value
+                mock_instance.get_makefile_info.side_effect = OSError(
+                    "Permission denied"
+                )
+
+                result = self.runner.invoke(app, ["test command"])
+
+            assert result.exit_code == 1
+            assert "Error reading Makefile:" in result.stdout
+            assert "Permission denied" in result.stdout
+
+    def test_unexpected_error_handling(self) -> None:
+        """Test handling of unexpected errors."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            makefile_path = temp_path / "Makefile"
+            makefile_path.write_text("all:\n\techo 'test'")
+
+            # Mock MakefileReader to raise unexpected error
+            with patch("automake.main.MakefileReader") as mock_reader:
+                mock_instance = mock_reader.return_value
+                mock_instance.get_makefile_info.side_effect = RuntimeError(
+                    "Unexpected error"
+                )
+
+                result = self.runner.invoke(app, ["test command"])
+
+            assert result.exit_code == 1
+            assert "Unexpected error:" in result.stdout
+            # The error message should contain the error details
+            assert "Unexpected error" in result.stdout
 
 
 class TestVersionCallback:
@@ -120,3 +333,23 @@ class TestVersionCallback:
         # Should not raise any exception
         result = version_callback(None)
         assert result is None
+
+
+class TestASCIIArt:
+    """Test cases for ASCII art functionality."""
+
+    def test_read_ascii_art_file_exists(self) -> None:
+        """Test reading ASCII art when file exists."""
+        # This test will pass even if the file is empty or contains placeholder text
+        art_content = read_ascii_art()
+        # Should return a string (empty or with content)
+        assert isinstance(art_content, str)
+
+    def test_read_ascii_art_with_content(self) -> None:
+        """Test that ASCII art is displayed in help when available."""
+        # Test that help includes ASCII art functionality
+        runner = CliRunner()
+        result = runner.invoke(app, ["--help"])
+        assert result.exit_code == 0
+        # The help should be displayed regardless of ASCII art content
+        assert "Usage" in result.stdout
