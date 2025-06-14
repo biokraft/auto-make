@@ -12,6 +12,7 @@
 ╰─────────────────────────────────────────────────────╯
 ```
 
+[![Latest Version](https://img.shields.io/pypi/v/automake-cli?label=latest&logo=pypi&logoColor=white)](https://pypi.org/project/automake-cli/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com/biokraft/auto-make)
 [![Build Status](https://github.com/biokraft/auto-make/actions/workflows/ci.yml/badge.svg)](https://github.com/biokraft/auto-make/actions/workflows/ci.yml)
