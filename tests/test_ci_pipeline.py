@@ -82,9 +82,8 @@ class TestCIPipeline:
         assert "Set up Python" in step_names, "Should set up Python"
         assert "Install uv" in step_names, "Should install uv"
         assert "Install dependencies" in step_names, "Should install dependencies"
-        assert "Run Ruff linting" in step_names, "Should run Ruff linting"
-        assert "Run Ruff formatting check" in step_names, (
-            "Should run Ruff formatting check"
+        assert "Run pre-commit hooks on all files" in step_names, (
+            "Should run pre-commit hooks"
         )
 
     def test_test_job_configuration(self) -> None:
@@ -168,7 +167,9 @@ class TestCIPipeline:
             "Should use uv sync for dependencies"
         )
         assert "uv run pytest" in workflow_content, "Should use uv run for pytest"
-        assert "uv run ruff" in workflow_content, "Should use uv run for ruff"
+        assert "uv run --with pre-commit" in workflow_content, (
+            "Should use uv run for pre-commit"
+        )
         assert "uv build" in workflow_content, (
             "Should use uv build for package building"
         )

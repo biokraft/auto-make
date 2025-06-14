@@ -34,7 +34,8 @@ jobs:
       run: uv sync --dev
 
     - name: Run pre-commit hooks on all files
-      run: uv run pre-commit run --all-files
+      run: |
+        uv run --with pre-commit pre-commit run --all-files
 
   test:
     name: Test Suite
@@ -108,8 +109,7 @@ jobs:
 
     - name: Run safety check
       run: |
-        uv run pip install safety
-        uv run safety check --json || true
+        uv run --with safety safety scan --json || true
 
   build:
     name: Build Package
