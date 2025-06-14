@@ -363,7 +363,7 @@ def print_welcome() -> None:
     # Print ASCII art first
     ascii_art = read_ascii_art()
     if ascii_art:
-        output.print_rainbow_ascii_art(ascii_art)
+        output.print_rainbow_ascii_art(ascii_art, duration=0.5)
         console.print()  # Add blank line after ASCII art
 
     # Print simple usage info
@@ -376,7 +376,7 @@ def print_help_with_ascii() -> None:
     # Print ASCII art first
     ascii_art = read_ascii_art()
     if ascii_art:
-        output.print_rainbow_ascii_art(ascii_art)
+        output.print_rainbow_ascii_art(ascii_art, duration=0)
         console.print()  # Add blank line after ASCII art
 
     # Create help content
