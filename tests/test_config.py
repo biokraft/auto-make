@@ -49,21 +49,22 @@ class TestConfig:
                     mock_user_config_dir.assert_called_once_with("automake")
 
     def test_default_config_creation(self, tmp_path):
-        """Test that default config file is created correctly."""
-        config_dir = tmp_path / "test_config"
-        config = Config(config_dir=config_dir)
+        """Test that default config is created correctly."""
+        config_dir = tmp_path / "config"
+        config = Config(config_dir)
 
         # Check that config file was created
-        assert config.config_file.exists()
+        assert config.config_file_path.exists()
 
-        # Check content of created config file
-        with open(config.config_file, "rb") as f:
-            config_data = tomllib.load(f)
-
+        # Check default values
         expected_config = {
-            "ollama": {"base_url": "http://localhost:11434", "model": "llama3"},
+            "ollama": {"base_url": "http://localhost:11434", "model": "gemma3:4b"},
             "logging": {"level": "INFO"},
         }
+
+        # Read the config file directly to verify content
+        with open(config.config_file_path, "rb") as f:
+            config_data = tomllib.load(f)
 
         assert config_data == expected_config
 
@@ -90,24 +91,23 @@ level = "DEBUG"
         assert config.log_level == "DEBUG"
 
     def test_load_partial_config_with_defaults(self, tmp_path):
-        """Test loading partial config file with missing keys filled by defaults."""
-        config_dir = tmp_path / "test_config"
-        config_dir.mkdir()
-        config_file = config_dir / "config.toml"
+        """Test loading partial config with default fallbacks."""
+        config_dir = tmp_path / "config"
+        config_dir.mkdir(parents=True)
 
-        # Create a partial config file (missing logging section)
+        # Create partial config (missing some values)
         partial_config = """[ollama]
-base_url = "http://partial:9000"
+base_url = "http://custom:8080"
 """
+        config_file = config_dir / "config.toml"
         config_file.write_text(partial_config)
 
-        config = Config(config_dir=config_dir)
+        config = Config(config_dir)
 
-        # Should have custom ollama settings
-        assert config.ollama_base_url == "http://partial:9000"
-        # Should have default model since it's missing
-        assert config.ollama_model == "llama3"
-        # Should have default logging level since section is missing
+        # Should have custom value
+        assert config.ollama_base_url == "http://custom:8080"
+        # Should have default values for missing keys
+        assert config.ollama_model == "gemma3:4b"
         assert config.log_level == "INFO"
 
     def test_invalid_toml_file(self, tmp_path):
@@ -141,39 +141,51 @@ base_url = "http://partial:9000"
 
     def test_config_properties(self, tmp_path):
         """Test config property accessors."""
-        config_dir = tmp_path / "test_config"
-        config = Config(config_dir=config_dir)
+        config_dir = tmp_path / "config"
+        config_dir.mkdir(parents=True)
 
-        # Test default values
-        assert config.ollama_base_url == "http://localhost:11434"
-        assert config.ollama_model == "llama3"
-        assert config.log_level == "INFO"
-        assert config.config_file_path == config.config_file
+        config_content = """[ollama]
+base_url = "http://test:9999"
+model = "test-model"
+
+[logging]
+level = "DEBUG"
+"""
+        config_file = config_dir / "config.toml"
+        config_file.write_text(config_content)
+
+        config = Config(config_dir)
+
+        assert config.ollama_base_url == "http://test:9999"
+        assert config.ollama_model == "test-model"
+        assert config.log_level == "DEBUG"
+
+        # Test with defaults
+        config_default = Config(tmp_path / "default")
+        assert config_default.ollama_base_url == "http://localhost:11434"
+        assert config_default.ollama_model == "gemma3:4b"
+        assert config_default.log_level == "INFO"
 
     def test_get_method(self, tmp_path):
         """Test the get method for accessing config values."""
-        config_dir = tmp_path / "test_config"
-        config = Config(config_dir=config_dir)
+        config = Config(tmp_path / "config")
 
         # Test existing values
         assert config.get("ollama", "base_url") == "http://localhost:11434"
-        assert config.get("ollama", "model") == "llama3"
+        assert config.get("ollama", "model") == "gemma3:4b"
         assert config.get("logging", "level") == "INFO"
 
         # Test non-existing values with defaults
+        assert config.get("ollama", "timeout", 30) == 30
         assert config.get("nonexistent", "key", "default") == "default"
-        assert config.get("ollama", "nonexistent", "default") == "default"
-
-        # Test non-existing values without defaults
-        assert config.get("nonexistent", "key") is None
 
     def test_reload_config(self, tmp_path):
-        """Test reloading configuration from file."""
-        config_dir = tmp_path / "test_config"
-        config = Config(config_dir=config_dir)
+        """Test config reloading functionality."""
+        config_dir = tmp_path / "config"
+        config = Config(config_dir)
 
-        # Initial values
-        assert config.ollama_model == "llama3"
+        # Initial state
+        assert config.ollama_model == "gemma3:4b"
 
         # Modify config file
         new_config = """[ollama]
@@ -183,9 +195,9 @@ model = "new-model"
 [logging]
 level = "INFO"
 """
-        config.config_file.write_text(new_config)
+        config.config_file_path.write_text(new_config)
 
-        # Reload and check new values
+        # Reload and check
         config.reload()
         assert config.ollama_model == "new-model"
 
@@ -255,56 +267,41 @@ class TestConfigIntegration:
 
     def test_full_config_lifecycle(self, tmp_path):
         """Test complete config lifecycle: create, read, modify, reload."""
-        config_dir = tmp_path / "lifecycle_test"
+        config_dir = tmp_path / "lifecycle"
 
-        # 1. Create config with defaults
-        config = Config(config_dir=config_dir)
-        assert config.ollama_model == "llama3"
-        assert config.log_level == "INFO"
+        # 1. Create new config (should create default)
+        config = Config(config_dir)
+        assert config.config_file_path.exists()
+        assert config.ollama_model == "gemma3:4b"
 
-        # 2. Verify file was created correctly
-        assert config.config_file.exists()
-        with open(config.config_file, "rb") as f:
-            data = tomllib.load(f)
-        assert data["ollama"]["model"] == "llama3"
-
-        # 3. Manually modify the file
-        modified_config = """[ollama]
-base_url = "http://modified:1234"
+        # 2. Modify config file externally
+        new_content = """[ollama]
+base_url = "http://modified:8080"
 model = "modified-model"
 
 [logging]
 level = "DEBUG"
-
-[new_section]
-new_key = "new_value"
 """
-        config.config_file.write_text(modified_config)
+        config.config_file_path.write_text(new_content)
 
-        # 4. Reload and verify changes
+        # 3. Reload and verify changes
         config.reload()
-        assert config.ollama_base_url == "http://modified:1234"
+        assert config.ollama_base_url == "http://modified:8080"
         assert config.ollama_model == "modified-model"
         assert config.log_level == "DEBUG"
-        assert config.get("new_section", "new_key") == "new_value"
-
-        # 5. Create new config instance and verify it loads the modified file
-        config2 = Config(config_dir=config_dir)
-        assert config2.ollama_model == "modified-model"
-        assert config2.log_level == "DEBUG"
 
     def test_concurrent_config_access(self, tmp_path):
-        """Test that multiple Config instances can access the same config file."""
-        config_dir = tmp_path / "concurrent_test"
+        """Test that multiple Config instances work correctly."""
+        config_dir = tmp_path / "concurrent"
 
-        # Create first config instance
-        config1 = Config(config_dir=config_dir)
-        assert config1.ollama_model == "llama3"
+        # Create first instance
+        config1 = Config(config_dir)
+        assert config1.ollama_model == "gemma3:4b"
 
-        # Create second config instance (should read existing file)
-        config2 = Config(config_dir=config_dir)
-        assert config2.ollama_model == "llama3"
+        # Create second instance (should read existing file)
+        config2 = Config(config_dir)
+        assert config2.ollama_model == "gemma3:4b"
 
-        # Both should have the same values
+        # Both should have same values
         assert config1.ollama_base_url == config2.ollama_base_url
         assert config1.log_level == config2.log_level

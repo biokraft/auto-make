@@ -6,6 +6,12 @@ import typer
 from rich.console import Console
 
 from automake import __version__
+from automake.cli.logs import (
+    clear_logs,
+    show_log_config,
+    show_logs_location,
+    view_log_content,
+)
 from automake.core.makefile_reader import MakefileNotFoundError, MakefileReader
 from automake.utils.output import MessageType, get_formatter
 
@@ -13,11 +19,74 @@ app = typer.Typer(
     name="automake",
     help="AI-powered Makefile command execution",
     add_completion=False,
-    add_help_option=False,  # Disable default help to use our custom one
+    no_args_is_help=False,
 )
+
+# Create a subcommand group for log operations
+logs_app = typer.Typer(
+    name="logs",
+    help="Manage AutoMake logs",
+    add_completion=False,
+    no_args_is_help=True,  # Show help when no subcommand is provided
+)
+app.add_typer(logs_app, name="logs")
 
 console = Console()
 output = get_formatter(console)
+
+
+# Help command - removed to avoid conflicts with callback
+
+
+# Log subcommands
+@logs_app.command("show")
+def logs_show() -> None:
+    """Show log files location and information."""
+    show_logs_location(console, output)
+
+
+@logs_app.command("view")
+def logs_view(
+    lines: int = typer.Option(
+        50,
+        "--lines",
+        "-n",
+        help="Number of lines to show from the end of the log",
+        min=1,
+    ),
+    follow: bool = typer.Option(
+        False,
+        "--follow",
+        "-f",
+        help="Follow the log file (like tail -f)",
+    ),
+    file: str = typer.Option(
+        None,
+        "--file",
+        help="Specific log file to view (defaults to current log)",
+    ),
+) -> None:
+    """View log file contents."""
+    view_log_content(console, output, lines=lines, follow=follow, log_file=file)
+
+
+@logs_app.command("clear")
+def logs_clear(
+    yes: bool = typer.Option(
+        False,
+        "--yes",
+        "-y",
+        help="Skip confirmation prompt",
+    ),
+) -> None:
+    """Clear all log files."""
+    clear_logs(console, output, confirm=yes)
+
+
+@logs_app.command("config")
+def logs_config() -> None:
+    """Show logging configuration."""
+    show_log_config(console, output)
 
 
 def read_ascii_art() -> str:
@@ -58,15 +127,16 @@ def print_help_with_ascii() -> None:
         console.print()  # Add blank line after ASCII art
 
     # Create help content
-    usage_text = "automake [OPTIONS] COMMAND"
+    usage_text = "automake [OPTIONS] COMMAND [ARGS]..."
     description = (
-        "Execute a natural language command using AI to interpret Makefile targets."
+        "AI-powered Makefile command execution with natural language processing."
     )
 
     examples = [
-        'automake "build the project"',
-        'automake "run all tests"',
-        'automake "deploy to staging"',
+        'automake run "build the project"',
+        'automake run "run all tests"',
+        'automake run "deploy to staging"',
+        'automake run "execute the cicd pipeline"',
     ]
 
     # Print usage
@@ -79,11 +149,13 @@ def print_help_with_ascii() -> None:
     examples_content = "\n".join(examples)
     output.print_box(examples_content, MessageType.INFO, "Examples")
 
-    # Print arguments
-    args_content = (
-        "*    command      TEXT  Natural language command to execute [required]"
+    # Print commands
+    commands_content = (
+        "run                  Execute natural language commands\n"
+        "help                 Show this help information\n"
+        "logs                 Manage AutoMake logs"
     )
-    output.print_box(args_content, MessageType.INFO, "Arguments")
+    output.print_box(commands_content, MessageType.INFO, "Commands")
 
     # Print options
     options_content = (
@@ -91,6 +163,15 @@ def print_help_with_ascii() -> None:
         "--help     -h        Show this message and exit."
     )
     output.print_box(options_content, MessageType.INFO, "Options")
+
+    # Print log subcommands
+    log_subcommands_content = (
+        "logs show            Show log files location and information\n"
+        "logs view            View log file contents\n"
+        "logs clear           Clear all log files\n"
+        "logs config          Show logging configuration"
+    )
+    output.print_box(log_subcommands_content, MessageType.INFO, "Log Commands")
 
 
 def version_callback(value: bool) -> None:
@@ -107,13 +188,10 @@ def help_callback(value: bool) -> None:
         raise typer.Exit()
 
 
-@app.command()
+# Main callback - handles global options only
+@app.callback(invoke_without_command=True)
 def main(
-    command: str | None = typer.Argument(
-        None,
-        help="Natural language command to execute",
-        metavar="COMMAND",
-    ),
+    ctx: typer.Context,
     version: bool | None = typer.Option(
         None,
         "--version",
@@ -131,24 +209,64 @@ def main(
         help="Show this message and exit.",
     ),
 ) -> None:
+    """AI-powered Makefile command execution."""
+    # If no command is provided, show welcome message
+    if ctx.invoked_subcommand is None:
+        print_welcome()
+
+
+# Natural language command execution
+@app.command()
+def run(
+    command: str = typer.Argument(
+        ...,
+        help="Natural language command to execute",
+        metavar="COMMAND",
+    ),
+) -> None:
     """Execute a natural language command using AI to interpret Makefile targets.
 
     Examples:
-        automake "build the project"
-        automake "run all tests"
-        automake "deploy to staging"
+        automake run "build the project"
+        automake run "run all tests"
+        automake run "deploy to staging"
+        automake run "execute the cicd pipeline"
     """
     # Handle special cases
-    if command is None:
-        # No command provided - show welcome with ASCII art
-        print_welcome()
-        raise typer.Exit()
-
     if command.lower() == "help":
         # Explicit help command
         print_help_with_ascii()
         raise typer.Exit()
 
+    # Check if this is a logs-related command
+    if "logs" in command.lower():
+        # Show log commands help
+        log_subcommands_content = (
+            "logs show            Show log files location and information\n"
+            "logs view            View log file contents\n"
+            "logs clear           Clear all log files\n"
+            "logs config          Show logging configuration"
+        )
+        output.print_box(log_subcommands_content, MessageType.INFO, "Log Commands")
+        raise typer.Exit()
+
+    # Execute the main logic
+    _execute_main_logic(command)
+
+
+# Help command
+@app.command("help")
+def help_command() -> None:
+    """Show help information with ASCII art."""
+    print_help_with_ascii()
+
+
+# Help command removed - handled in main callback
+
+
+# The rest of the main command logic needs to be added back to the main function
+def _execute_main_logic(command: str) -> None:
+    """Execute the main command logic."""
     output.print_command_received(command)
 
     # Phase 4: Makefile Reader Implementation

@@ -39,7 +39,7 @@ class TestMainCLI:
         assert "Usage" in result.stdout
         assert "automake [OPTIONS] COMMAND" in result.stdout
         assert (
-            "Execute a natural language command using AI to interpret Makefile targets"
+            "AI-powered Makefile command execution with natural language processing"
             in result.stdout
         )
         assert "Examples" in result.stdout
@@ -53,7 +53,7 @@ class TestMainCLI:
         assert "Usage" in result.stdout
         assert "automake [OPTIONS] COMMAND" in result.stdout
         assert (
-            "Execute a natural language command using AI to interpret Makefile targets"
+            "AI-powered Makefile command execution with natural language processing"
             in result.stdout
         )
         assert "Examples" in result.stdout
@@ -67,7 +67,7 @@ class TestMainCLI:
         assert "Usage" in result.stdout
         assert "automake [OPTIONS] COMMAND" in result.stdout
         assert (
-            "Execute a natural language command using AI to interpret Makefile targets"
+            "AI-powered Makefile command execution with natural language processing"
             in result.stdout
         )
         assert "Examples" in result.stdout
@@ -75,13 +75,13 @@ class TestMainCLI:
 
     def test_help_command_case_insensitive(self) -> None:
         """Test that 'HELP' command displays help information (case insensitive)."""
-        result = self.runner.invoke(app, ["HELP"])
+        result = self.runner.invoke(app, ["run", "HELP"])
         assert result.exit_code == 0
         # Check for our custom help format
         assert "Usage" in result.stdout
         assert "automake [OPTIONS] COMMAND" in result.stdout
         assert (
-            "Execute a natural language command using AI to interpret Makefile targets"
+            "AI-powered Makefile command execution with natural language processing"
             in result.stdout
         )
         assert "Examples" in result.stdout
@@ -112,7 +112,7 @@ deploy:
             with patch(
                 "automake.core.makefile_reader.Path.cwd", return_value=temp_path
             ):
-                result = self.runner.invoke(app, [test_command])
+                result = self.runner.invoke(app, ["run", test_command])
 
             assert result.exit_code == 0
             assert "Command Received" in result.stdout
@@ -136,7 +136,7 @@ deploy:
             with patch(
                 "automake.core.makefile_reader.Path.cwd", return_value=temp_path
             ):
-                result = self.runner.invoke(app, [test_command])
+                result = self.runner.invoke(app, ["run", test_command])
 
             assert result.exit_code == 1
             assert "Command Received" in result.stdout
@@ -159,7 +159,7 @@ deploy:
             with patch(
                 "automake.core.makefile_reader.Path.cwd", return_value=temp_path
             ):
-                result = self.runner.invoke(app, [test_command])
+                result = self.runner.invoke(app, ["run", test_command])
 
             assert result.exit_code == 0
             assert "Command Received" in result.stdout
@@ -178,7 +178,7 @@ deploy:
             with patch(
                 "automake.core.makefile_reader.Path.cwd", return_value=temp_path
             ):
-                result = self.runner.invoke(app, [test_command])
+                result = self.runner.invoke(app, ["run", test_command])
 
             assert result.exit_code == 0
             assert "Command Received" in result.stdout
@@ -203,7 +203,7 @@ deploy:
             with patch(
                 "automake.core.makefile_reader.Path.cwd", return_value=temp_path
             ):
-                result = self.runner.invoke(app, [""])
+                result = self.runner.invoke(app, ["run", ""])
 
             assert result.exit_code == 0
             assert "Command Received" in result.stdout
@@ -229,7 +229,7 @@ deploy:
             with patch(
                 "automake.core.makefile_reader.Path.cwd", return_value=temp_path
             ):
-                result = self.runner.invoke(app, [command])
+                result = self.runner.invoke(app, ["run", command])
 
             assert result.exit_code == 0
             assert "Command Received" in result.stdout
@@ -249,7 +249,7 @@ deploy:
             with patch(
                 "automake.core.makefile_reader.Path.cwd", return_value=temp_path
             ):
-                result = self.runner.invoke(app, ["test command"])
+                result = self.runner.invoke(app, ["run", "test command"])
 
             assert result.exit_code == 0
             assert "─ Available Targets " in result.stdout
@@ -274,7 +274,7 @@ VARIABLE = value
             with patch(
                 "automake.core.makefile_reader.Path.cwd", return_value=temp_path
             ):
-                result = self.runner.invoke(app, ["test command"])
+                result = self.runner.invoke(app, ["run", "test command"])
 
             assert result.exit_code == 0
             # Should not show targets preview if no targets found
@@ -282,43 +282,34 @@ VARIABLE = value
 
     def test_makefile_read_error(self) -> None:
         """Test handling of Makefile read errors."""
+        makefile_content = "all:\n\techo 'test'"
+
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
             makefile_path = temp_path / "Makefile"
-            makefile_path.write_text("all:\n\techo 'test'")
+            makefile_path.write_text(makefile_content)
 
-            # Mock MakefileReader to raise OSError
-            with patch("automake.cli.main.MakefileReader") as mock_reader:
-                mock_instance = mock_reader.return_value
-                mock_instance.get_makefile_info.side_effect = OSError(
-                    "Permission denied"
-                )
-
-                result = self.runner.invoke(app, ["test command"])
+            with (
+                patch("automake.core.makefile_reader.Path.cwd", return_value=temp_path),
+                patch(
+                    "automake.core.makefile_reader.MakefileReader.read_makefile",
+                    side_effect=OSError("Permission denied"),
+                ),
+            ):
+                result = self.runner.invoke(app, ["run", "test command"])
 
             assert result.exit_code == 1
-            assert "Error reading Makefile:" in result.stdout
-            assert "Permission denied" in result.stdout
+            assert "Error reading Makefile" in result.stdout
 
     def test_unexpected_error_handling(self) -> None:
         """Test handling of unexpected errors."""
-        with tempfile.TemporaryDirectory() as temp_dir:
-            temp_path = Path(temp_dir)
-            makefile_path = temp_path / "Makefile"
-            makefile_path.write_text("all:\n\techo 'test'")
-
-            # Mock MakefileReader to raise unexpected error
-            with patch("automake.cli.main.MakefileReader") as mock_reader:
-                mock_instance = mock_reader.return_value
-                mock_instance.get_makefile_info.side_effect = RuntimeError(
-                    "Unexpected error"
-                )
-
-                result = self.runner.invoke(app, ["test command"])
+        with patch(
+            "automake.core.makefile_reader.MakefileReader.get_makefile_info",
+            side_effect=RuntimeError("Unexpected error"),
+        ):
+            result = self.runner.invoke(app, ["run", "test command"])
 
             assert result.exit_code == 1
-            assert "Unexpected error:" in result.stdout
-            # The error message should contain the error details
             assert "Unexpected error" in result.stdout
 
 

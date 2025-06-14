@@ -8,7 +8,7 @@ This document specifies how users will configure the AutoMake tool, particularly
 - If the configuration file does not exist upon first run, the tool shall create it with default values and inform the user.
 - The configuration will allow the user to specify:
     - The base URL of their local Ollama server.
-    - The name of the LLM model they wish to use (e.g., `llama3`, `phi3`, etc.).
+    - The name of the LLM model they wish to use (e.g., `gemma3:4b`, `phi3`, etc.).
 - The tool must read this configuration at runtime to connect to the correct Ollama instance and use the specified model.
 
 ## 3. Configuration File Format
@@ -24,11 +24,11 @@ base_url = "http://localhost:11434"
 
 # The model to use for interpreting commands.
 # The user must ensure this model is available on their Ollama server.
-model = "llama3"
+model = "gemma3:4b"
 ```
 
 ## 4. Default Behavior
-- If `config.toml` is not found, AutoMake will create it with the default `base_url` (`http://localhost:11434`) and a sensible default `model` (e.g., `llama3`).
+- If `config.toml` is not found, AutoMake will create it with the default `base_url` (`http://localhost:11434`) and a sensible default `model` (e.g., `gemma3:4b`).
 - If the `base_url` or `model` keys are missing from the file, the tool will use the same default values.
 - If the tool cannot connect to the specified `base_url`, it will exit with a clear error message instructing the user to check if their Ollama server is running and if the configuration is correct.
 

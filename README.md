@@ -26,7 +26,7 @@
 
 ---
 
-**auto-make** is a Python-based command-line tool that leverages a local Large Language Model (LLM) to interpret your natural language commands and execute the correct `Makefile` target.
+**auto-make** is a Python-based command-line tool that leverages a local Large Language autModel (LLM) to interpret your natural language commands and execute the correct `Makefile` target.
 
 Tired of `grep "deploy" Makefile`? Just run `automake "deploy the app to staging"` and let the AI do the work.
 
@@ -51,7 +51,7 @@ Tired of `grep "deploy" Makefile`? Just run `automake "deploy the app to staging
 ### Prerequisites
 - Python 3.11+
 - [uv](https://github.com/astral-sh/uv) (recommended for installation)
-- An active [Ollama](https://ollama.ai/) server with a running model (e.g., `ollama run gemma3:12b`).
+- An active [Ollama](https://ollama.ai/) server with a running model (e.g., `ollama run gemma3:4b`).
 
 ### Installation
 Install `auto-make` using `uvx` (the `uv` equivalent of `npx`):
@@ -69,6 +69,11 @@ automake "run the tests and generate a coverage report"
 
 The tool will find the corresponding target in your `Makefile` and execute it.
 
+For detailed usage information and available options, run:
+```bash
+automake help
+```
+
 ## 🛠️ Configuration
 On first run, `auto-make` will create a `config.toml` file in your user configuration directory. You can edit this file to change the default Ollama model or other settings.
 
@@ -76,7 +81,7 @@ Example `config.toml`:
 ```toml
 # Default configuration for auto-make
 [ollama]
-model = "gemma3:12b" # Specify the Ollama model you want to use
+model = "gemma3:4b" # Specify the Ollama model you want to use
 ```
 
 ## 🗺️ Project Roadmap

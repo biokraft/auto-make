@@ -38,7 +38,7 @@ class Config:
     def _get_default_config(self) -> dict[str, Any]:
         """Get default configuration values."""
         return {
-            "ollama": {"base_url": "http://localhost:11434", "model": "llama3"},
+            "ollama": {"base_url": "http://localhost:11434", "model": "gemma3:4b"},
             "logging": {"level": "INFO"},
         }
 
@@ -56,7 +56,7 @@ base_url = "http://localhost:11434"
 
 # The model to use for interpreting commands.
 # The user must ensure this model is available on their Ollama server.
-model = "llama3"
+model = "gemma3:4b"
 
 [logging]
 # Set log level to "DEBUG" for verbose output for troubleshooting.
