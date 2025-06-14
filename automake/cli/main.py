@@ -1,26 +1,37 @@
 """Main CLI entry point for AutoMake."""
 
+import os
+import warnings
 from pathlib import Path
 
-import typer
-from rich.console import Console
+# Suppress Pydantic serialization warnings early and comprehensively
+os.environ.setdefault("PYTHONWARNINGS", "ignore::UserWarning:pydantic.*")
+warnings.filterwarnings("ignore", category=UserWarning, module="pydantic.*")
+warnings.filterwarnings("ignore", message=".*Pydantic serializer warnings.*")
+warnings.filterwarnings("ignore", message=".*PydanticSerializationUnexpectedValue.*")
 
-from automake import __version__
-from automake.cli.logs import (
+import typer  # noqa: E402
+from rich.console import Console  # noqa: E402
+
+from automake import __version__  # noqa: E402
+from automake.cli.logs import (  # noqa: E402
     clear_logs,
     show_log_config,
     show_logs_location,
     view_log_content,
 )
-from automake.config import get_config
-from automake.core.ai_agent import (
+from automake.config import get_config  # noqa: E402
+from automake.core.ai_agent import (  # noqa: E402
     CommandInterpretationError,
     create_ai_agent,
 )
-from automake.core.command_runner import CommandRunner
-from automake.core.interactive import select_command
-from automake.core.makefile_reader import MakefileNotFoundError, MakefileReader
-from automake.utils.output import MessageType, get_formatter
+from automake.core.command_runner import CommandRunner  # noqa: E402
+from automake.core.interactive import select_command  # noqa: E402
+from automake.core.makefile_reader import (  # noqa: E402
+    MakefileNotFoundError,
+    MakefileReader,
+)
+from automake.utils.output import MessageType, get_formatter  # noqa: E402
 
 app = typer.Typer(
     name="automake",
@@ -245,18 +256,6 @@ def run(
         print_help_with_ascii()
         raise typer.Exit()
 
-    # Check if this is a logs-related command
-    if "logs" in command.lower():
-        # Show log commands help
-        log_subcommands_content = (
-            "logs show            Show log files location and information\n"
-            "logs view            View log file contents\n"
-            "logs clear           Clear all log files\n"
-            "logs config          Show logging configuration"
-        )
-        output.print_box(log_subcommands_content, MessageType.INFO, "Log Commands")
-        raise typer.Exit()
-
     # Execute the main logic
     _execute_main_logic(command)
 
@@ -301,18 +300,6 @@ def _execute_main_logic(command: str) -> None:
         if target_lines:
             target_names = [line.split(":")[0].strip() for line in target_lines[:5]]
             output.print_targets_preview(target_names, len(target_lines))
-
-        # TODO: This will be replaced with actual AI integration in Phase 6
-        output.print_status(
-            "AI integration not yet implemented (Phase 4 complete)", MessageType.WARNING
-        )
-        output.print_status(
-            "Makefile reading functionality is now working!", MessageType.HINT
-        )
-        output.print_status(
-            "Next: Phase 5 (Ollama Integration) and Phase 6 (Smolagent Core)",
-            MessageType.HINT,
-        )
 
     except MakefileNotFoundError as e:
         output.print_error_box(

@@ -5,6 +5,7 @@ natural language commands and execute corresponding Makefile targets.
 """
 
 import tomllib  # noqa: UP036
+import warnings
 from pathlib import Path
 
 # Configuration and logging exports
@@ -21,6 +22,18 @@ from automake.logging_setup import (
     setup_logging,
 )
 from automake.utils.output import MessageType, OutputFormatter, get_formatter
+
+# Suppress Pydantic serialization warnings from dependencies
+warnings.filterwarnings(
+    "ignore",
+    message=".*Pydantic serializer warnings.*",
+    category=UserWarning,
+)
+warnings.filterwarnings(
+    "ignore",
+    message=".*PydanticSerializationUnexpectedValue.*",
+    category=UserWarning,
+)
 
 
 def _get_version() -> str:

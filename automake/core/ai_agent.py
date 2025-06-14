@@ -6,11 +6,27 @@ commands and translating them into Makefile targets using Ollama LLM.
 
 import json
 import logging
+import warnings
 
 import ollama
 from smolagents import CodeAgent, LiteLLMModel
 
 from ..config import Config
+
+# Suppress Pydantic serialization warnings from LiteLLM
+warnings.filterwarnings(
+    "ignore",
+    message=".*PydanticSerializationUnexpectedValue.*",
+    category=UserWarning,
+    module="pydantic.*",
+)
+
+# Also suppress the broader Pydantic serializer warnings
+warnings.filterwarnings(
+    "ignore",
+    message=".*Pydantic serializer warnings.*",
+    category=UserWarning,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -152,7 +168,8 @@ class MakefileCommandAgent:
             self.agent = CodeAgent(
                 tools=[],  # No tools needed for our use case
                 model=self.model,
-                max_steps=1,  # We only need one step for command interpretation
+                max_steps=3,  # Allow a few steps for command interpretation
+                additional_authorized_imports=["json"],  # Allow json import
             )
 
             logger.info("AI agent initialized successfully")
@@ -215,15 +232,16 @@ class MakefileCommandAgent:
         """
         targets_list = "\n".join(f"- {target}" for target in makefile_targets)
 
-        return f"""You are an AI assistant that interprets natural language commands
-        and maps them to Makefile targets.  # noqa: E501
+        return f"""You are an AI assistant that interprets natural language commands and maps them to Makefile targets.
 
 Given the user command: "{user_command}"
 
 Available Makefile targets:
 {targets_list}
 
-Please analyze the user command and return a JSON response with the following structure:
+Your task is to analyze the user command and create a JSON response. Use the final_answer() function to return your result.
+
+Write Python code that creates a JSON response with this structure:
 {{
     "reasoning": "Brief explanation of why this command was chosen",
     "command": "most_appropriate_target_name_or_null",
@@ -236,9 +254,25 @@ Rules:
 2. Confidence should be 0-100 (0 = no match, 100 = perfect match)
 3. Include 2-3 alternatives even if confidence is high
 4. Consider semantic similarity, not just exact matches
-5. Return ONLY the JSON response, no additional text
+5. Use final_answer() to return the JSON string
 
-Analyze the command and provide your response:"""
+Example code structure:
+```python
+import json
+
+# Analyze the command and targets
+response = {{
+    "reasoning": "Your reasoning here",
+    "command": "target_name_or_null",
+    "alternatives": ["alt1", "alt2"],
+    "confidence": 85
+}}
+
+# Return the JSON response
+final_answer(json.dumps(response))
+```
+
+Now analyze the command and provide your response:"""  # noqa: E501
 
 
 def create_ai_agent(config: Config) -> MakefileCommandAgent:
@@ -256,24 +290,41 @@ def create_ai_agent(config: Config) -> MakefileCommandAgent:
     try:
         # Verify Ollama connection
         client = ollama.Client(host=config.ollama_base_url)
-        models = client.list()
+        models_response = client.list()
 
-        # Handle different possible model list structures
-        if isinstance(models, dict) and "models" in models:
-            model_list = models["models"]
-        else:
-            model_list = models
-
-        # Extract model names safely
+        # Extract model names from the response
         available_models = []
-        for model in model_list:
-            if isinstance(model, dict):
-                # Try different possible keys for model name
-                model_name = model.get("name") or model.get("model") or model.get("id")
-                if model_name:
-                    available_models.append(model_name)
-            elif isinstance(model, str):
-                available_models.append(model)
+        if hasattr(models_response, "models"):
+            # New ollama client API - models_response is a ListResponse object
+            for model in models_response.models:
+                if hasattr(model, "model"):
+                    available_models.append(model.model)
+                elif hasattr(model, "name"):
+                    available_models.append(model.name)
+        elif isinstance(models_response, dict) and "models" in models_response:
+            # Legacy API - models_response is a dictionary
+            model_list = models_response["models"]
+            for model in model_list:
+                if isinstance(model, dict):
+                    model_name = (
+                        model.get("name") or model.get("model") or model.get("id")
+                    )
+                    if model_name:
+                        available_models.append(model_name)
+                elif isinstance(model, str):
+                    available_models.append(model)
+        else:
+            # Fallback for other response types
+            model_list = models_response
+            for model in model_list:
+                if isinstance(model, dict):
+                    model_name = (
+                        model.get("name") or model.get("model") or model.get("id")
+                    )
+                    if model_name:
+                        available_models.append(model_name)
+                elif isinstance(model, str):
+                    available_models.append(model)
 
         if config.ollama_model not in available_models:
             raise CommandInterpretationError(
