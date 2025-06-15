@@ -1,5 +1,5 @@
-# 🤖 auto-make
-*Makefiles without writing Makefiles.*
+# 🤖 automake: Your AI Command-Line Assistant
+*The AI-native shell that turns natural language into actions.*
 
 [![Latest Version](https://img.shields.io/pypi/v/automake-cli?label=latest&logo=pypi&logoColor=white)](https://pypi.org/project/automake-cli/)
 [![Changelog](https://img.shields.io/badge/changelog-keep%20a%20changelog-blue)](CHANGELOG.md)
@@ -21,25 +21,26 @@
 
 ---
 
-**auto-make** is a Python-based command-line tool that leverages a local Large Language autModel (LLM) to interpret your natural language commands and execute the correct `Makefile` target.
+**automake** is a Python-based, agent-first command-line tool that uses a powerful multi-agent system to interpret your natural language commands and execute them.
 
-Tired of `grep "deploy" Makefile`? Just run `automake "deploy the app to staging"` and let the AI do the work.
+Forget remembering complex flags or exact `Makefile` targets. Just tell `automake` what you want to do.
 
 ## ✨ Key Features
-- **Natural Language Commands**: Run `make` targets using plain English. No more memorizing target names.
+- **AI-Native Commands**: Run terminal commands, execute `Makefile` targets, and perform other tasks using plain English.
+- **Multi-Agent System**: A sophisticated `ManagerAgent` orchestrates a team of specialists (Terminal, Coding, Web, Makefile) to get the job done right.
+- **Interactive Agent Mode**: Launch a chat session with `automake agent` for complex, multi-step tasks.
 - **Local First**: Integrates with local LLMs via [Ollama](https://ollama.ai/) for privacy and offline access.
-- **User-Friendly CLI**: A clean, simple interface built with `Typer`.
-- **Configurable**: Set your preferred LLM model and other options in a simple `config.toml` file.
-- **Modern Python Stack**: Built with `uv`, `smolagents`, and `pre-commit` for a robust development experience.
+- **Intelligent Error Handling**: If you make a typo, the agent will analyze the error and suggest a correction.
+- **User-Friendly & Configurable**: A clean CLI and a simple `config.toml` file for all your settings.
 
 ## ⚙️ How It Works
-`auto-make` follows a simple, powerful workflow to translate your instructions into actions:
+`automake` puts an AI agent at the heart of your command line, following a modern, agentic workflow:
 
-1.  **Parse Command**: The CLI captures your natural language instruction.
-2.  **Read Makefile**: It finds and reads the `Makefile` in your current directory.
-3.  **Consult AI**: It sends the `Makefile` contents and your instruction to a local LLM (via Ollama).
-4.  **Identify Target**: The LLM analyzes the context and identifies the single most likely `make` command to run.
-5.  **Execute**: The identified command is executed, and its output is streamed directly to your terminal.
+1.  **Parse Prompt**: The CLI captures your natural language instruction (e.g., `automake "list all python files"`).
+2.  **Invoke Agent**: Your prompt is sent directly to a central **Manager Agent**.
+3.  **Reason & Delegate**: The agent analyzes your request and decides which specialist is best for the job—the `TerminalAgent` for shell commands, the `MakefileAgent` for `make` targets, etc.
+4.  **Execute & Observe**: The specialist agent executes the task, and the result is observed.
+5.  **Stream Output**: The results are streamed directly to your terminal in real-time.
 
 ## 🚀 Getting Started
 
@@ -61,18 +62,31 @@ After installation, run the initialization command once to set up Ollama and dow
 automake init
 ```
 This command will:
-- Verify that Ollama is installed and running
-- Download the configured LLM model if not already available
-- Ensure everything is ready for natural language command interpretation
+- Verify that Ollama is installed and running.
+- Download the configured LLM model if not already available.
+- Ensure everything is ready for natural language command interpretation.
 
 ## ✍️ Usage
-To use `auto-make`, simply pass your command as a string argument:
+
+### Non-Interactive Commands
+The primary way to use `automake` is to pass your command as a string argument:
 
 ```bash
+# Run a terminal command
+automake "recursively find all files named README.md"
+
+# Execute a Makefile target
 automake "run the tests and generate a coverage report"
+
+# Ask a question
+automake "what is the capital of nepal?"
 ```
 
-The tool will find the corresponding target in your `Makefile` and execute it.
+### Interactive Agent Session
+For more complex tasks, start a chat with the agent:
+```bash
+automake agent
+```
 
 For detailed usage information and available options, run:
 ```bash
@@ -80,55 +94,35 @@ automake help
 ```
 
 ## 🛠️ Configuration
-`auto-make` features a modern, user-friendly configuration system with beautiful UI/UX. On first run, it creates a `config.toml` file in your user configuration directory with sensible defaults.
+`auto-make` features a modern, user-friendly configuration system. On first run, it creates a `config.toml` file in your user configuration directory.
 
-### View Configuration
-See your current configuration with a beautifully formatted display:
+### Interactive Model Selection
+Easily select your preferred Ollama model:
 ```bash
-automake config show
+automake config model
 ```
+This command opens an interactive menu to choose from your locally downloaded models or search for new ones online.
 
-You can also view specific sections:
-```bash
-automake config show --section ollama
-```
+### View and Modify Configuration
+- **View current config**: `automake config show`
+- **Edit manually**: `automake config edit`
+- **Reset to defaults**: `automake config reset`
 
-### Modify Configuration
-Change settings easily with the intuitive set command:
-```bash
-automake config set ollama model "qwen3:1.7b"
-automake config set logging level "DEBUG"
-automake config set ai interactive_threshold 70
-```
-
-**Important**: After changing the model, you must run the initialization command to download the new model:
-```bash
-automake init
-```
-
-### Additional Configuration Commands
-- **Edit directly**: `automake config edit` - Opens the config file in your default editor
-- **Reset to defaults**: `automake config reset` - Restores all settings to defaults (with confirmation)
+**Important**: After changing the model (manually or via the interactive menu), you must run `automake init` to download the new model if it's not already available locally.
 
 ### Configuration Structure
-
 Run `automake config show` to see the current configuration.
-```bash
-❯ automake config show
-╭─ Configuration ─────────────────────╮
-│ [ollama]                            │
-│ base_url = "http://localhost:11434" │
-│ model = "qwen3:1.7b"                │
-│                                     │
-│ [logging]                           │
-│ level = "DEBUG"                     │
-│                                     │
-│ [ai]                                │
-│ interactive_threshold = 80          │
-╰─────────────────────────────────────╯
-╭─ Location ───────────────────────────────────────────────────────────────────────╮
-│ Config file: /Users/seanbaufeld/Library/Application Support/automake/config.toml │
-╰──────────────────────────────────────────────────────────────────────────────────╯
+```toml
+# Example from automake config show
+[ollama]
+base_url = "http://localhost:11434"
+model = "qwen3:0.6b"
+
+[logging]
+level = "INFO"
+
+[ai]
+interactive_threshold = 80
 ```
 
 ## 🎬 Demos
