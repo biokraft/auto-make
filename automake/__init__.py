@@ -37,13 +37,21 @@ warnings.filterwarnings(
 
 
 def _get_version() -> str:
-    """Get version from pyproject.toml.
+    """Get version from pyproject.toml or package metadata.
 
     Returns:
-        Version string from pyproject.toml, or fallback version if not found.
+        Version string from pyproject.toml, package metadata, or fallback version.
     """
     try:
-        # Get the path to pyproject.toml relative to this file
+        # First try to get from package metadata (when installed)
+        from importlib.metadata import version
+
+        return version("automake-cli")
+    except Exception:
+        pass
+
+    try:
+        # Fallback to pyproject.toml (when in development)
         pyproject_path = Path(__file__).parent.parent / "pyproject.toml"
 
         if pyproject_path.exists():
@@ -51,10 +59,9 @@ def _get_version() -> str:
                 pyproject_data = tomllib.load(f)
                 return pyproject_data["project"]["version"]
     except Exception:
-        # Fallback if we can't read the version
         pass
 
-    return "0.2.1"  # Fallback version
+    return "0.3.4"  # Fallback version
 
 
 __version__ = _get_version()

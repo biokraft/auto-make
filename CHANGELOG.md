@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.3.4 - UVX Distribution Enhancement
+
+### ✨ Added
+- 🚀 Additional `automake-cli` script entry point for direct uvx execution
+- 📦 Enhanced version detection using importlib.metadata for installed packages
+
+### 🛠️ Improved
+- 🔧 Version handling now works correctly when package is installed via uvx
+- 📋 Dual entry points: both `automake` and `automake-cli` commands available
+
+### 🔧 Fixed
+- ✅ Version reporting accuracy in installed packages
+- 🎯 UVX compatibility for `uvx automake-cli` direct execution
+
 ## v0.3.3 - Enhanced UX & Testing Improvements
 
 ### ✨ Added

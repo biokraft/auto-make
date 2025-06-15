@@ -97,3 +97,33 @@ or use automake: `automake "show all demos"`
 
 ## 🗺️ Project Roadmap
 For a detailed breakdown of the project roadmap, implementation phases, and technical specifications, see [SPECS.md](SPECS.md).
+
+## 🚀 Development & Publishing
+
+### For Contributors
+This project uses modern Python tooling and automated publishing:
+
+- **Package Management**: [UV](https://github.com/astral-sh/uv) for fast dependency management
+- **Code Quality**: Pre-commit hooks with Ruff for linting and formatting
+- **Testing**: Pytest with comprehensive test coverage
+- **CI/CD**: GitHub Actions for automated testing and publishing
+
+### Publishing Process
+The project uses **GitHub Actions with Trusted Publishing** for secure, automated releases:
+
+- **Production**: Automatically publishes to PyPI when a GitHub release is created
+- **Testing**: Manual workflow to test publishing on TestPyPI before production releases
+
+For detailed publishing instructions, see [docs/PUBLISHING.md](docs/PUBLISHING.md).
+
+### Installation Methods
+```bash
+# Direct execution (recommended for users)
+uvx automake-cli
+
+# Alternative with explicit package name
+uvx --from automake-cli automake
+
+# Traditional pip installation
+pip install automake-cli
+```
