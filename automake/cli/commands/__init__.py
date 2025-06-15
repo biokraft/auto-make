@@ -1,15 +1,36 @@
-"""CLI command modules for AutoMake.
+"""Command implementations for AutoMake CLI.
 
-This package contains individual command implementations for the AutoMake CLI,
-organized by functionality to maintain single responsibility principle.
+This package contains individual command modules that implement the CLI functionality.
+Each module focuses on a specific command or group of related commands.
 """
 
-# Commands will be imported here as they are created
-# from .run import run_command
-# from .init import init_command
-# from .config import config_commands
-# from .logs import logs_commands
+from .config import (
+    config_edit_command,
+    config_reset_command,
+    config_set_command,
+    config_show_command,
+)
+from .init import init_command
+from .logs import (
+    logs_clear_command,
+    logs_config_command,
+    logs_show_command,
+    logs_view_command,
+)
+from .run import run_command
 
 __all__ = [
-    # Command exports will be added as modules are created
+    # Main commands
+    "run_command",
+    "init_command",
+    # Config commands
+    "config_show_command",
+    "config_set_command",
+    "config_reset_command",
+    "config_edit_command",
+    # Logs commands
+    "logs_show_command",
+    "logs_view_command",
+    "logs_clear_command",
+    "logs_config_command",
 ]

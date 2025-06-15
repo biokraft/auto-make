@@ -6,7 +6,22 @@ Individual command implementations are in the commands/ package.
 
 import typer
 
-from automake import __version__
+from automake.cli.commands.config import (
+    config_edit_command,
+    config_reset_command,
+    config_set_command,
+    config_show_command,
+)
+from automake.cli.commands.init import init_command
+from automake.cli.commands.logs import (
+    logs_clear_command,
+    logs_config_command,
+    logs_show_command,
+    logs_view_command,
+)
+from automake.cli.commands.run import run_command
+from automake.cli.display.callbacks import help_callback, help_command, version_callback
+from automake.cli.display.help import print_welcome
 
 # Main CLI application
 app = typer.Typer(
@@ -16,7 +31,7 @@ app = typer.Typer(
     no_args_is_help=False,
 )
 
-# Command group applications (will be populated during migration)
+# Command group applications
 logs_app = typer.Typer(
     name="logs",
     help="Manage AutoMake logs",
@@ -34,22 +49,6 @@ config_app = typer.Typer(
 # Add command groups to main app
 app.add_typer(logs_app, name="logs")
 app.add_typer(config_app, name="config")
-
-
-# Placeholder callbacks (will be moved from main.py during migration)
-def version_callback(value: bool) -> None:
-    """Print version and exit."""
-    if value:
-        typer.echo(f"AutoMake version {__version__}")
-        raise typer.Exit()
-
-
-def help_callback(value: bool) -> None:
-    """Print help information using our custom formatting and exit."""
-    if value:
-        # This will be implemented when display/help.py is created
-        typer.echo("Help system will be implemented during migration")
-        raise typer.Exit()
 
 
 # Main callback - handles global options only
@@ -76,8 +75,7 @@ def main(
     """AI-powered Makefile command execution."""
     # If no command is provided, show welcome message
     if ctx.invoked_subcommand is None:
-        # This will be implemented when display/help.py is created
-        typer.echo("Welcome message will be implemented during migration")
+        print_welcome()
 
 
 # Command group callbacks
@@ -97,7 +95,19 @@ def config_main(ctx: typer.Context) -> None:
         raise typer.Exit()
 
 
-# Individual commands will be added here during migration
-# from .commands.run import run_command
-# from .commands.init import init_command
-# etc.
+# Register main commands
+app.command("run")(run_command)
+app.command("init")(init_command)
+app.command("help")(help_command)
+
+# Register logs subcommands
+logs_app.command("show")(logs_show_command)
+logs_app.command("view")(logs_view_command)
+logs_app.command("clear")(logs_clear_command)
+logs_app.command("config")(logs_config_command)
+
+# Register config subcommands
+config_app.command("show")(config_show_command)
+config_app.command("set")(config_set_command)
+config_app.command("reset")(config_reset_command)
+config_app.command("edit")(config_edit_command)

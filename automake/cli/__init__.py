@@ -1,11 +1,9 @@
-"""Command-line interface for AutoMake.
+"""AutoMake CLI package.
 
-This module contains the CLI application logic, command parsing,
-and user interaction components.
+This package contains the command-line interface for AutoMake, organized into
+focused modules for better maintainability and single responsibility.
 """
 
-from automake.cli.main import app
+from .app import app
 
-__all__ = [
-    "app",
-]
+__all__ = ["app"]
