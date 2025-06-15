@@ -24,6 +24,7 @@ The following table links to the detailed specifications for each domain and tec
 | `specs/15-rag-agent.md`                              | A high-level sketch for a RAG agent to provide project-aware Q&A. (Deprioritized in favor of Codebase Exploration Agent) |
 | `specs/16-project-init-agent.md`                     | A high-level sketch for an agent that can scaffold new projects. |
 | `specs/17-codebase-exploration-agent.md`             | Defines a coding agent that uses dynamic codebase exploration instead of RAG. |
+| `specs/18-concurrent-sessions.md` | Defines the process-isolated logging mechanism to enable multiple, simultaneous agent sessions. |
 
 ## 3. Future Work
 This section captures features and ideas that are currently out of scope but are being considered for future versions:
@@ -49,3 +50,4 @@ This plan outlines the steps to implement the agent-first architecture for AutoM
 | 9     | Codebase Exploration Agent  | - Implement the `CodebaseExplorationAgent` with tools for dynamic file system and code analysis.<br>- Develop tools for AST parsing and dependency tracing.             | `specs/17-codebase-exploration-agent.md`                                                                    | TBD    |
 | 10    | Project Init Agent          | - Implement the `ProjectInitAgent` with tools for scaffolding projects.<br>- Create a library of project templates (FastAPI, CLI, etc.).                                       | `specs/16-project-init-agent.md`                                                                            | TBD    |
 | 11    | RAG Agent Implementation    | - Implement the `RAGAgent` with tools for indexing and querying.<br>- Integrate a local vector DB (e.g., LanceDB).<br>- Train the `ManagerAgent` to delegate knowledge-based questions. | `specs/15-rag-agent.md`                                                                                     | TBD    |
+| 12    | Concurrent Session Support  | - Implement PID-based unique log filenames.<br>- Replace timed rotation with a startup-based cleanup mechanism for old log files.                                           | `specs/06-logging-strategy.md`<br>`specs/18-concurrent-sessions.md`                                        | TBD    |
