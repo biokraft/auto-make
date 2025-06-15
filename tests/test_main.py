@@ -36,56 +36,56 @@ class TestMainCLI:
         result = self.runner.invoke(app, ["--help"])
         assert result.exit_code == 0
         # Check for our custom help format
-        assert "Usage" in result.stdout
-        assert "automake [OPTIONS] COMMAND" in result.stdout
+        assert "Usage" in result.output
+        assert "automake [OPTIONS] COMMAND" in result.output
         assert (
             "AI-powered Makefile command execution with natural language processing"
-            in result.stdout
+            in result.output
         )
-        assert "Examples" in result.stdout
-        assert "Options" in result.stdout
+        assert "Examples" in result.output
+        assert "Options" in result.output
 
     def test_help_flag_short(self) -> None:
         """Test that -h flag displays help information."""
         result = self.runner.invoke(app, ["-h"])
         assert result.exit_code == 0
         # Check for our custom help format
-        assert "Usage" in result.stdout
-        assert "automake [OPTIONS] COMMAND" in result.stdout
+        assert "Usage" in result.output
+        assert "automake [OPTIONS] COMMAND" in result.output
         assert (
             "AI-powered Makefile command execution with natural language processing"
-            in result.stdout
+            in result.output
         )
-        assert "Examples" in result.stdout
-        assert "Options" in result.stdout
+        assert "Examples" in result.output
+        assert "Options" in result.output
 
     def test_help_command(self) -> None:
         """Test that 'help' command displays help information."""
         result = self.runner.invoke(app, ["help"])
         assert result.exit_code == 0
         # Check for our custom help format
-        assert "Usage" in result.stdout
-        assert "automake [OPTIONS] COMMAND" in result.stdout
+        assert "Usage" in result.output
+        assert "automake [OPTIONS] COMMAND" in result.output
         assert (
             "AI-powered Makefile command execution with natural language processing"
-            in result.stdout
+            in result.output
         )
-        assert "Examples" in result.stdout
-        assert "Options" in result.stdout
+        assert "Examples" in result.output
+        assert "Options" in result.output
 
     def test_help_command_case_insensitive(self) -> None:
         """Test that 'HELP' command displays help information (case insensitive)."""
         result = self.runner.invoke(app, ["run", "HELP"])
         assert result.exit_code == 0
         # Check for our custom help format
-        assert "Usage" in result.stdout
-        assert "automake [OPTIONS] COMMAND" in result.stdout
+        assert "Usage" in result.output
+        assert "automake [OPTIONS] COMMAND" in result.output
         assert (
             "AI-powered Makefile command execution with natural language processing"
-            in result.stdout
+            in result.output
         )
-        assert "Examples" in result.stdout
-        assert "Options" in result.stdout
+        assert "Examples" in result.output
+        assert "Options" in result.output
 
     def test_main_command_with_makefile_success(self) -> None:
         """Test main command with a natural language argument and existing Makefile."""
@@ -234,8 +234,8 @@ deploy:
         """Test that running without arguments shows welcome message."""
         result = self.runner.invoke(app, [])
         assert result.exit_code == 0  # Should show welcome and exit cleanly
-        assert "Welcome" in result.stdout
-        assert 'Run "automake help" for detailed usage information.' in result.stdout
+        assert "Welcome" in result.output
+        assert 'Run "automake help" for detailed usage information.' in result.output
 
     def test_empty_command_argument(self) -> None:
         """Test behavior with empty command argument."""
@@ -479,4 +479,4 @@ class TestASCIIArt:
         result = runner.invoke(app, ["--help"])
         assert result.exit_code == 0
         # The help should be displayed regardless of ASCII art content
-        assert "Usage" in result.stdout
+        assert "Usage" in result.output

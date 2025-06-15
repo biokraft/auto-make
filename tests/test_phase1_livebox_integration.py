@@ -55,7 +55,7 @@ class TestInitCommandLiveBoxIntegration:
             mock_box = Mock()
             mock_live_box.return_value.__enter__.return_value = mock_box
 
-            with patch("automake.cli.main.output", self.formatter):
+            with patch("automake.cli.main.get_formatter", return_value=self.formatter):
                 init()
 
             # Verify LiveBox was used for initialization steps
@@ -80,7 +80,7 @@ class TestInitCommandLiveBoxIntegration:
             mock_box = Mock()
             mock_live_box.return_value.__enter__.return_value = mock_box
 
-            with patch("automake.cli.main.output", self.formatter):
+            with patch("automake.cli.main.get_formatter", return_value=self.formatter):
                 with pytest.raises(typer.Exit):
                     init()
 
@@ -113,7 +113,7 @@ class TestInitCommandLiveBoxIntegration:
             mock_box = Mock()
             mock_live_box.return_value.__enter__.return_value = mock_box
 
-            with patch("automake.cli.main.output", self.formatter):
+            with patch("automake.cli.main.get_formatter", return_value=self.formatter):
                 with pytest.raises(typer.Exit):
                     init()
 
@@ -147,7 +147,7 @@ class TestInitCommandLiveBoxIntegration:
             mock_box = Mock()
             mock_live_box.return_value.__enter__.return_value = mock_box
 
-            with patch("automake.cli.main.output", self.formatter):
+            with patch("automake.cli.main.get_formatter", return_value=self.formatter):
                 with pytest.raises(typer.Exit):
                     init()
 
@@ -197,7 +197,7 @@ class TestMainExecutionLiveBoxIntegration:
             mock_box = Mock()
             mock_live_box.return_value.__enter__.return_value = mock_box
 
-            with patch("automake.cli.main.output", self.formatter):
+            with patch("automake.cli.main.get_formatter", return_value=self.formatter):
                 with pytest.raises(typer.Exit):
                     _execute_main_logic("test command")
 
@@ -231,7 +231,7 @@ class TestMainExecutionLiveBoxIntegration:
             mock_box = Mock()
             mock_live_box.return_value.__enter__.return_value = mock_box
 
-            with patch("automake.cli.main.output", self.formatter):
+            with patch("automake.cli.main.get_formatter", return_value=self.formatter):
                 with pytest.raises(typer.Exit):
                     _execute_main_logic("test command")
 
@@ -273,7 +273,7 @@ class TestMainExecutionLiveBoxIntegration:
             mock_box = Mock()
             mock_live_box.return_value.__enter__.return_value = mock_box
 
-            with patch("automake.cli.main.output", self.formatter):
+            with patch("automake.cli.main.get_formatter", return_value=self.formatter):
                 with pytest.raises(typer.Exit):
                     _execute_main_logic("test command")
 
@@ -334,7 +334,7 @@ class TestMainExecutionLiveBoxIntegration:
             mock_box = Mock()
             mock_live_box.return_value.__enter__.return_value = mock_box
 
-            with patch("automake.cli.main.output", self.formatter):
+            with patch("automake.cli.main.get_formatter", return_value=self.formatter):
                 with pytest.raises(typer.Exit):
                     _execute_main_logic("test command")
 
@@ -389,7 +389,7 @@ class TestMainExecutionLiveBoxIntegration:
             mock_box = Mock()
             mock_live_box.return_value.__enter__.return_value = mock_box
 
-            with patch("automake.cli.main.output", self.formatter):
+            with patch("automake.cli.main.get_formatter", return_value=self.formatter):
                 with pytest.raises(typer.Exit):
                     _execute_main_logic("test command")
 
@@ -431,7 +431,7 @@ class TestConfigCommandLiveBoxIntegration:
             mock_box = Mock()
             mock_live_box.return_value.__enter__.return_value = mock_box
 
-            with patch("automake.cli.main.output", self.formatter):
+            with patch("automake.cli.main.get_formatter", return_value=self.formatter):
                 with pytest.raises(typer.Exit):
                     config_show(section="nonexistent")
 

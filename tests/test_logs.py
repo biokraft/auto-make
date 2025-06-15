@@ -313,16 +313,16 @@ class TestLogsCLI:
     def test_logs_no_subcommand(self):
         """Test 'automake logs' without subcommand shows help."""
         result = self.runner.invoke(app, ["logs"])
-        # Typer returns exit code 2 for missing arguments when no_args_is_help=True
-        assert result.exit_code == 2
-        # Should show help due to no_args_is_help=True
+        # Now returns exit code 0 because we handle help manually
+        assert result.exit_code == 0
+        # Should show help due to manual callback handling
 
     def test_main_command_logs_hint(self):
         """Test that 'automake logs' as natural language shows hint."""
         result = self.runner.invoke(app, ["logs"])
         # This should be handled by the logs subcommand help, not the main command
-        # Typer returns exit code 2 for missing arguments when no_args_is_help=True
-        assert result.exit_code == 2
+        # Now returns exit code 0 because we handle help manually
+        assert result.exit_code == 0
 
     def test_main_command_logs_with_text_hint(self):
         """Test that 'automake logs something' executes successfully."""
@@ -337,11 +337,11 @@ class TestLogsCLI:
         """Test that main help includes subcommand information."""
         result = self.runner.invoke(app, ["--help"])
         assert result.exit_code == 0
-        assert "Log Commands" in result.stdout
-        assert "logs show" in result.stdout
-        assert "logs view" in result.stdout
-        assert "logs clear" in result.stdout
-        assert "logs config" in result.stdout
+        assert "Log Commands" in result.output
+        assert "logs show" in result.output
+        assert "logs view" in result.output
+        assert "logs clear" in result.output
+        assert "logs config" in result.output
 
 
 class TestLogCommandsIntegration:

@@ -57,21 +57,37 @@ logs_app = typer.Typer(
     name="logs",
     help="Manage AutoMake logs",
     add_completion=False,
-    no_args_is_help=True,  # Show help when no subcommand is provided
+    no_args_is_help=False,  # We'll handle this manually to avoid empty error box
 )
 app.add_typer(logs_app, name="logs")
+
+
+@logs_app.callback(invoke_without_command=True)
+def logs_main(ctx: typer.Context) -> None:
+    """Manage AutoMake logs."""
+    if ctx.invoked_subcommand is None:
+        # Show help when no subcommand is provided
+        ctx.get_help()
+        raise typer.Exit()
+
 
 # Create a subcommand group for config operations
 config_app = typer.Typer(
     name="config",
     help="Manage AutoMake configuration",
     add_completion=False,
-    no_args_is_help=True,  # Show help when no subcommand is provided
+    no_args_is_help=False,  # We'll handle this manually to avoid empty error box
 )
 app.add_typer(config_app, name="config")
 
-console = Console()
-output = get_formatter(console)
+
+@config_app.callback(invoke_without_command=True)
+def config_main(ctx: typer.Context) -> None:
+    """Manage AutoMake configuration."""
+    if ctx.invoked_subcommand is None:
+        # Show help when no subcommand is provided
+        ctx.get_help()
+        raise typer.Exit()
 
 
 # Help command - removed to avoid conflicts with callback
@@ -81,6 +97,8 @@ output = get_formatter(console)
 @logs_app.command("show")
 def logs_show() -> None:
     """Show log files location and information."""
+    console = Console()
+    output = get_formatter(console)
     show_logs_location(console, output)
 
 
@@ -106,6 +124,8 @@ def logs_view(
     ),
 ) -> None:
     """View log file contents."""
+    console = Console()
+    output = get_formatter(console)
     view_log_content(console, output, lines=lines, follow=follow, log_file=file)
 
 
@@ -119,12 +139,16 @@ def logs_clear(
     ),
 ) -> None:
     """Clear all log files."""
+    console = Console()
+    output = get_formatter(console)
     clear_logs(console, output, confirm=yes)
 
 
 @logs_app.command("config")
 def logs_config() -> None:
     """Show logging configuration."""
+    console = Console()
+    output = get_formatter(console)
     show_log_config(console, output)
 
 
@@ -139,6 +163,7 @@ def config_show(
     ),
 ) -> None:
     """Show current configuration."""
+    output = get_formatter()
     try:
         config = get_config()
 
@@ -212,6 +237,7 @@ def config_set(
     value: str = typer.Argument(..., help="Value to set"),
 ) -> None:
     """Set a configuration value."""
+    output = get_formatter()
     try:
         config = get_config()
 
@@ -257,6 +283,7 @@ def config_reset(
     ),
 ) -> None:
     """Reset configuration to defaults."""
+    output = get_formatter()
     try:
         if not yes:
             import questionary
@@ -295,6 +322,7 @@ def config_reset(
 @config_app.command("edit")
 def config_edit() -> None:
     """Open configuration file in default editor."""
+    output = get_formatter()
     try:
         config = get_config()
         config_path = config.config_file_path
@@ -387,6 +415,8 @@ def read_ascii_art() -> str:
 
 def print_welcome() -> None:
     """Print ASCII art with version and author credit and simple usage info."""
+    console = Console()
+    output = get_formatter(console)
     # Print ASCII art with version and author credit
     ascii_art = read_ascii_art()
     if ascii_art:
@@ -407,6 +437,8 @@ def print_help_with_ascii(show_author: bool = False) -> None:
     Args:
         show_author: Whether to include the author credit in the ASCII art
     """
+    console = Console()
+    output = get_formatter(console)
     # Print ASCII art
     ascii_art = read_ascii_art()
     if ascii_art:
@@ -549,6 +581,7 @@ def run(
 @app.command()
 def init() -> None:
     """Initialize AutoMake by ensuring Ollama and the configured model are ready."""
+    output = get_formatter()
     try:
         # Load configuration
         config = get_config()
@@ -685,6 +718,7 @@ def help_command() -> None:
 # The rest of the main command logic needs to be added back to the main function
 def _execute_main_logic(command: str) -> None:
     """Execute the main command logic."""
+    output = get_formatter()
     # Phase 1: Setup logging
     try:
         config = get_config()
