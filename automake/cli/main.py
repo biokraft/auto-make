@@ -32,6 +32,12 @@ from automake.core.makefile_reader import (  # noqa: E402
     MakefileNotFoundError,
     MakefileReader,
 )
+from automake.logging_setup import (  # noqa: E402
+    get_logger,
+    log_command_execution,
+    log_config_info,
+    setup_logging,
+)
 from automake.utils.ollama_manager import (  # noqa: E402
     OllamaManagerError,
     ensure_model_available,
@@ -635,6 +641,16 @@ def help_command() -> None:
 # The rest of the main command logic needs to be added back to the main function
 def _execute_main_logic(command: str) -> None:
     """Execute the main command logic."""
+    # Phase 1: Setup logging
+    try:
+        config = get_config()
+        logger = setup_logging(config)
+        log_config_info(logger, config)
+        log_command_execution(logger, command, "TBD")
+    except Exception:
+        # Don't fail the entire command if logging setup fails
+        pass
+
     output.print_command_received(command)
 
     # Phase 4: Makefile Reader Implementation
@@ -658,6 +674,7 @@ def _execute_main_logic(command: str) -> None:
     # Phase 2: AI Core
     try:
         config = get_config()
+        logger = get_logger()
         agent, ollama_was_started = create_ai_agent(config)
 
         # Show notice if Ollama was started automatically
@@ -673,10 +690,20 @@ def _execute_main_logic(command: str) -> None:
             # The first message is already animated by ai_thinking_box
 
             thinking_box.update("🧠 Processing Makefile targets...")
+
+            # Log target descriptions for debugging
+            targets_with_desc = reader.targets_with_descriptions
+            logger.debug(f"Found {len(targets_with_desc)} targets in Makefile")
+            for target, desc in targets_with_desc.items():
+                if desc:
+                    logger.debug(f"Target '{target}': {desc}")
+                else:
+                    logger.debug(f"Target '{target}': (no description)")
+
             time.sleep(0.2)
 
             thinking_box.update("🔍 Finding best match...")
-            response = agent.interpret_command(command, reader.targets)
+            response = agent.interpret_command(command, reader)
 
         # Show AI reasoning with streaming effect
         output.print_ai_reasoning_streaming(response.reasoning, response.confidence)
@@ -714,6 +741,9 @@ def _execute_main_logic(command: str) -> None:
                 hint="Try rephrasing your command.",
             )
             raise typer.Exit()
+
+        # Log the final command that will be executed
+        logger.info(f"Final command selected: '{final_command}'")
 
         # Phase 2: Execution Engine with LiveBox
         runner = CommandRunner()

@@ -29,6 +29,7 @@ class MakefileReader:
         self.directory = directory or Path.cwd()
         self._content = None
         self._targets = None
+        self._targets_with_descriptions = None
 
     def find_makefile(self) -> Path:
         """Find a Makefile in the specified directory.
@@ -77,6 +78,49 @@ class MakefileReader:
 
         return self._content
 
+    def extract_targets_with_descriptions(self) -> dict[str, str]:
+        """Extract target names and their help descriptions from the Makefile.
+
+        Returns:
+            Dictionary mapping target names to their descriptions.
+            Targets without descriptions will have empty string values.
+        """
+        if self._targets_with_descriptions is not None:
+            return self._targets_with_descriptions
+
+        content = self.read_makefile()
+        targets_with_descriptions = {}
+
+        # Pattern to match targets with help descriptions (target: ## description)
+        help_pattern = re.compile(r"^([a-zA-Z0-9_.-]+)\s*:.*?##\s*(.*)$", re.MULTILINE)
+
+        # Pattern to match all target definitions
+        target_pattern = re.compile(r"^([a-zA-Z0-9_.-]+)\s*:", re.MULTILINE)
+
+        # First, collect all targets with descriptions
+        for match in help_pattern.finditer(content):
+            target_name = match.group(1).strip()
+            description = match.group(2).strip()
+
+            # Skip special targets and variables
+            if not target_name.startswith(".") and "=" not in target_name:
+                targets_with_descriptions[target_name] = description
+
+        # Then, collect all other targets without descriptions
+        for match in target_pattern.finditer(content):
+            target_name = match.group(1).strip()
+
+            # Skip special targets and variables
+            if (
+                not target_name.startswith(".")
+                and "=" not in target_name
+                and target_name not in targets_with_descriptions
+            ):
+                targets_with_descriptions[target_name] = ""
+
+        self._targets_with_descriptions = targets_with_descriptions
+        return self._targets_with_descriptions
+
     def extract_targets(self) -> list[str]:
         """Extract target names from the Makefile content.
 
@@ -86,30 +130,31 @@ class MakefileReader:
         if self._targets is not None:
             return self._targets
 
-        content = self.read_makefile()
-        targets = []
-
-        # Pattern to match target definitions (target: dependencies)
-        # This matches lines that start with a target name followed by a colon
-        # and are not indented (not recipe lines)
-        target_pattern = re.compile(r"^([a-zA-Z0-9_.-]+)\s*:", re.MULTILINE)
-
-        for match in target_pattern.finditer(content):
-            target_name = match.group(1).strip()
-            # Skip special targets and variables
-            if not target_name.startswith(".") and "=" not in target_name:
-                targets.append(target_name)
-
-        # Remove duplicates while preserving order
-        seen = set()
-        unique_targets = []
-        for target in targets:
-            if target not in seen:
-                seen.add(target)
-                unique_targets.append(target)
-
-        self._targets = unique_targets
+        # Use the targets with descriptions method and extract just the keys
+        targets_dict = self.extract_targets_with_descriptions()
+        self._targets = list(targets_dict.keys())
         return self._targets
+
+    def get_target_description(self, target_name: str) -> str:
+        """Get the description for a specific target.
+
+        Args:
+            target_name: Name of the target to get description for.
+
+        Returns:
+            Description of the target, or empty string if no description found.
+        """
+        targets_dict = self.extract_targets_with_descriptions()
+        return targets_dict.get(target_name, "")
+
+    def get_targets_with_descriptions(self) -> list[tuple[str, str]]:
+        """Get a list of tuples containing target names and descriptions.
+
+        Returns:
+            List of (target_name, description) tuples.
+        """
+        targets_dict = self.extract_targets_with_descriptions()
+        return [(target, desc) for target, desc in targets_dict.items()]
 
     @property
     def targets(self) -> list[str]:
@@ -119,6 +164,15 @@ class MakefileReader:
             List of target names.
         """
         return self.extract_targets()
+
+    @property
+    def targets_with_descriptions(self) -> dict[str, str]:
+        """Get the dictionary of targets with their descriptions.
+
+        Returns:
+            Dictionary mapping target names to descriptions.
+        """
+        return self.extract_targets_with_descriptions()
 
     def get_makefile_info(self) -> dict[str, str]:
         """Get information about the found Makefile.

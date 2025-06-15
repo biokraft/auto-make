@@ -195,12 +195,21 @@ def test_interpret_command_success(
     }
     agent_instance.run.return_value = json.dumps(mock_response)
 
+    # Create mock MakefileReader
+    from unittest.mock import Mock
+
+    mock_reader = Mock()
+    mock_reader.targets_with_descriptions = {
+        "build": "Build the application",
+        "all": "",
+    }
+
     # Create agent
     agent = MakefileCommandAgent(mock_config)
     agent.agent = agent_instance  # Inject mocked CodeAgent
 
     # Run interpretation
-    response = agent.interpret_command("build the project", ["build", "all"])
+    response = agent.interpret_command("build the project", mock_reader)
     assert response.command == "build"
     assert response.confidence == 95
     agent_instance.run.assert_called_once()
@@ -216,8 +225,14 @@ def test_interpret_command_json_error(
     agent_instance = mock_code_agent.return_value
     agent_instance.run.return_value = "This is not JSON"
 
+    # Create mock MakefileReader
+    from unittest.mock import Mock
+
+    mock_reader = Mock()
+    mock_reader.targets_with_descriptions = {"test": "Run tests"}
+
     agent = MakefileCommandAgent(mock_config)
     agent.agent = agent_instance
 
     with pytest.raises(CommandInterpretationError, match="Invalid JSON response"):
-        agent.interpret_command("test", ["test"])
+        agent.interpret_command("test", mock_reader)

@@ -16,6 +16,7 @@ from smolagents import CodeAgent, LiteLLMModel
 
 from ..config import Config
 from ..utils.ollama_manager import OllamaManagerError, ensure_ollama_running
+from .makefile_reader import MakefileReader
 
 # Suppress Pydantic serialization warnings from LiteLLM
 warnings.filterwarnings(
@@ -221,13 +222,13 @@ class MakefileCommandAgent:
             ) from e
 
     def interpret_command(
-        self, user_command: str, makefile_targets: list[str]
+        self, user_command: str, makefile_reader: MakefileReader
     ) -> CommandResponse:
         """Interpret a natural language command into a Makefile target.
 
         Args:
             user_command: The natural language command from the user
-            makefile_targets: List of available Makefile targets
+            makefile_reader: MakefileReader instance with target information
 
         Returns:
             CommandResponse with the interpretation results
@@ -236,8 +237,28 @@ class MakefileCommandAgent:
             CommandInterpretationError: If command interpretation fails
         """
         try:
+            # Get targets with descriptions
+            targets_with_descriptions = makefile_reader.targets_with_descriptions
+
+            # Log debug information about targets and descriptions
+            logger.debug(
+                "Processing %d targets for command interpretation",
+                len(targets_with_descriptions),
+            )
+
+            targets_with_desc_count = sum(
+                1 for desc in targets_with_descriptions.values() if desc
+            )
+            logger.debug(
+                "Found %d targets with descriptions, %d without descriptions",
+                targets_with_desc_count,
+                len(targets_with_descriptions) - targets_with_desc_count,
+            )
+
             # Create the prompt for command interpretation
-            prompt = self._create_interpretation_prompt(user_command, makefile_targets)
+            prompt = self._create_interpretation_prompt(
+                user_command, targets_with_descriptions
+            )
 
             # Use the agent to interpret the command with selective output suppression
             with suppress_agent_output():
@@ -281,24 +302,39 @@ class MakefileCommandAgent:
                 ) from e
 
     def _create_interpretation_prompt(
-        self, user_command: str, makefile_targets: list[str]
+        self, user_command: str, targets_with_descriptions: dict[str, str]
     ) -> str:
         """Create the prompt for command interpretation.
 
         Args:
             user_command: The user's natural language command
-            makefile_targets: Available Makefile targets
+            targets_with_descriptions: Dictionary mapping target names to descriptions
 
         Returns:
             Formatted prompt string
         """
-        targets_list = "\n".join(f"- {target}" for target in makefile_targets)
+        # Create targets list with descriptions when available
+        targets_list_parts = []
+        for target, description in targets_with_descriptions.items():
+            if description:
+                targets_list_parts.append(f"- {target}: {description}")
+            else:
+                targets_list_parts.append(f"- {target}")
+
+        targets_list = "\n".join(targets_list_parts)
+
+        # Log the enhanced prompt information in debug mode
+        logger.debug(
+            "Created prompt with %d targets for command: %s",
+            len(targets_with_descriptions),
+            user_command,
+        )
 
         return f"""You are an AI assistant that interprets natural language commands and maps them to Makefile targets.
 
 Given the user command: "{user_command}"
 
-Available Makefile targets:
+Available Makefile targets (with descriptions where available):
 {targets_list}
 
 Your task is to analyze the user command and write Python code that returns a JSON response using the final_answer() function.
@@ -318,7 +354,8 @@ Rules:
 2. Confidence should be 0-100 (0 = no match, 100 = perfect match)
 3. Include 2-3 alternatives even if confidence is high
 4. Consider semantic similarity, not just exact matches
-5. Use final_answer() to return the JSON string
+5. Use the target descriptions to better understand what each target does
+6. Use final_answer() to return the JSON string
 
 You must follow this exact format:
 

@@ -88,5 +88,12 @@ Example `config.toml`:
 model = "qwen3:0.6b" # Specify the Ollama model you want to use
 ```
 
+## 🎬 Demos
+Want to see some UI/UX demos?
+Just run `uv run make demo-all`
+or use automake: `automake "show all demos"`
+
+> **Note:** Running demos with automake may cause animation display issues. For the best demo experience, use the direct `uv run make demo-all` command.
+
 ## 🗺️ Project Roadmap
 For a detailed breakdown of the project roadmap, implementation phases, and technical specifications, see [SPECS.md](SPECS.md).
