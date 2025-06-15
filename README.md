@@ -88,6 +88,19 @@ Example `config.toml`:
 model = "qwen3:0.6b" # Specify the Ollama model you want to use
 ```
 
+### Changing Models
+You can change the Ollama model using the configuration command:
+```bash
+automake config set ollama model "qwen3:1.7b"
+```
+
+**Important**: After changing the model, you must run the initialization command to download the new model:
+```bash
+automake init
+```
+
+This ensures the new model is available and ready for use.
+
 ## 🎬 Demos
 Want to see some UI/UX demos?
 Just run `uv run make demo-all`
