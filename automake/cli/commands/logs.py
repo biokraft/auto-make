@@ -13,7 +13,7 @@ from automake.cli.logs import (
     show_logs_location,
     view_log_content,
 )
-from automake.utils.output_new import get_formatter
+from automake.utils.output import get_formatter
 
 
 def logs_show_command() -> None:

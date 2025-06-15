@@ -8,8 +8,8 @@ import subprocess
 
 import typer
 
-from automake.config_new import get_config
-from automake.utils.output_new import MessageType, get_formatter
+from automake.config import get_config
+from automake.utils.output import MessageType, get_formatter
 
 
 def _convert_config_value(value: str) -> str | int | bool:
@@ -36,11 +36,9 @@ def _convert_config_value(value: str) -> str | int | bool:
 
 
 def config_show_command(
-    section: str = typer.Option(
+    section: str = typer.Argument(
         None,
-        "--section",
-        "-s",
-        help="Show only a specific section",
+        help="Show only a specific section (optional)",
     ),
 ) -> None:
     """Show current configuration."""
@@ -100,16 +98,24 @@ def config_show_command(
 
 
 def config_set_command(
-    section: str = typer.Argument(
-        ..., help="Configuration section (e.g., 'ollama', 'logging')"
+    key_path: str = typer.Argument(
+        ..., help="Configuration key path (e.g., 'ollama.model', 'logging.level')"
     ),
-    key: str = typer.Argument(..., help="Configuration key (e.g., 'model', 'level')"),
     value: str = typer.Argument(..., help="Value to set"),
 ) -> None:
     """Set a configuration value."""
     output = get_formatter()
     try:
         config = get_config()
+
+        # Parse the key path (e.g., "ollama.model" -> section="ollama", key="model")
+        if "." not in key_path:
+            raise ValueError(
+                f"Invalid key path '{key_path}'. Use format 'section.key' "
+                "(e.g., 'ollama.model')"
+            )
+
+        section, key = key_path.split(".", 1)
 
         # Convert value to appropriate type
         converted_value = _convert_config_value(value)
@@ -178,7 +184,7 @@ def config_edit_command() -> None:
     output = get_formatter()
     try:
         config = get_config()
-        config_file = config.config_file
+        config_file = config.config_file_path
 
         # Determine which editor to use
         editor = os.environ.get("EDITOR", "nano")
@@ -208,15 +214,40 @@ def config_edit_command() -> None:
                 )
             raise typer.Exit(1) from e
         except FileNotFoundError:
-            with output.live_box("Editor Not Found", MessageType.ERROR) as error_box:
-                error_box.update(
-                    f"❌ Editor '{editor}' not found.\n\n"
-                    "💡 Hint: Install the editor or set the EDITOR environment "
-                    "variable to an available editor (e.g., 'nano', 'vim', 'code')."
-                )
-            raise typer.Exit(1) from None
+            # Try fallback to system open command
+            try:
+                with output.live_box("Trying Fallback", MessageType.INFO) as info_box:
+                    info_box.update(
+                        f"⚠️ Editor '{editor}' not found. Trying system open command..."
+                    )
+
+                subprocess.run(["open", str(config_file)], check=True)
+
+                with output.live_box("File Opened", MessageType.SUCCESS) as success_box:
+                    success_box.update(
+                        "✅ Configuration file opened with system default application.\n\n"  # noqa: E501
+                        "💡 If you made changes, they will take effect on the next "
+                        "AutoMake command."
+                    )
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                with output.live_box(
+                    "Editor Not Found", MessageType.ERROR
+                ) as error_box:
+                    error_box.update(
+                        f"❌ Editor '{editor}' not found and fallback failed.\n\n"
+                        "💡 Hint: Install the editor or set the EDITOR environment "
+                        "variable to an available editor (e.g., 'nano', 'vim', 'code')."
+                    )
+                raise typer.Exit(1) from None
 
     except Exception as e:
         with output.live_box("Configuration Error", MessageType.ERROR) as error_box:
             error_box.update(f"❌ Error accessing configuration file: {e}")
         raise typer.Exit(1) from e
+
+
+# Backward compatibility aliases for tests
+config_show = config_show_command
+config_set = config_set_command
+config_reset = config_reset_command
+config_edit = config_edit_command

@@ -7,7 +7,7 @@ import time
 
 import typer
 
-from automake.config_new import get_config
+from automake.config import get_config
 from automake.core.ai_agent import (
     CommandInterpretationError,
     create_ai_agent,
@@ -18,13 +18,13 @@ from automake.core.makefile_reader import (
     MakefileNotFoundError,
     MakefileReader,
 )
-from automake.logging_new import (
+from automake.logging import (
     get_logger,
     log_command_execution,
     log_config_info,
     setup_logging,
 )
-from automake.utils.output_new import MessageType, get_formatter
+from automake.utils.output import MessageType, get_formatter
 
 
 def run_command(
@@ -179,6 +179,9 @@ def _execute_main_logic(command: str) -> None:
         with output.command_execution_box(final_command) as execution_box:
             runner.run(final_command, live_box=execution_box)
 
+    except typer.Exit:
+        # Re-raise typer.Exit without modification
+        raise
     except CommandInterpretationError as e:
         with output.live_box("AI Interpretation Error", MessageType.ERROR) as error_box:
             error_box.update(

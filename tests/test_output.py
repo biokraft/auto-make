@@ -353,7 +353,7 @@ class TestOutputFormatter:
 
     def test_live_box_context_manager_parameters(self) -> None:
         """Test live_box context manager with custom parameters."""
-        with patch("automake.utils.output.LiveBox") as mock_live_box_class:
+        with patch("automake.utils.output.formatter.LiveBox") as mock_live_box_class:
             mock_instance = MagicMock()
             mock_live_box_class.return_value = mock_instance
             mock_instance.__enter__.return_value = mock_instance
@@ -762,15 +762,15 @@ class TestGlobalFormatter:
     def test_get_formatter_with_console(self) -> None:
         """Test get_formatter with custom console on first call."""
         # Reset global formatter
-        import automake.utils.output
+        import automake.utils.output.formatter
 
-        automake.utils.output._global_formatter = None
+        automake.utils.output.formatter._global_formatter = None
 
         custom_console = Console()
         formatter = get_formatter(custom_console)
         assert formatter.console is custom_console
 
-    @patch("automake.utils.output.get_formatter")
+    @patch("automake.utils.output.formatter.get_formatter")
     def test_print_box_convenience_function(
         self, mock_get_formatter: MagicMock
     ) -> None:
@@ -783,7 +783,7 @@ class TestGlobalFormatter:
             "Test message", MessageType.INFO, "Test Title"
         )
 
-    @patch("automake.utils.output.get_formatter")
+    @patch("automake.utils.output.formatter.get_formatter")
     def test_print_error_box_convenience_function(
         self, mock_get_formatter: MagicMock
     ) -> None:
@@ -796,7 +796,7 @@ class TestGlobalFormatter:
             "Error message", "Hint message"
         )
 
-    @patch("automake.utils.output.get_formatter")
+    @patch("automake.utils.output.formatter.get_formatter")
     def test_print_status_convenience_function(
         self, mock_get_formatter: MagicMock
     ) -> None:

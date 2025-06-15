@@ -7,7 +7,7 @@ from unittest.mock import Mock, mock_open, patch
 import pytest
 
 from automake.config import Config
-from automake.logging_setup import (
+from automake.logging import (
     LoggingSetupError,
     get_logger,
     log_command_execution,
@@ -211,7 +211,7 @@ level = "INVALID_LEVEL"
 
             # Simulate older appdirs without user_log_dir by patching hasattr in the
             # module
-            with patch("automake.logging_setup.hasattr") as mock_hasattr:
+            with patch("automake.logging.setup.hasattr") as mock_hasattr:
                 # Make hasattr return False for user_log_dir check
                 def hasattr_side_effect(obj, name):
                     if name == "user_log_dir":

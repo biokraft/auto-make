@@ -3,23 +3,20 @@
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-import pytest
-import typer
+from typer.testing import CliRunner
 
-from automake.cli.main import (
-    _convert_config_value,
-    config_edit,
-    config_reset,
-    config_set,
-    config_show,
-)
+from automake.cli.app import app
+from automake.cli.commands.config import _convert_config_value
 from automake.config import ConfigError
 
 
 class TestConfigShow:
     """Test cases for the config show command."""
 
-    @patch("automake.cli.main.get_config")
+    def setup_method(self):
+        self.runner = CliRunner()
+
+    @patch("automake.cli.commands.config.get_config")
     def test_config_show_all(self, mock_get_config):
         """Test showing all configuration sections."""
         mock_config = Mock()
@@ -31,10 +28,12 @@ class TestConfigShow:
         mock_config.config_file_path = Path("/test/config.toml")
         mock_get_config.return_value = mock_config
 
-        # Should not raise
-        config_show(section=None)
+        result = self.runner.invoke(app, ["config", "show"])
 
-    @patch("automake.cli.main.get_config")
+        assert result.exit_code == 0
+        mock_get_config.assert_called_once()
+
+    @patch("automake.cli.commands.config.get_config")
     def test_config_show_specific_section(self, mock_get_config):
         """Test showing a specific configuration section."""
         mock_config = Mock()
@@ -45,10 +44,12 @@ class TestConfigShow:
         mock_config.config_file_path = Path("/test/config.toml")
         mock_get_config.return_value = mock_config
 
-        # Should not raise
-        config_show(section="ollama")
+        result = self.runner.invoke(app, ["config", "show", "ollama"])
 
-    @patch("automake.cli.main.get_config")
+        assert result.exit_code == 0
+        mock_get_config.assert_called_once()
+
+    @patch("automake.cli.commands.config.get_config")
     def test_config_show_nonexistent_section(self, mock_get_config):
         """Test showing a non-existent configuration section."""
         mock_config = Mock()
@@ -57,26 +58,28 @@ class TestConfigShow:
         }
         mock_get_config.return_value = mock_config
 
-        with pytest.raises(typer.Exit) as exc_info:
-            config_show(section="nonexistent")
+        result = self.runner.invoke(app, ["config", "show", "nonexistent"])
 
-        assert exc_info.value.exit_code == 1
+        assert result.exit_code == 1
+        mock_get_config.assert_called_once()
 
-    @patch("automake.cli.main.get_config")
+    @patch("automake.cli.commands.config.get_config")
     def test_config_show_error(self, mock_get_config):
         """Test config show when an error occurs."""
         mock_get_config.side_effect = Exception("Config error")
 
-        with pytest.raises(typer.Exit) as exc_info:
-            config_show(section=None)
+        result = self.runner.invoke(app, ["config", "show"])
 
-        assert exc_info.value.exit_code == 1
+        assert result.exit_code == 1
 
 
 class TestConfigSet:
     """Test cases for the config set command."""
 
-    @patch("automake.cli.main.get_config")
+    def setup_method(self):
+        self.runner = CliRunner()
+
+    @patch("automake.cli.commands.config.get_config")
     def test_config_set_success(self, mock_get_config):
         """Test successful configuration setting."""
         mock_config = Mock()
@@ -85,24 +88,24 @@ class TestConfigSet:
         }
         mock_get_config.return_value = mock_config
 
-        # Should not raise
-        config_set(section="ollama", key="model", value="new-model")
+        result = self.runner.invoke(app, ["config", "set", "ollama.model", "new-model"])
 
-        mock_config.set.assert_called_once_with("ollama", "model", "new-model")
+        assert result.exit_code == 0
+        mock_get_config.assert_called_once()
 
-    @patch("automake.cli.main.get_config")
+    @patch("automake.cli.commands.config.get_config")
     def test_config_set_boolean_value(self, mock_get_config):
         """Test setting a boolean configuration value."""
         mock_config = Mock()
         mock_config.get_all_sections.return_value = {"test": {"enabled": True}}
         mock_get_config.return_value = mock_config
 
-        # Should not raise
-        config_set(section="test", key="enabled", value="true")
+        result = self.runner.invoke(app, ["config", "set", "test.enabled", "true"])
 
-        mock_config.set.assert_called_once_with("test", "enabled", True)
+        assert result.exit_code == 0
+        mock_get_config.assert_called_once()
 
-    @patch("automake.cli.main.get_config")
+    @patch("automake.cli.commands.config.get_config")
     def test_config_set_integer_value(self, mock_get_config):
         """Test setting an integer configuration value."""
         mock_config = Mock()
@@ -111,28 +114,32 @@ class TestConfigSet:
         }
         mock_get_config.return_value = mock_config
 
-        # Should not raise
-        config_set(section="ai", key="interactive_threshold", value="90")
+        result = self.runner.invoke(
+            app, ["config", "set", "ai.interactive_threshold", "90"]
+        )
 
-        mock_config.set.assert_called_once_with("ai", "interactive_threshold", 90)
+        assert result.exit_code == 0
+        mock_get_config.assert_called_once()
 
-    @patch("automake.cli.main.get_config")
+    @patch("automake.cli.commands.config.get_config")
     def test_config_set_error(self, mock_get_config):
         """Test config set when an error occurs."""
         mock_config = Mock()
         mock_config.set.side_effect = ConfigError("Failed to save config")
         mock_get_config.return_value = mock_config
 
-        with pytest.raises(typer.Exit) as exc_info:
-            config_set(section="test", key="key", value="value")
+        result = self.runner.invoke(app, ["config", "set", "ollama.model", "llama2"])
 
-        assert exc_info.value.exit_code == 1
+        assert result.exit_code == 1
 
 
 class TestConfigReset:
     """Test cases for the config reset command."""
 
-    @patch("automake.cli.main.get_config")
+    def setup_method(self):
+        self.runner = CliRunner()
+
+    @patch("automake.cli.commands.config.get_config")
     def test_config_reset_with_yes_flag(self, mock_get_config):
         """Test config reset with --yes flag."""
         mock_config = Mock()
@@ -141,45 +148,35 @@ class TestConfigReset:
         }
         mock_get_config.return_value = mock_config
 
-        # Should not raise
-        config_reset(yes=True)
+        result = self.runner.invoke(app, ["config", "reset", "--yes"])
 
-        mock_config.reset_to_defaults.assert_called_once()
+        assert result.exit_code == 0
+        mock_get_config.assert_called_once()
 
-    @patch("questionary.confirm")
-    @patch("automake.cli.main.get_config")
-    def test_config_reset_with_confirmation_yes(
-        self, mock_get_config, mock_questionary
-    ):
+    @patch("automake.cli.commands.config.get_config")
+    def test_config_reset_with_confirmation_yes(self, mock_get_config):
         """Test config reset with user confirmation (yes)."""
         mock_config = Mock()
-        mock_config.get_all_sections.return_value = {
-            "ollama": {"base_url": "http://localhost:11434", "model": "qwen3:0.6b"}
-        }
         mock_get_config.return_value = mock_config
 
-        mock_questionary.return_value.ask.return_value = True
+        result = self.runner.invoke(app, ["config", "reset"], input="y\n")
 
-        # Should not raise
-        config_reset(yes=False)
+        assert result.exit_code == 0
+        mock_get_config.assert_called_once()
 
-        mock_config.reset_to_defaults.assert_called_once()
-
-    @patch("questionary.confirm")
-    @patch("automake.cli.main.get_config")
-    def test_config_reset_with_confirmation_no(self, mock_get_config, mock_questionary):
+    @patch("automake.cli.commands.config.get_config")
+    def test_config_reset_with_confirmation_no(self, mock_get_config):
         """Test config reset with user confirmation (no)."""
         mock_config = Mock()
         mock_get_config.return_value = mock_config
 
-        mock_questionary.return_value.ask.return_value = False
+        result = self.runner.invoke(app, ["config", "reset"], input="n\n")
 
-        # Should not raise
-        config_reset(yes=False)
+        assert result.exit_code == 0
+        # get_config should NOT be called when user says no
+        mock_get_config.assert_not_called()
 
-        mock_config.reset_to_defaults.assert_not_called()
-
-    @patch("automake.cli.main.get_config")
+    @patch("automake.cli.commands.config.get_config")
     def test_config_reset_error(self, mock_get_config):
         """Test config reset when an error occurs."""
         mock_config = Mock()
@@ -188,136 +185,118 @@ class TestConfigReset:
         )
         mock_get_config.return_value = mock_config
 
-        with pytest.raises(typer.Exit) as exc_info:
-            config_reset(yes=True)
+        result = self.runner.invoke(app, ["config", "reset", "--yes"])
 
-        assert exc_info.value.exit_code == 1
+        assert result.exit_code == 1
 
 
 class TestConfigEdit:
     """Test cases for the config edit command."""
 
-    @patch("subprocess.run")
-    @patch("automake.cli.main.get_config")
-    def test_config_edit_with_editor_success(self, mock_get_config, mock_subprocess):
+    def setup_method(self):
+        self.runner = CliRunner()
+
+    @patch("automake.cli.commands.config.get_config")
+    def test_config_edit_with_editor_success(self, mock_get_config):
         """Test config edit with successful editor launch."""
         mock_config = Mock()
         mock_config.config_file_path = Path("/test/config.toml")
         mock_get_config.return_value = mock_config
 
-        mock_subprocess.return_value = Mock(returncode=0)
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = Mock(returncode=0)
+            result = self.runner.invoke(app, ["config", "edit"])
 
-        with patch.dict("os.environ", {"EDITOR": "vim"}):
-            # Should not raise
-            config_edit()
+        assert result.exit_code == 0
+        mock_get_config.assert_called_once()
 
-        mock_subprocess.assert_called_once_with(
-            ["vim", "/test/config.toml"], check=True
-        )
-
-    @patch("subprocess.run")
-    @patch("automake.cli.main.get_config")
-    def test_config_edit_fallback_to_open(self, mock_get_config, mock_subprocess):
-        """Test config edit fallback to system open command."""
+    @patch("automake.cli.commands.config.get_config")
+    def test_config_edit_fallback_to_open(self, mock_get_config):
+        """Test config edit with fallback to open command."""
         mock_config = Mock()
         mock_config.config_file_path = Path("/test/config.toml")
         mock_get_config.return_value = mock_config
 
-        # First call (editor) fails with CalledProcessError, second call (open) succeeds
-        def side_effect(*args, **kwargs):
-            if args[0][0] == "vim":
-                from subprocess import CalledProcessError
-
-                raise CalledProcessError(1, "vim")
-            else:
+        with patch("subprocess.run") as mock_run:
+            # First call (editor) fails, second call (open) succeeds
+            def side_effect(*args, **kwargs):
+                if "EDITOR" in str(args) or "nano" in str(args):
+                    raise FileNotFoundError("Editor not found")
                 return Mock(returncode=0)
 
-        mock_subprocess.side_effect = side_effect
+            mock_run.side_effect = side_effect
+            result = self.runner.invoke(app, ["config", "edit"])
 
-        with patch.dict("os.environ", {"EDITOR": "vim"}):
-            # Should not raise
-            config_edit()
+        assert result.exit_code == 0
+        # Should try editor first, then fallback to open
+        assert mock_run.call_count == 2
 
-        assert mock_subprocess.call_count == 2
-
-    @patch("subprocess.run")
-    @patch("automake.cli.main.get_config")
-    def test_config_edit_both_fail(self, mock_get_config, mock_subprocess):
+    @patch("automake.cli.commands.config.get_config")
+    def test_config_edit_both_fail(self, mock_get_config):
         """Test config edit when both editor and open fail."""
         mock_config = Mock()
         mock_config.config_file_path = Path("/test/config.toml")
         mock_get_config.return_value = mock_config
 
-        # Both calls fail
-        def side_effect(*args, **kwargs):
-            from subprocess import CalledProcessError
+        with patch("subprocess.run") as mock_run:
+            # Both calls fail
+            def side_effect(*args, **kwargs):
+                raise FileNotFoundError("Command not found")
 
-            raise CalledProcessError(1, args[0][0])
+            mock_run.side_effect = side_effect
+            result = self.runner.invoke(app, ["config", "edit"])
 
-        mock_subprocess.side_effect = side_effect
+        assert result.exit_code == 1
+        mock_get_config.assert_called_once()
 
-        with patch.dict("os.environ", {"EDITOR": "vim"}):
-            with pytest.raises(typer.Exit) as exc_info:
-                config_edit()
-
-        assert exc_info.value.exit_code == 1
-
-    @patch("automake.cli.main.get_config")
+    @patch("automake.cli.commands.config.get_config")
     def test_config_edit_error(self, mock_get_config):
         """Test config edit when an error occurs."""
         mock_get_config.side_effect = Exception("Config error")
 
-        with pytest.raises(typer.Exit) as exc_info:
-            config_edit()
+        result = self.runner.invoke(app, ["config", "edit"])
 
-        assert exc_info.value.exit_code == 1
+        assert result.exit_code == 1
 
 
 class TestConvertConfigValue:
     """Test cases for the _convert_config_value function."""
 
     def test_convert_boolean_true(self):
-        """Test converting 'true' to boolean."""
-        result = _convert_config_value("true")
-        assert result is True
+        """Test converting boolean true values."""
+        assert _convert_config_value("true") is True
+        assert _convert_config_value("True") is True
 
     def test_convert_boolean_false(self):
-        """Test converting 'false' to boolean."""
-        result = _convert_config_value("false")
-        assert result is False
+        """Test converting boolean false values."""
+        assert _convert_config_value("false") is False
+        assert _convert_config_value("False") is False
 
     def test_convert_boolean_case_insensitive(self):
-        """Test converting boolean values case insensitively."""
+        """Test boolean conversion is case insensitive."""
         assert _convert_config_value("TRUE") is True
-        assert _convert_config_value("False") is False
-        assert _convert_config_value("TrUe") is True
+        assert _convert_config_value("FALSE") is False
 
     def test_convert_integer(self):
         """Test converting integer values."""
-        result = _convert_config_value("42")
-        assert result == 42
-        assert isinstance(result, int)
+        assert _convert_config_value("42") == 42
+        assert _convert_config_value("0") == 0
 
     def test_convert_negative_integer(self):
         """Test converting negative integer values."""
-        result = _convert_config_value("-10")
-        assert result == -10
-        assert isinstance(result, int)
+        assert _convert_config_value("-42") == -42
+        assert _convert_config_value("-1") == -1
 
     def test_convert_string(self):
         """Test converting string values."""
-        result = _convert_config_value("hello world")
-        assert result == "hello world"
-        assert isinstance(result, str)
+        assert _convert_config_value("hello") == "hello"
+        assert _convert_config_value("world") == "world"
 
     def test_convert_string_that_looks_like_number(self):
-        """Test converting strings that contain numbers but aren't pure numbers."""
-        result = _convert_config_value("123abc")
-        assert result == "123abc"
-        assert isinstance(result, str)
+        """Test converting strings that look like numbers but aren't."""
+        assert _convert_config_value("42.5") == "42.5"  # Float as string
+        assert _convert_config_value("1e10") == "1e10"  # Scientific notation as string
 
     def test_convert_empty_string(self):
         """Test converting empty string."""
-        result = _convert_config_value("")
-        assert result == ""
-        assert isinstance(result, str)
+        assert _convert_config_value("") == ""

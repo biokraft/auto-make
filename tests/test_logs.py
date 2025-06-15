@@ -6,6 +6,7 @@ from unittest.mock import Mock, patch
 from rich.console import Console
 from typer.testing import CliRunner
 
+from automake.cli.app import app
 from automake.cli.logs import (
     clear_logs,
     format_file_size,
@@ -16,7 +17,6 @@ from automake.cli.logs import (
     show_logs_location,
     view_log_content,
 )
-from automake.cli.main import app
 from automake.utils.output import get_formatter
 
 

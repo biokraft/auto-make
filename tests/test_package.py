@@ -36,15 +36,15 @@ class TestPackageStructure:
         assert isinstance(automake.__email__, str)
         assert "@" in automake.__email__
 
-    def test_main_module_imports(self) -> None:
-        """Test that main module can be imported."""
-        from automake.cli import main
+    def test_main_app_imports(self) -> None:
+        """Test that main app can be imported."""
+        from automake.cli import app
 
-        assert main is not None
+        assert app is not None
 
     def test_main_app_exists(self) -> None:
         """Test that the main app object exists."""
-        from automake.cli.main import app
+        from automake.cli.app import app
 
         assert app is not None
 
@@ -65,13 +65,16 @@ class TestPackageStructure:
 
     def test_module_docstring(self) -> None:
         """Test that modules have proper docstrings."""
+        import importlib
+
         import automake
-        import automake.cli.main
+
+        app_module = importlib.import_module("automake.cli.app")
 
         assert automake.__doc__ is not None
         assert len(automake.__doc__.strip()) > 0
-        assert automake.cli.main.__doc__ is not None
-        assert len(automake.cli.main.__doc__.strip()) > 0
+        assert app_module.__doc__ is not None
+        assert len(app_module.__doc__.strip()) > 0
 
     def test_dynamic_import(self) -> None:
         """Test dynamic import of the package."""
@@ -79,10 +82,9 @@ class TestPackageStructure:
         assert module is not None
         assert hasattr(module, "__version__")
 
-    def test_main_module_dynamic_import(self) -> None:
-        """Test dynamic import of the main module."""
-        module = import_module("automake.cli.main")
+    def test_main_app_dynamic_import(self) -> None:
+        """Test dynamic import of the main app module."""
+        module = import_module("automake.cli.app")
         assert module is not None
         assert hasattr(module, "app")
-        assert hasattr(module, "main")
         assert hasattr(module, "version_callback")

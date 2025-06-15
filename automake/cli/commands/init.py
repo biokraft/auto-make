@@ -7,13 +7,13 @@ import subprocess
 
 import typer
 
-from automake.config_new import get_config
+from automake.config import get_config
 from automake.utils.ollama_manager import (
     OllamaManagerError,
     ensure_model_available,
     get_available_models,
 )
-from automake.utils.output_new import MessageType, get_formatter
+from automake.utils.output import MessageType, get_formatter
 
 
 def init_command() -> None:
@@ -33,18 +33,13 @@ def init_command() -> None:
             try:
                 init_box.update("🔍 Checking Ollama installation...")
                 result = subprocess.run(
-                    ["ollama", "--version"],
-                    capture_output=True,
-                    text=True,
-                    timeout=10,
-                    check=True,
+                    ["ollama", "--version"], capture_output=True, text=True, timeout=10
                 )
-                init_box.update(f"✅ Ollama found: {result.stdout.strip()}")
-            except (
-                subprocess.CalledProcessError,
-                FileNotFoundError,
-                subprocess.TimeoutExpired,
-            ):
+                if result.returncode != 0:
+                    raise FileNotFoundError("Ollama command failed")
+
+                init_box.update("✅ Ollama installation verified")
+            except (FileNotFoundError, subprocess.TimeoutExpired):
                 with output.live_box(
                     "Installation Error", MessageType.ERROR
                 ) as error_box:
@@ -92,10 +87,38 @@ def init_command() -> None:
             # Ensure the configured model is available
             init_box.update(f"🔍 Checking model availability: {config.ollama_model}")
             try:
-                ensure_model_available(config.ollama_model, config.ollama_base_url)
-                init_box.update(f"✅ Model '{config.ollama_model}' is ready")
+                is_available, was_pulled = ensure_model_available(config)
+
+                if was_pulled:
+                    init_box.update(
+                        f"✅ Model '{config.ollama_model}' has been pulled and is "
+                        "now ready."
+                    )
+                else:
+                    init_box.update(
+                        f"✅ Model '{config.ollama_model}' is already available and "
+                        "ready."
+                    )
+
+                # Show available models
+                try:
+                    init_box.update("📋 Fetching available models...")
+                    available_models = get_available_models(config.ollama_base_url)
+                    if available_models:
+                        models_text = "Available models:\n" + "\n".join(
+                            f"• {model}" for model in available_models[:10]
+                        )
+                        if len(available_models) > 10:
+                            models_text += (
+                                f"\n... and {len(available_models) - 10} more"
+                            )
+
+                        init_box.update(models_text)
+                except Exception:
+                    # Don't fail if we can't list models, the main goal is achieved
+                    init_box.update("⚠️ Could not fetch available models list")
             except OllamaManagerError as e:
-                if "not found" in str(e).lower():
+                if "model" in str(e).lower() and "not found" in str(e).lower():
                     init_box.update(f"📥 Pulling model: {config.ollama_model}")
                     try:
                         # Try to pull the model

@@ -8,7 +8,7 @@ from pathlib import Path
 from rich.console import Console
 
 from automake import __version__
-from automake.utils.output_new import MessageType, get_formatter
+from automake.utils.output import MessageType, get_formatter
 
 
 def read_ascii_art() -> str:

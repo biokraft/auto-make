@@ -10,7 +10,7 @@ from pathlib import Path
 
 import appdirs
 
-from ..config_new import Config
+from ..config import Config
 
 
 class LoggingSetupError(Exception):
@@ -36,7 +36,7 @@ def setup_logging(
         LoggingSetupError: If logging setup fails
     """
     if config is None:
-        from ..config_new import get_config
+        from ..config import get_config
 
         config = get_config()
 
