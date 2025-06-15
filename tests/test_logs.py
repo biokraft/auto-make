@@ -333,6 +333,13 @@ class TestLogsCLI:
             patch("automake.cli.main.CommandRunner") as mock_runner_class,
             # Mock the config
             patch("automake.cli.main.get_config") as mock_get_config,
+            # Mock the new UX methods
+            patch("automake.cli.main.output.ai_thinking_box") as mock_thinking_box,
+            patch("automake.cli.main.output.print_ai_reasoning_streaming"),
+            patch("automake.cli.main.output.print_command_chosen_animated"),
+            patch(
+                "automake.cli.main.output.command_execution_box"
+            ) as mock_execution_box,
         ):
             # Set up mock makefile reader
             mock_reader = Mock()
@@ -356,6 +363,12 @@ class TestLogsCLI:
             # Set up mock command runner
             mock_runner = Mock()
             mock_runner_class.return_value = mock_runner
+
+            # Set up mock UX methods
+            mock_thinking_box.return_value.__enter__ = Mock()
+            mock_thinking_box.return_value.__exit__ = Mock()
+            mock_execution_box.return_value.__enter__ = Mock()
+            mock_execution_box.return_value.__exit__ = Mock()
 
             result = self.runner.invoke(app, ["run", "logs show me the logs"])
             assert result.exit_code == 0

@@ -1,6 +1,7 @@
 """Main CLI entry point for AutoMake."""
 
 import os
+import time
 import warnings
 from pathlib import Path
 
@@ -667,17 +668,21 @@ def _execute_main_logic(command: str) -> None:
                 "Notice",
             )
 
-        # Start the AI thinking animation
-        stop_event, animation_thread = output.start_ai_thinking_animation()
+        # Use the new AI thinking box for better UX
+        with output.ai_thinking_box("AI Command Analysis") as thinking_box:
+            # The first message is already animated by ai_thinking_box
 
-        try:
+            thinking_box.update("🧠 Processing Makefile targets...")
+            time.sleep(0.2)
+
+            thinking_box.update("🔍 Finding best match...")
             response = agent.interpret_command(command, reader.targets)
-        finally:
-            # Stop the animation regardless of success or failure
-            output.stop_ai_thinking_animation(stop_event, animation_thread)
 
-        # Show which command was chosen
-        output.print_command_chosen(response.command, response.confidence)
+        # Show AI reasoning with streaming effect
+        output.print_ai_reasoning_streaming(response.reasoning, response.confidence)
+
+        # Show which command was chosen with animation
+        output.print_command_chosen_animated(response.command, response.confidence)
 
         final_command = response.command
         # Phase 3: Interactive session
@@ -698,7 +703,7 @@ def _execute_main_logic(command: str) -> None:
                 )
                 raise typer.Exit()
 
-            final_command = select_command(command_options)
+            final_command = select_command(command_options, output)
             if final_command is None:
                 output.print_status("Operation cancelled.", MessageType.INFO, "Abort")
                 raise typer.Exit()
@@ -710,9 +715,10 @@ def _execute_main_logic(command: str) -> None:
             )
             raise typer.Exit()
 
-        # Phase 2: Execution Engine
+        # Phase 2: Execution Engine with LiveBox
         runner = CommandRunner()
-        runner.run(final_command)
+        with output.command_execution_box(final_command) as execution_box:
+            runner.run(final_command, live_box=execution_box)
 
     except CommandInterpretationError as e:
         output.print_error_box(

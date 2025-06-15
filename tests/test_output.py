@@ -431,37 +431,24 @@ class TestOutputFormatter:
         assert "─ Command Received " in output
 
     def test_print_makefile_found(self) -> None:
-        """Test print_makefile_found formats makefile info correctly."""
+        """Test print_makefile_found method."""
         self.formatter.print_makefile_found("Makefile", "1024")
-        output = self.get_output()
-
-        assert "Found Makefile:" in output
-        assert "Makefile" in output
-        assert "(1024 bytes)" in output
-        assert "─ Success " in output
+        output = self.console.file.getvalue()
+        assert "Found Makefile (1024)" in output
 
     def test_print_targets_preview(self) -> None:
-        """Test print_targets_preview formats targets correctly."""
+        """Test print_targets_preview method."""
         targets = ["build", "test", "clean"]
         self.formatter.print_targets_preview(targets, 5)
-        output = self.get_output()
-
-        assert "─ Available Targets " in output
-        assert "• build" in output
-        assert "• test" in output
-        assert "• clean" in output
-        assert "and 2 more targets" in output
+        output = self.console.file.getvalue()
+        assert "Available targets: build, test, clean" in output
 
     def test_print_targets_preview_no_extra(self) -> None:
-        """Test print_targets_preview when no extra targets."""
+        """Test print_targets_preview with no extra targets."""
         targets = ["build", "test"]
         self.formatter.print_targets_preview(targets, 2)
-        output = self.get_output()
-
-        assert "─ Available Targets " in output
-        assert "• build" in output
-        assert "• test" in output
-        assert "more targets" not in output
+        output = self.console.file.getvalue()
+        assert "Available targets: build, test" in output
 
     def test_print_error_box_with_hint(self) -> None:
         """Test print_error_box with hint message."""
@@ -523,6 +510,147 @@ class TestOutputFormatter:
         self.formatter.print_simple("Test message", message_type, prefix=True)
         output = self.get_output()
         assert expected_emoji in output
+
+    def test_ai_thinking_box_context_manager(self) -> None:
+        """Test ai_thinking_box context manager."""
+        with (
+            patch.object(LiveBox, "__enter__") as mock_enter,
+            patch.object(LiveBox, "__exit__") as mock_exit,
+        ):
+            mock_live_box = MagicMock()
+            mock_enter.return_value = mock_live_box
+
+            with self.formatter.ai_thinking_box("Custom Title") as live_box:
+                assert live_box == mock_live_box
+
+            mock_enter.assert_called_once()
+            mock_exit.assert_called_once()
+
+    def test_command_execution_box_context_manager(self) -> None:
+        """Test command_execution_box context manager."""
+        with (
+            patch.object(LiveBox, "__enter__") as mock_enter,
+            patch.object(LiveBox, "__exit__") as mock_exit,
+        ):
+            mock_live_box = MagicMock()
+            mock_enter.return_value = mock_live_box
+
+            with self.formatter.command_execution_box("test") as live_box:
+                assert live_box == mock_live_box
+
+            mock_enter.assert_called_once()
+            mock_exit.assert_called_once()
+
+    def test_model_streaming_box_context_manager(self) -> None:
+        """Test model_streaming_box context manager."""
+        with (
+            patch.object(LiveBox, "__enter__") as mock_enter,
+            patch.object(LiveBox, "__exit__") as mock_exit,
+        ):
+            mock_live_box = MagicMock()
+            mock_enter.return_value = mock_live_box
+
+            with self.formatter.model_streaming_box("AI Response") as live_box:
+                assert live_box == mock_live_box
+
+            mock_enter.assert_called_once()
+            mock_exit.assert_called_once()
+
+    @patch("time.sleep")
+    def test_print_ai_reasoning_streaming(self, mock_sleep: MagicMock) -> None:
+        """Test print_ai_reasoning_streaming method."""
+        with patch.object(self.formatter, "live_box") as mock_live_box_context:
+            mock_live_box = MagicMock()
+            mock_live_box_context.return_value.__enter__.return_value = mock_live_box
+
+            self.formatter.print_ai_reasoning_streaming("Test reasoning", 85)
+
+            # Verify live_box was called with correct parameters
+            mock_live_box_context.assert_called_once_with(
+                "AI Reasoning (Confidence: 85%)", MessageType.INFO, transient=False
+            )
+
+            # Verify update was called for each word
+            assert (
+                mock_live_box.update.call_count >= 2
+            )  # At least for "Test" and "Test reasoning"
+
+    @patch("time.sleep")
+    def test_print_command_chosen_animated(self, mock_sleep: MagicMock) -> None:
+        """Test print_command_chosen_animated method."""
+        with patch.object(self.formatter, "live_box") as mock_live_box_context:
+            mock_live_box = MagicMock()
+            mock_live_box_context.return_value.__enter__.return_value = mock_live_box
+
+            self.formatter.print_command_chosen_animated("build", 90)
+
+            # Verify live_box was called with correct parameters
+            mock_live_box_context.assert_called_once_with(
+                "Command Selected", MessageType.SUCCESS, transient=False
+            )
+
+            # Verify update was called multiple times for animation
+            assert mock_live_box.update.call_count >= 3  # Multiple animation steps
+
+    @patch("time.sleep")
+    def test_print_command_chosen_animated_no_command(
+        self, mock_sleep: MagicMock
+    ) -> None:
+        """Test print_command_chosen_animated with no command found."""
+        with patch.object(self.formatter, "live_box") as mock_live_box_context:
+            mock_live_box = MagicMock()
+            mock_live_box_context.return_value.__enter__.return_value = mock_live_box
+
+            self.formatter.print_command_chosen_animated(None, 30)
+
+            # Verify live_box was called
+            mock_live_box_context.assert_called_once()
+
+            # Verify update was called with no command message
+            mock_live_box.update.assert_called_with(
+                "❌ No suitable command found (confidence: 30%)"
+            )
+
+    @patch("time.sleep")
+    def test_animate_thinking_message(self, mock_sleep: MagicMock) -> None:
+        """Test animate_thinking_message method."""
+        mock_live_box = MagicMock()
+
+        message = "🤔 Analyzing your command..."
+        self.formatter.animate_thinking_message(mock_live_box, message, delay=0.1)
+
+        # Verify that update was called multiple times (once per token)
+        assert mock_live_box.update.call_count > 1
+
+        # Verify that the final call contains the complete message
+        final_call = mock_live_box.update.call_args_list[-1]
+        assert message in final_call[0][0]
+
+        # Verify sleep was called for animation timing
+        assert mock_sleep.call_count > 0
+
+    @patch("time.sleep")
+    def test_animate_thinking_message_with_punctuation(
+        self, mock_sleep: MagicMock
+    ) -> None:
+        """Test animate_thinking_message with punctuation and spaces."""
+        mock_live_box = MagicMock()
+
+        message = "Hello, world! How are you?"
+        self.formatter.animate_thinking_message(mock_live_box, message, delay=0.05)
+
+        # Should handle punctuation and spaces correctly
+        assert mock_live_box.update.call_count > 5  # Multiple tokens
+
+        # Check that intermediate calls build up the message
+        calls = [call[0][0] for call in mock_live_box.update.call_args_list]
+
+        # Each call should be a progressive build-up
+        for i in range(1, len(calls)):
+            assert len(calls[i]) >= len(calls[i - 1])
+
+        # Final call should be the complete message
+        assert calls[-1] == message
 
 
 class TestLiveBoxIntegration:

@@ -340,30 +340,22 @@ class OutputFormatter:
             self.console.print(formatted_message)
 
     def print_command_received(self, command: str) -> None:
-        """Print the command received message with consistent styling."""
-        self.print_box(
-            f"[bold cyan]{command}[/bold cyan]", MessageType.INFO, "Command Received"
-        )
+        """Print that a command was received."""
+        self.print_box(f"[cyan]{command}[/cyan]", MessageType.INFO, "Command Received")
 
     def print_makefile_found(self, name: str, size: str) -> None:
-        """Print makefile found message."""
-        self.print_box(
-            f"Found Makefile: [green]{name}[/green] ({size} bytes)", MessageType.SUCCESS
-        )
+        """Print that a Makefile was found."""
+        self.print_simple(f"Found {name} ({size})", MessageType.SUCCESS)
 
     def print_targets_preview(self, targets: list[str], total_count: int) -> None:
-        """Print available targets preview."""
-        # Build the content for the box
-        content_lines = []
-        for target in targets:
-            content_lines.append(f"• [yellow]{target}[/yellow]")
-
-        if total_count > len(targets):
-            remaining = total_count - len(targets)
-            content_lines.append(f"... and {remaining} more targets")
-
-        content = "\n".join(content_lines)
-        self.print_box(content, MessageType.INFO, "Available Targets")
+        """Print a preview of available targets."""
+        if targets:
+            targets_text = ", ".join(targets[:5])
+            if total_count > 5:
+                targets_text += f" (and {total_count - 5} more)"
+            self.print_simple(f"Available targets: {targets_text}", MessageType.INFO)
+        else:
+            self.print_simple("No targets found in Makefile", MessageType.WARNING)
 
     def print_error_box(self, message: str, hint: str | None = None) -> None:
         """Print an error in a box with optional hint.
@@ -502,33 +494,24 @@ class OutputFormatter:
         self.print_box(content, MessageType.INFO, title)
 
     def print_command_chosen(self, command: str | None, confidence: int) -> None:
-        """Print the chosen command with confidence.
-
-        Args:
-            command: The chosen make command
-            confidence: Confidence percentage
-        """
+        """Print the chosen command."""
         if command:
             self.print_box(
-                f"[bold green]make {command}[/bold green] (confidence: {confidence}%)",
+                f"make {command} (confidence: {confidence}%)",
                 MessageType.SUCCESS,
                 "Command Selected",
             )
         else:
             self.print_box(
                 f"No suitable command found (confidence: {confidence}%)",
-                MessageType.WARNING,
-                "Command Selected",
+                MessageType.ERROR,
+                "No Match",
             )
 
     def print_command_execution(self, command: str) -> None:
-        """Print command execution message.
-
-        Args:
-            command: The command that will be executed
-        """
+        """Print that a command is being executed."""
         self.print_box(
-            f"Executing: [bold cyan]make {command}[/bold cyan]",
+            f"Executing: make {command}",
             MessageType.INFO,
             "Execution",
         )
@@ -615,6 +598,147 @@ class OutputFormatter:
         """
         stop_event.set()
         thread.join(timeout=3.0)  # Wait longer for animation to complete
+
+    def animate_thinking_message(
+        self, live_box: LiveBox, message: str, delay: float = 0.08
+    ) -> None:
+        """Animate a thinking message token by token.
+
+        Args:
+            live_box: LiveBox instance to update
+            message: Message to animate
+            delay: Delay between tokens in seconds
+        """
+        import time
+
+        # Split message into tokens (words and punctuation)
+        tokens = []
+        current_token = ""
+
+        for char in message:
+            if char.isspace():
+                if current_token:
+                    tokens.append(current_token)
+                    current_token = ""
+                tokens.append(char)
+            else:
+                current_token += char
+
+        if current_token:
+            tokens.append(current_token)
+
+        # Animate token by token
+        animated_text = ""
+        for token in tokens:
+            animated_text += token
+            live_box.update(animated_text)
+            time.sleep(delay)
+
+        # Final pause to let user read the complete message
+        time.sleep(0.5)
+
+    @contextmanager
+    def ai_thinking_box(
+        self, title: str = "AI Processing"
+    ) -> Generator[LiveBox, None, None]:
+        """Context manager for AI thinking with LiveBox.
+
+        Args:
+            title: Title for the thinking box
+
+        Yields:
+            LiveBox instance for updating content
+        """
+        with self.live_box(title, MessageType.INFO, transient=True) as live_box:
+            # Start with animated thinking message
+            self.animate_thinking_message(live_box, "🤔 Analyzing your command...")
+            yield live_box
+
+    @contextmanager
+    def command_execution_box(self, command: str) -> Generator[LiveBox, None, None]:
+        """Context manager for command execution with LiveBox.
+
+        Args:
+            command: The command being executed
+
+        Yields:
+            LiveBox instance for updating execution progress
+        """
+        title = f"Executing: make {command}"
+        with self.live_box(title, MessageType.INFO, transient=False) as live_box:
+            live_box.update(f"🚀 Starting execution of make {command}...")
+            yield live_box
+
+    @contextmanager
+    def model_streaming_box(
+        self, title: str = "AI Response"
+    ) -> Generator[LiveBox, None, None]:
+        """Context manager for streaming AI model responses.
+
+        Args:
+            title: Title for the streaming box
+
+        Yields:
+            LiveBox instance for streaming content
+        """
+        with self.live_box(title, MessageType.INFO, transient=False) as live_box:
+            live_box.update("🤖 Generating response...")
+            yield live_box
+
+    def print_ai_reasoning_streaming(
+        self, reasoning: str, confidence: int | None = None
+    ) -> None:
+        """Print AI reasoning with streaming effect.
+
+        Args:
+            reasoning: The AI's reasoning or explanation
+            confidence: Optional confidence score to include in the display
+        """
+        if confidence is not None:
+            title = f"AI Reasoning (Confidence: {confidence}%)"
+        else:
+            title = "AI Reasoning"
+
+        with self.live_box(title, MessageType.INFO, transient=False) as live_box:
+            # Stream the reasoning text word by word for dramatic effect
+            words = reasoning.split()
+            current_text = ""
+
+            for i, word in enumerate(words):
+                current_text += word
+                if i < len(words) - 1:
+                    current_text += " "
+
+                live_box.update(current_text)
+                time.sleep(0.05)  # Small delay for streaming effect
+
+    def print_command_chosen_animated(
+        self, command: str | None, confidence: int
+    ) -> None:
+        """Print the chosen command with animated reveal.
+
+        Args:
+            command: The chosen make command
+            confidence: Confidence percentage
+        """
+        title = "Command Selected"
+
+        with self.live_box(title, MessageType.SUCCESS, transient=False) as live_box:
+            if command:
+                # Animate the command reveal
+                live_box.update("🎯 Command identified...")
+                time.sleep(0.5)
+
+                live_box.update(f"🎯 Selected: make {command}")
+                time.sleep(0.3)
+
+                live_box.update(
+                    f"🎯 Selected: make {command}\n📊 Confidence: {confidence}%"
+                )
+            else:
+                live_box.update(
+                    f"❌ No suitable command found (confidence: {confidence}%)"
+                )
 
 
 # Global formatter instance for convenience
