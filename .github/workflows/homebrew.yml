@@ -1,0 +1,90 @@
+name: Publish to Homebrew
+
+on:
+  release:
+    types: [published]
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  homebrew:
+    name: Update Homebrew Formula
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        version: "latest"
+
+    - name: Verify version matches release tag
+      run: |
+        # Extract version from pyproject.toml
+        PACKAGE_VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+        # Extract version from release tag (remove 'v' prefix if present)
+        RELEASE_VERSION=${GITHUB_REF_NAME#v}
+
+        echo "Package version: $PACKAGE_VERSION"
+        echo "Release version: $RELEASE_VERSION"
+
+        if [ "$PACKAGE_VERSION" != "$RELEASE_VERSION" ]; then
+          echo "❌ Version mismatch: package version ($PACKAGE_VERSION) does not match release tag ($RELEASE_VERSION)"
+          exit 1
+        fi
+        echo "✅ Version verification passed"
+
+    - name: Wait for PyPI publication
+      run: |
+        echo "⏳ Waiting for package to be available on PyPI..."
+        PACKAGE_VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+
+        # Wait and verify package is available on PyPI before updating Homebrew
+        for i in {1..10}; do
+          if curl -s "https://pypi.org/pypi/automake-cli/$PACKAGE_VERSION/json" | grep -q "\"version\": \"$PACKAGE_VERSION\""; then
+            echo "✅ Package automake-cli==$PACKAGE_VERSION is available on PyPI"
+            break
+          else
+            echo "⏳ Attempt $i: Package not yet available on PyPI, waiting 60 seconds..."
+            sleep 60
+          fi
+
+          if [ $i -eq 10 ]; then
+            echo "❌ Package not available on PyPI after 10 minutes"
+            exit 1
+          fi
+        done
+
+    - name: Update Homebrew formula
+      uses: dawidd6/action-homebrew-bump-formula@v3
+      with:
+        # Token with permissions to create PRs in homebrew-core
+        token: ${{ secrets.HOMEBREW_GITHUB_TOKEN }}
+        # Formula name (will be automake-cli)
+        formula: automake-cli
+        # Tag name from the release
+        tag: ${{ github.ref_name }}
+        # Force update even if version hasn't changed
+        force: false
+        # Create a pull request instead of pushing directly
+        no_fork: false
+        # Commit message
+        message: |
+          automake-cli ${{ github.ref_name }}
+
+          Created by GitHub Actions from release ${{ github.ref_name }}
+
+    - name: Verify Homebrew formula update
+      run: |
+        echo "✅ Homebrew formula update initiated"
+        echo "📝 A pull request should be created in homebrew-core repository"
+        echo "🔗 Check: https://github.com/Homebrew/homebrew-core/pulls"
+        echo "📦 Once merged, users can install with: brew install automake-cli"
