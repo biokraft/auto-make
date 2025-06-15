@@ -61,6 +61,7 @@ class TestConfig:
             "ollama": {"base_url": "http://localhost:11434", "model": "qwen3:0.6b"},
             "logging": {"level": "INFO"},
             "ai": {"interactive_threshold": 80},
+            "agent": {"require_confirmation": False},
         }
 
         # Read the config file directly to verify content
@@ -260,6 +261,7 @@ level = "INFO"
             "ollama": {"base_url": "http://localhost:11434", "model": "qwen3:0.6b"},
             "logging": {"level": "INFO"},
             "ai": {"interactive_threshold": 80},
+            "agent": {"require_confirmation": False},
         }
 
         assert result == expected

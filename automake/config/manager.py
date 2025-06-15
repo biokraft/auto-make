@@ -41,6 +41,7 @@ class Config:
             "ollama": {"base_url": "http://localhost:11434", "model": "qwen3:0.6b"},
             "logging": {"level": "INFO"},
             "ai": {"interactive_threshold": 80},
+            "agent": {"require_confirmation": False},
         }
 
     def _create_default_config(self) -> None:
@@ -68,6 +69,10 @@ level = "INFO"
 # Confidence threshold for interactive mode (0-100)
 # If AI confidence is below this threshold, interactive mode will be triggered
 interactive_threshold = 80
+
+[agent]
+# Whether to require confirmation before executing agent actions
+require_confirmation = false
 """
 
         # Write the config file
@@ -115,6 +120,11 @@ interactive_threshold = 80
     def interactive_threshold(self) -> int:
         """Get AI interactive threshold."""
         return self._config_data["ai"]["interactive_threshold"]
+
+    @property
+    def agent_require_confirmation(self) -> bool:
+        """Get agent require confirmation setting."""
+        return self._config_data["agent"]["require_confirmation"]
 
     @property
     def config_file_path(self) -> Path:

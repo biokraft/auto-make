@@ -46,6 +46,7 @@ dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
     "pytest-mock>=3.11.0",
+    "pytest-timeout>=2.3.1",
     "pyyaml>=6.0.0",
     "pytest-asyncio>=1.0.0",
 ]
@@ -103,11 +104,16 @@ addopts = [
     "--cov=automake",
     "--cov-report=term-missing",
     "--cov-report=html",
+    "--timeout=3",
+    "--timeout-method=thread",
+    "--durations=10",
+    "--durations-min=1.0",
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
     "asyncio: marks tests as async tests",
+    "timeout: marks tests with custom timeout values",
 ]
 
 [tool.coverage.run]
@@ -137,5 +143,6 @@ dev = [
     "pytest>=8.4.0",
     "pytest-cov>=6.2.1",
     "pytest-mock>=3.14.1",
+    "pytest-timeout>=2.3.1",
     "pyyaml>=6.0.2",
 ]

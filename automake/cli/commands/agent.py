@@ -6,9 +6,9 @@ agent sessions.
 
 import typer
 from rich.console import Console
-from rich.prompt import Prompt
 
 from automake.agent.manager import ManagerAgentRunner
+from automake.agent.ui import RichInteractiveSession
 from automake.config import get_config
 from automake.logging import (
     get_logger,
@@ -106,59 +106,21 @@ def _run_non_interactive(runner: ManagerAgentRunner, prompt: str, output) -> Non
 
 
 def _run_interactive(runner: ManagerAgentRunner, output) -> None:
-    """Run the agent in interactive chat mode."""
+    """Run the agent in interactive chat mode using RichInteractiveSession."""
     logger = get_logger()
 
-    console.print("\n[bold blue]🤖 AutoMake Agent - Interactive Mode[/bold blue]")
-    console.print(
-        "Type your commands in natural language. "
-        "Type 'exit' or 'quit' to end the session.\n"
-    )
-
     try:
-        while True:
-            try:
-                # Get user input
-                user_input = Prompt.ask("[bold cyan]You[/bold cyan]")
+        # Get configuration
+        config = get_config()
 
-                # Check for exit commands
-                if user_input.lower().strip() in ["exit", "quit", "q"]:
-                    console.print("\n[yellow]👋 Goodbye![/yellow]")
-                    break
+        # Create and start the rich interactive session
+        session = RichInteractiveSession(
+            agent=runner.agent,
+            console=console,
+            require_confirmation=config.agent_require_confirmation,
+        )
 
-                if not user_input.strip():
-                    continue
-
-                # Process the command
-                console.print("\n[bold green]🤖 Agent[/bold green]")
-
-                try:
-                    # Run the agent with streaming
-                    result_stream = runner.run(user_input, stream=True)
-
-                    # Handle streaming response
-                    if hasattr(result_stream, "__iter__"):
-                        # Stream the response
-                        for chunk in result_stream:
-                            if chunk:
-                                console.print(chunk, end="")
-                        console.print()  # New line after streaming
-                    else:
-                        # Non-streaming response
-                        console.print(result_stream)
-
-                except Exception as e:
-                    logger.error(f"Agent execution failed: {e}")
-                    console.print(f"[red]❌ Error: {e}[/red]")
-
-                console.print()  # Extra line for readability
-
-            except KeyboardInterrupt:
-                console.print("\n[yellow]👋 Session interrupted. Goodbye![/yellow]")
-                break
-            except EOFError:
-                console.print("\n[yellow]👋 Session ended. Goodbye![/yellow]")
-                break
+        session.start()
 
     except Exception as e:
         logger.error(f"Interactive session failed: {e}")
