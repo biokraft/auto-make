@@ -77,12 +77,40 @@ class TestMainCLI:
             "Should contain welcome message or ASCII art"
         )
 
-    def test_help_command_case_insensitive(self) -> None:
+    @patch("automake.cli.app.ManagerAgentRunner")
+    @patch("automake.cli.app.get_config")
+    @patch("automake.cli.app.setup_logging")
+    @patch("automake.cli.app.log_config_info")
+    @patch("automake.cli.app.log_command_execution")
+    @patch("automake.cli.app._run_non_interactive")
+    def test_help_command_case_insensitive(
+        self,
+        mock_run_non_interactive: Mock,
+        mock_log_command: Mock,
+        mock_log_config: Mock,
+        mock_setup_logging: Mock,
+        mock_get_config: Mock,
+        mock_manager_runner: Mock,
+    ) -> None:
         """Test that HELP is treated as a prompt in Phase 4 implementation."""
+        # Setup mocks
+        mock_config = Mock()
+        mock_get_config.return_value = mock_config
+        mock_logger = Mock()
+        mock_setup_logging.return_value = mock_logger
+
+        # Setup manager runner mock
+        mock_runner_instance = Mock()
+        mock_runner_instance.initialize.return_value = False
+        mock_manager_runner.return_value = mock_runner_instance
+
         result = self.runner.invoke(app, ["HELP"])
         # With Phase 4, unrecognized commands like "HELP" are treated as prompts
         # This should succeed (exit code 0) as it gets passed to the agent
         assert result.exit_code == 0
+
+        # Verify that the non-interactive runner was called with "HELP"
+        mock_run_non_interactive.assert_called_once()
 
     @patch("automake.cli.commands.run.ManagerAgentRunner")
     @patch("automake.cli.commands.run.get_config")
