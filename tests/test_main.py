@@ -111,8 +111,8 @@ deploy:
 
             # Mock the AI agent and command runner
             with (
-                patch("automake.core.ai_agent.create_ai_agent") as mock_create_agent,
-                patch("automake.core.command_runner.CommandRunner") as mock_runner,
+                patch("automake.cli.commands.run.create_ai_agent") as mock_create_agent,
+                patch("automake.cli.commands.run.CommandRunner") as mock_runner,
                 patch("automake.core.makefile_reader.Path.cwd", return_value=temp_path),
             ):
                 # Mock AI agent response

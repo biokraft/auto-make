@@ -59,10 +59,22 @@ class TestInitCommandLiveBoxIntegration:
             mock_box = Mock()
             mock_live_box.return_value.__enter__.return_value = mock_box
 
-            with patch(
-                "automake.utils.output.formatter.get_formatter",
-                return_value=self.formatter,
+            with (
+                patch(
+                    "automake.utils.output.formatter.get_formatter",
+                    return_value=self.formatter,
+                ),
+                patch(
+                    "automake.cli.commands.init.get_available_models"
+                ) as mock_init_get_models,
+                patch(
+                    "automake.cli.commands.init.ensure_model_available"
+                ) as mock_ensure_model,
             ):
+                # Mock the direct call to get_available_models in init command
+                mock_init_get_models.return_value = ["llama2", "codellama", "mistral"]
+                mock_ensure_model.return_value = (True, False)  # Available, not pulled
+
                 init()
 
             # Verify LiveBox was used for initialization steps
