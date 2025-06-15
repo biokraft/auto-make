@@ -42,6 +42,8 @@ Forget remembering complex flags or exact `Makefile` targets. Just tell `automak
 4.  **Execute & Observe**: The specialist agent executes the task, and the result is observed.
 5.  **Stream Output**: The results are streamed directly to your terminal in real-time.
 
+This entire workflow is triggered by the `run` command. For example: `automake run "list all python files"`.
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -75,7 +77,7 @@ uv tool install automake-cli
 #### Temporary Execution: `uvx`
 If you prefer not to install the tool, you can run it directly using `uvx` (similar to `npx`). This downloads and runs the package in a temporary environment.
 ```bash
-uvx automake-cli "your command here"
+uvx automake-cli run "your command here"
 ```
 
 #### Traditional `pip`
@@ -97,17 +99,17 @@ This command will:
 ## ✍️ Usage
 
 ### Non-Interactive Commands
-The primary way to use `automake` is to pass your command as a string argument:
+The primary way to use `automake` is with the `run` command, passing your request as a string argument:
 
 ```bash
 # Run a terminal command
-automake "recursively find all files named README.md"
+automake run "recursively find all files named README.md"
 
 # Execute a Makefile target
-automake "run the tests and generate a coverage report"
+automake run "run the tests and generate a coverage report"
 
-# Ask a question
-automake "what is the capital of nepal?"
+# Build the project
+automake run "build the project"
 ```
 
 ### Interactive Agent Session
@@ -122,21 +124,40 @@ automake help
 ```
 
 ## 🛠️ Configuration
-`auto-make` features a modern, user-friendly configuration system. On first run, it creates a `config.toml` file in your user configuration directory.
+`automake` features a modern, user-friendly configuration system. On first run, it creates a `config.toml` file in your user configuration directory.
 
-### Interactive Model Selection
-Easily select your preferred Ollama model:
+### Setting the AI Model
+Configure your preferred Ollama model:
 ```bash
-automake config model
+# Set a specific model
+automake config set ollama.model "qwen2.5:7b"
+
+# After changing the model, initialize it
+automake init
 ```
-This command opens an interactive menu to choose from your locally downloaded models or search for new ones online.
+
+**Important**: After changing the model, you must run `automake init` to download and initialize the new model if it's not already available locally.
 
 ### View and Modify Configuration
 - **View current config**: `automake config show`
+- **Set specific values**: `automake config set <section.key> <value>`
 - **Edit manually**: `automake config edit`
 - **Reset to defaults**: `automake config reset`
 
-**Important**: After changing the model (manually or via the interactive menu), you must run `automake init` to download the new model if it's not already available locally.
+### Common Configuration Examples
+```bash
+# Set the AI model
+automake config set ollama.model "qwen3:8b"
+
+# Set the Ollama server URL
+automake config set ollama.base_url "http://localhost:11434"
+
+# Set logging level
+automake config set logging.level "DEBUG"
+
+# Set AI interaction threshold
+automake config set ai.interactive_threshold 90
+```
 
 ### Configuration Structure
 Run `automake config show` to see the current configuration.
@@ -156,7 +177,7 @@ interactive_threshold = 80
 ## 🎬 Demos
 Want to see some UI/UX demos?
 Just run `uv run make demo-all`
-or use automake: `automake "show all demos"`
+or use automake: `automake run "show all demos"`
 
 > **Note:** Running demos with automake may cause animation display issues. For the best demo experience, use the direct `uv run make demo-all` command.
 

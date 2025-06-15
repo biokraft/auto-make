@@ -94,6 +94,43 @@ class TestConfigSet:
         mock_get_config.assert_called_once()
 
     @patch("automake.cli.commands.config.get_config")
+    def test_config_set_model_success(self, mock_get_config):
+        """Test that setting ollama.model succeeds and calls config.set correctly."""
+        mock_config = Mock()
+        mock_config.get_all_sections.return_value = {
+            "ollama": {"base_url": "http://localhost:11434", "model": "qwen2.5:7b"}
+        }
+        mock_get_config.return_value = mock_config
+
+        result = self.runner.invoke(
+            app, ["config", "set", "ollama.model", "qwen2.5:7b"]
+        )
+
+        assert result.exit_code == 0
+        mock_config.set.assert_called_once_with("ollama", "model", "qwen2.5:7b")
+        mock_get_config.assert_called_once()
+
+    @patch("automake.cli.commands.config.get_config")
+    def test_config_set_non_model_success(self, mock_get_config):
+        """Test that setting non-model config succeeds
+        and calls config.set correctly."""
+        mock_config = Mock()
+        mock_config.get_all_sections.return_value = {
+            "ollama": {"base_url": "http://localhost:11434", "model": "qwen3:0.6b"}
+        }
+        mock_get_config.return_value = mock_config
+
+        result = self.runner.invoke(
+            app, ["config", "set", "ollama.base_url", "http://localhost:11434"]
+        )
+
+        assert result.exit_code == 0
+        mock_config.set.assert_called_once_with(
+            "ollama", "base_url", "http://localhost:11434"
+        )
+        mock_get_config.assert_called_once()
+
+    @patch("automake.cli.commands.config.get_config")
     def test_config_set_boolean_value(self, mock_get_config):
         """Test setting a boolean configuration value."""
         mock_config = Mock()
@@ -129,6 +166,18 @@ class TestConfigSet:
         mock_get_config.return_value = mock_config
 
         result = self.runner.invoke(app, ["config", "set", "ollama.model", "llama2"])
+
+        assert result.exit_code == 1
+
+    def test_config_set_invalid_key_path_known_section(self):
+        """Test config set with invalid key path for known section."""
+        result = self.runner.invoke(app, ["config", "set", "ollama", "model"])
+
+        assert result.exit_code == 1
+
+    def test_config_set_invalid_key_path_unknown_section(self):
+        """Test config set with invalid key path for unknown section."""
+        result = self.runner.invoke(app, ["config", "set", "unknown", "value"])
 
         assert result.exit_code == 1
 

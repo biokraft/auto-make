@@ -110,10 +110,20 @@ def config_set_command(
 
         # Parse the key path (e.g., "ollama.model" -> section="ollama", key="model")
         if "." not in key_path:
-            raise ValueError(
-                f"Invalid key path '{key_path}'. Use format 'section.key' "
-                "(e.g., 'ollama.model')"
-            )
+            # Provide more specific guidance based on common mistakes
+            if key_path in ["ollama", "logging", "agent"]:
+                raise ValueError(
+                    f"Invalid key path '{key_path}'. Missing key name after section.\n"
+                    f"Use format 'section.key', for example:\n"
+                    f"  • 'ollama.model' to set the AI model\n"
+                    f"  • 'ollama.base_url' to set the Ollama server URL\n"
+                    f"  • 'logging.level' to set the log level"
+                )
+            else:
+                raise ValueError(
+                    f"Invalid key path '{key_path}'. Use format 'section.key' "
+                    "(e.g., 'ollama.model', 'logging.level')"
+                )
 
         section, key = key_path.split(".", 1)
 
@@ -123,13 +133,25 @@ def config_set_command(
         # Set the configuration value
         config.set(section, key, converted_value)
 
-        with output.live_box(
-            "Configuration Updated", MessageType.SUCCESS
-        ) as success_box:
-            success_box.update(
-                f"✅ Set {section}.{key} = {converted_value}\n\n"
-                "💡 Configuration has been saved to file."
-            )
+        # Special handling for model changes
+        if section == "ollama" and key == "model":
+            with output.live_box(
+                "Model Configuration Updated", MessageType.SUCCESS
+            ) as success_box:
+                success_box.update(
+                    f"✅ Ollama model updated to: {converted_value}\n\n"
+                    "💡 Configuration has been saved to file.\n\n"
+                    "⚠️  Important: Run 'automake init' to initialize the new model "
+                    "before using AutoMake commands."
+                )
+        else:
+            with output.live_box(
+                "Configuration Updated", MessageType.SUCCESS
+            ) as success_box:
+                success_box.update(
+                    f"✅ Set {section}.{key} = {converted_value}\n\n"
+                    "💡 Configuration has been saved to file."
+                )
 
     except Exception as e:
         with output.live_box("Configuration Error", MessageType.ERROR) as error_box:

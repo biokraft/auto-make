@@ -123,6 +123,17 @@ def print_help_with_ascii(show_author: bool = False) -> None:
     )
     output.print_box(config_subcommands_content, MessageType.INFO, "Config Commands")
 
+    # Print config examples
+    config_examples_content = (
+        'automake config set ollama.model "qwen3:8b"\n'
+        'automake config set ollama.base_url "http://localhost:11434"\n'
+        'automake config set logging.level "DEBUG"\n'
+        "automake config set ai.interactive_threshold 90\n"
+        "\n"
+        "💡 After changing the model, run 'automake init' to initialize it"
+    )
+    output.print_box(config_examples_content, MessageType.INFO, "Config Examples")
+
     # Print log subcommands
     log_subcommands_content = (
         "logs show            Show log files location and information\n"

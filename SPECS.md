@@ -31,6 +31,7 @@ The following table links to the detailed specifications for each domain and tec
 
 ## 4. Future Work
 This section captures features and ideas that are currently out of scope but are being considered for future versions:
+- **Simplified Command Invocation**: Make `run` the default subcommand, allowing users to execute commands directly (e.g., `automake "build the project"` instead of `automake run "build the project"`).
 - **GitAgent**: A specialist agent for intelligent, repository-aware source control operations (e.g., summarizing branch changes, structured status reports).
 - **Dry-Run Mode**: Add a flag (e.g., `--dry-run`) to display the interpreted command without executing it.
 - **Failure Detection**: Implement logic to detect when the LLM fails to return a valid command or when the executed command fails.
