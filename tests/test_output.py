@@ -713,6 +713,42 @@ class TestLiveBoxIntegration:
         # Should handle all types without errors
         assert True
 
+    def test_phase1_error_message_format_consistency(self) -> None:
+        """Test Phase 1 error messages use consistent LiveBox format."""
+        with self.formatter.live_box("Test Error", MessageType.ERROR) as error_box:
+            error_box.update(
+                "❌ This is a test error message\n\n"
+                "💡 Hint: This is a helpful hint for the user"
+            )
+
+        # Verify the content was set correctly
+        assert "❌" in str(error_box._content)
+        assert "💡" in str(error_box._content)
+        assert "test error message" in str(error_box._content)
+        assert "helpful hint" in str(error_box._content)
+
+    def test_phase1_success_message_format_consistency(self) -> None:
+        """Test Phase 1 success messages use consistent LiveBox format."""
+        with self.formatter.live_box(
+            "Test Success", MessageType.SUCCESS
+        ) as success_box:
+            success_box.update("🎉 Operation completed successfully!")
+
+        # Verify the content was set correctly
+        assert "🎉" in str(success_box._content)
+        assert "completed successfully" in str(success_box._content)
+
+    def test_phase1_progress_message_format_consistency(self) -> None:
+        """Test Phase 1 progress messages use consistent LiveBox format."""
+        with self.formatter.live_box("Test Progress", MessageType.INFO) as progress_box:
+            progress_box.update("🔧 Initializing system...")
+            progress_box.update("🔍 Checking dependencies...")
+            progress_box.update("✅ All checks passed")
+
+        # Verify the final content
+        assert "✅" in str(progress_box._content)
+        assert "All checks passed" in str(progress_box._content)
+
 
 class TestGlobalFormatter:
     """Test cases for global formatter functions."""

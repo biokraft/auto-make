@@ -146,10 +146,14 @@ def config_show(
             # Show specific section
             section_data = config.get_all_sections().get(section)
             if section_data is None:
-                output.print_error_box(
-                    f"Section '{section}' not found in configuration.",
-                    hint="Use 'automake config show' to see all available sections.",
-                )
+                with output.live_box(
+                    "Configuration Error", MessageType.ERROR
+                ) as error_box:
+                    error_box.update(
+                        f"❌ Section '{section}' not found in configuration.\n\n"
+                        "💡 Hint: Use 'automake config show' to see all available "
+                        "sections."
+                    )
                 raise typer.Exit(1)
 
             # Format section data
@@ -160,11 +164,10 @@ def config_show(
                 else:
                     content += f"{key} = {value}\n"
 
-            output.print_status(
-                content.strip(),
-                MessageType.INFO,
-                f"Configuration - {section}",
-            )
+            with output.live_box(
+                f"Configuration - {section}", MessageType.INFO, transient=False
+            ) as config_box:
+                config_box.update(content.strip())
         else:
             # Show all configuration
             all_config = config.get_all_sections()
@@ -179,15 +182,24 @@ def config_show(
                         content += f"{key} = {value}\n"
                 content += "\n"
 
-            output.print_status(content.strip(), MessageType.INFO, "Configuration")
+            with output.live_box(
+                "Configuration", MessageType.INFO, transient=False
+            ) as config_box:
+                config_box.update(content.strip())
 
         # Show config file location
-        output.print_status(
-            f"Config file: {config.config_file_path}", MessageType.INFO, "Location"
-        )
+        with output.live_box(
+            "Location", MessageType.INFO, transient=False
+        ) as location_box:
+            location_box.update(f"Config file: {config.config_file_path}")
 
     except Exception as e:
-        output.print_error_box(f"Failed to show configuration: {e}")
+        with output.live_box("Configuration Error", MessageType.ERROR) as error_box:
+            error_box.update(
+                f"❌ Failed to show configuration: {e}\n\n"
+                "💡 Hint: Check if the configuration file is accessible and "
+                "properly formatted."
+            )
         raise typer.Exit(1) from e
 
 
@@ -218,12 +230,20 @@ def config_set(
             else:
                 content += f"{k} = {v}\n"
 
-        output.print_status(
-            content.strip(), MessageType.INFO, f"Updated Section - {section}"
-        )
+        with output.live_box(
+            f"Updated Section - {section}", MessageType.SUCCESS
+        ) as success_box:
+            success_box.update(
+                f"✅ Configuration updated successfully\n\n{content.strip()}"
+            )
 
     except Exception as e:
-        output.print_error_box(f"Failed to set configuration: {e}")
+        with output.live_box("Configuration Error", MessageType.ERROR) as error_box:
+            error_box.update(
+                f"❌ Failed to set configuration: {e}\n\n"
+                "💡 Hint: Check the section and key names, and ensure the value "
+                "format is correct."
+            )
         raise typer.Exit(1) from e
 
 
@@ -247,29 +267,28 @@ def config_reset(
             ).ask()
 
             if not confirm:
-                output.print_status(
-                    "Configuration reset cancelled.", MessageType.INFO, "Cancelled"
-                )
+                with output.live_box("Cancelled", MessageType.INFO) as info_box:
+                    info_box.update("🚫 Configuration reset cancelled.")
                 return
 
         config = get_config()
         config.reset_to_defaults()
 
-        output.print_status(
-            "Configuration has been reset to defaults.",
-            MessageType.SUCCESS,
-            "Reset Complete",
-        )
+        with output.live_box("Reset Complete", MessageType.SUCCESS) as success_box:
+            success_box.update("🎉 Configuration has been reset to defaults.")
 
         # Show config file location
-        output.print_status(
-            f"Config file: {config.config_file_path}",
-            MessageType.INFO,
-            "Location",
-        )
+        with output.live_box(
+            "Location", MessageType.INFO, transient=False
+        ) as location_box:
+            location_box.update(f"Config file: {config.config_file_path}")
 
     except Exception as e:
-        output.print_error_box(f"Failed to reset configuration: {e}")
+        with output.live_box("Configuration Error", MessageType.ERROR) as error_box:
+            error_box.update(
+                f"❌ Failed to reset configuration: {e}\n\n"
+                "💡 Hint: Check if the configuration file is accessible and writable."
+            )
         raise typer.Exit(1) from e
 
 
@@ -289,11 +308,8 @@ def config_edit() -> None:
 
         try:
             subprocess.run([editor, str(config_path)], check=True)
-            output.print_status(
-                f"Configuration file opened with {editor}.",
-                MessageType.SUCCESS,
-                "Editor",
-            )
+            with output.live_box("Editor", MessageType.SUCCESS) as success_box:
+                success_box.update(f"✅ Configuration file opened with {editor}.")
             return
         except subprocess.CalledProcessError:
             # Fallback to system default open command
@@ -305,24 +321,28 @@ def config_edit() -> None:
                 else:  # Linux and others
                     subprocess.run(["xdg-open", str(config_path)], check=True)
 
-                output.print_status(
-                    "Configuration file opened with system default application.",
-                    MessageType.SUCCESS,
-                    "Editor",
-                )
+                with output.live_box("Editor", MessageType.SUCCESS) as success_box:
+                    success_box.update(
+                        "✅ Configuration file opened with system default application."
+                    )
                 return
             except subprocess.CalledProcessError:
                 pass
 
-            output.print_error_box(
-                f"Could not open configuration file with editor '{editor}' "
-                "or system default.",
-                hint=f"You can manually edit the file at: {config_path}",
-            )
+            with output.live_box("Editor Error", MessageType.ERROR) as error_box:
+                error_box.update(
+                    f"❌ Could not open configuration file with editor '{editor}' "
+                    "or system default.\n\n"
+                    f"💡 Hint: You can manually edit the file at: {config_path}"
+                )
             raise typer.Exit(1) from None
 
     except Exception as e:
-        output.print_error_box(f"Failed to edit configuration: {e}")
+        with output.live_box("Configuration Error", MessageType.ERROR) as error_box:
+            error_box.update(
+                f"❌ Failed to edit configuration: {e}\n\n"
+                "💡 Hint: Check if the configuration file exists and is accessible."
+            )
         raise typer.Exit(1) from e
 
 
@@ -533,99 +553,123 @@ def init() -> None:
         # Load configuration
         config = get_config()
 
-        output.print_status(
-            f"Initializing AutoMake with model: {config.ollama_model}",
-            MessageType.INFO,
-            "Initialization",
-        )
-
-        # Check if Ollama is installed by trying to run ollama --version
-        try:
-            import subprocess
-
-            result = subprocess.run(
-                ["ollama", "--version"], capture_output=True, text=True, timeout=10
+        # Use LiveBox for initialization process
+        with output.live_box("AutoMake Initialization", MessageType.INFO) as init_box:
+            init_box.update(
+                f"🔧 Initializing AutoMake with model: {config.ollama_model}"
             )
-            if result.returncode != 0:
-                raise FileNotFoundError("Ollama command failed")
-        except (FileNotFoundError, subprocess.TimeoutExpired):
-            output.print_error_box(
-                "Ollama is not installed or not available in your PATH.",
-                hint="Please install Ollama from https://ollama.ai/ and ensure "
-                "it's in your PATH.",
-            )
-            raise typer.Exit(1) from None
 
-        # Ensure model is available
-        try:
-            is_available, was_pulled = ensure_model_available(config)
-
-            if was_pulled:
-                output.print_status(
-                    f"Model '{config.ollama_model}' has been pulled and is now ready.",
-                    MessageType.SUCCESS,
-                    "Model Ready",
-                )
-            else:
-                output.print_status(
-                    f"Model '{config.ollama_model}' is already available and ready.",
-                    MessageType.SUCCESS,
-                    "Model Ready",
-                )
-
-            # Show available models
+            # Check if Ollama is installed by trying to run ollama --version
             try:
-                available_models = get_available_models(config.ollama_base_url)
-                if available_models:
-                    models_text = "\n".join(
-                        f"• {model}" for model in available_models[:10]
-                    )
-                    if len(available_models) > 10:
-                        models_text += f"\n... and {len(available_models) - 10} more"
+                import subprocess
 
-                    output.print_status(
-                        models_text, MessageType.INFO, "Available Models"
-                    )
-            except OllamaManagerError:
-                # Don't fail if we can't list models, the main goal is achieved
-                pass
+                init_box.update("🔍 Checking Ollama installation...")
+                result = subprocess.run(
+                    ["ollama", "--version"], capture_output=True, text=True, timeout=10
+                )
+                if result.returncode != 0:
+                    raise FileNotFoundError("Ollama command failed")
 
-            output.print_status(
-                "AutoMake is ready to use! Try running: "
-                'automake run "your command here"',
-                MessageType.SUCCESS,
-                "Ready",
+                init_box.update("✅ Ollama installation verified")
+            except (FileNotFoundError, subprocess.TimeoutExpired):
+                init_box.update("❌ Ollama not found")
+                # Use LiveBox for error display
+                with output.live_box(
+                    "Installation Error", MessageType.ERROR
+                ) as error_box:
+                    error_box.update(
+                        "❌ Ollama is not installed or not available in your PATH.\n\n"
+                        "💡 Hint: Please install Ollama from https://ollama.ai/ and "
+                        "ensure it's in your PATH."
+                    )
+                raise typer.Exit(1) from None
+
+            # Ensure model is available
+            try:
+                init_box.update(
+                    f"📥 Checking model availability: {config.ollama_model}"
+                )
+                is_available, was_pulled = ensure_model_available(config)
+
+                if was_pulled:
+                    init_box.update(
+                        f"✅ Model '{config.ollama_model}' has been pulled and is "
+                        "now ready."
+                    )
+                else:
+                    init_box.update(
+                        f"✅ Model '{config.ollama_model}' is already available and "
+                        "ready."
+                    )
+
+                # Show available models
+                try:
+                    init_box.update("📋 Fetching available models...")
+                    available_models = get_available_models(config.ollama_base_url)
+                    if available_models:
+                        models_text = "Available models:\n" + "\n".join(
+                            f"• {model}" for model in available_models[:10]
+                        )
+                        if len(available_models) > 10:
+                            models_text += (
+                                f"\n... and {len(available_models) - 10} more"
+                            )
+
+                        init_box.update(models_text)
+                except OllamaManagerError:
+                    # Don't fail if we can't list models, the main goal is achieved
+                    init_box.update("⚠️ Could not fetch available models list")
+            except OllamaManagerError as e:
+                # Use LiveBox for different error types
+                if "Ollama command not found" in str(e):
+                    with output.live_box(
+                        "Installation Error", MessageType.ERROR
+                    ) as error_box:
+                        error_box.update(
+                            "❌ Ollama is not installed or not available in your "
+                            "PATH.\n\n"
+                            "💡 Hint: Please install Ollama from https://ollama.ai/ "
+                            "and ensure it's in your PATH."
+                        )
+                elif "Connection" in str(e) or "connect" in str(e).lower():
+                    with output.live_box(
+                        "Connection Error", MessageType.ERROR
+                    ) as error_box:
+                        error_box.update(
+                            f"❌ Could not connect to Ollama server at "
+                            f"{config.ollama_base_url}.\n\n"
+                            "💡 Hint: Make sure Ollama is running. Try: ollama serve"
+                        )
+                elif "pull" in str(e).lower() or "model" in str(e).lower():
+                    with output.live_box("Model Error", MessageType.ERROR) as error_box:
+                        error_box.update(
+                            f"❌ Failed to pull model '{config.ollama_model}': {e}\n\n"
+                            f"💡 Hint: Check if '{config.ollama_model}' is a valid "
+                            f"model name. You can see available models at "
+                            f"https://ollama.ai/library"
+                        )
+                else:
+                    with output.live_box(
+                        "Initialization Error", MessageType.ERROR
+                    ) as error_box:
+                        error_box.update(
+                            f"❌ Initialization failed: {e}\n\n"
+                            "💡 Hint: Check your Ollama setup and configuration."
+                        )
+                raise typer.Exit(1) from e
+
+                # Final success message with LiveBox
+        with output.live_box("Ready", MessageType.SUCCESS) as success_box:
+            success_box.update(
+                "🎉 AutoMake is ready to use!\n\n"
+                'Try running: automake run "your command here"'
             )
-
-        except OllamaManagerError as e:
-            if "Ollama command not found" in str(e):
-                output.print_error_box(
-                    "Ollama is not installed or not available in your PATH.",
-                    hint="Please install Ollama from https://ollama.ai/ and ensure "
-                    "it's in your PATH.",
-                )
-            elif "Connection" in str(e) or "connect" in str(e).lower():
-                output.print_error_box(
-                    f"Could not connect to Ollama server at {config.ollama_base_url}.",
-                    hint="Make sure Ollama is running. Try: ollama serve",
-                )
-            elif "pull" in str(e).lower() or "model" in str(e).lower():
-                output.print_error_box(
-                    f"Failed to pull model '{config.ollama_model}': {e}",
-                    hint=f"Check if '{config.ollama_model}' is a valid model name. "
-                    f"You can see available models at https://ollama.ai/library",
-                )
-            else:
-                output.print_error_box(
-                    f"Initialization failed: {e}",
-                    hint="Check your Ollama setup and configuration.",
-                )
-            raise typer.Exit(1) from e
 
     except Exception as e:
-        output.print_error_box(
-            f"An unexpected error occurred during initialization: {e}"
-        )
+        with output.live_box("Unexpected Error", MessageType.ERROR) as error_box:
+            error_box.update(
+                f"❌ An unexpected error occurred during initialization: {e}"
+            )
         raise typer.Exit(1) from e
 
 
@@ -651,7 +695,8 @@ def _execute_main_logic(command: str) -> None:
         # Don't fail the entire command if logging setup fails
         pass
 
-    output.print_command_received(command)
+    with output.live_box("Command Received", MessageType.INFO) as command_box:
+        command_box.update(f"[cyan]{command}[/cyan]")
 
     # Phase 4: Makefile Reader Implementation
     try:
@@ -660,15 +705,19 @@ def _execute_main_logic(command: str) -> None:
         reader.read_makefile()  # Validate makefile content
 
     except MakefileNotFoundError as e:
-        output.print_error_box(
-            str(e), hint="Make sure you're in a directory with a Makefile"
-        )
+        with output.live_box("Makefile Error", MessageType.ERROR) as error_box:
+            error_box.update(
+                f"❌ {str(e)}\n\n"
+                "💡 Hint: Make sure you're in a directory with a Makefile"
+            )
         raise typer.Exit(1) from e
     except OSError as e:
-        output.print_error_box(f"Error reading Makefile: {e}")
+        with output.live_box("File System Error", MessageType.ERROR) as error_box:
+            error_box.update(f"❌ Error reading Makefile: {e}")
         raise typer.Exit(1) from e
     except Exception as e:
-        output.print_error_box(f"Unexpected error: {e}")
+        with output.live_box("Unexpected Error", MessageType.ERROR) as error_box:
+            error_box.update(f"❌ Unexpected error: {e}")
         raise typer.Exit(1) from e
 
     # Phase 2: AI Core
@@ -679,11 +728,11 @@ def _execute_main_logic(command: str) -> None:
 
         # Show notice if Ollama was started automatically
         if ollama_was_started:
-            output.print_status(
-                "Ollama server was not running and has been started automatically.",
-                MessageType.INFO,
-                "Notice",
-            )
+            with output.live_box("Notice", MessageType.INFO) as notice_box:
+                notice_box.update(
+                    "ℹ️ Ollama server was not running and has been started "
+                    "automatically."
+                )
 
         # Use the new AI thinking box for better UX
         with output.ai_thinking_box("AI Command Analysis") as thinking_box:
@@ -714,32 +763,40 @@ def _execute_main_logic(command: str) -> None:
         final_command = response.command
         # Phase 3: Interactive session
         if response.confidence < config.interactive_threshold:
-            output.print_status(
-                f"Confidence is below threshold ({config.interactive_threshold}%), "
-                "starting interactive session.",
-                MessageType.WARNING,
-                "Interaction",
-            )
+            with output.live_box("Interaction", MessageType.WARNING) as warning_box:
+                warning_box.update(
+                    f"⚠️ Confidence is below threshold "
+                    f"({config.interactive_threshold}%), starting interactive session."
+                )
             command_options = (
                 [response.command] if response.command else []
             ) + response.alternatives
             if not command_options:
-                output.print_error_box(
-                    "AI could not determine a command and provided no alternatives.",
-                    hint="Try rephrasing your command or checking your Makefile.",
-                )
+                with output.live_box(
+                    "AI Analysis Error", MessageType.ERROR
+                ) as error_box:
+                    error_box.update(
+                        "❌ AI could not determine a command and provided no "
+                        "alternatives.\n\n"
+                        "💡 Hint: Try rephrasing your command or checking your "
+                        "Makefile."
+                    )
                 raise typer.Exit()
 
             final_command = select_command(command_options, output)
             if final_command is None:
-                output.print_status("Operation cancelled.", MessageType.INFO, "Abort")
+                with output.live_box(
+                    "Operation Cancelled", MessageType.INFO
+                ) as info_box:
+                    info_box.update("🚫 Operation cancelled by user.")
                 raise typer.Exit()
 
         if not final_command:
-            output.print_error_box(
-                "AI could not determine a command to run.",
-                hint="Try rephrasing your command.",
-            )
+            with output.live_box("AI Analysis Error", MessageType.ERROR) as error_box:
+                error_box.update(
+                    "❌ AI could not determine a command to run.\n\n"
+                    "💡 Hint: Try rephrasing your command."
+                )
             raise typer.Exit()
 
         # Log the final command that will be executed
@@ -751,12 +808,14 @@ def _execute_main_logic(command: str) -> None:
             runner.run(final_command, live_box=execution_box)
 
     except CommandInterpretationError as e:
-        output.print_error_box(
-            str(e), hint="Check your Ollama setup and configuration."
-        )
+        with output.live_box("AI Interpretation Error", MessageType.ERROR) as error_box:
+            error_box.update(
+                f"❌ {str(e)}\n\n💡 Hint: Check your Ollama setup and configuration."
+            )
         raise typer.Exit(1) from e
     except Exception as e:
-        output.print_error_box(f"An unexpected error occurred in the AI core: {e}")
+        with output.live_box("AI Core Error", MessageType.ERROR) as error_box:
+            error_box.update(f"❌ An unexpected error occurred in the AI core: {e}")
         raise typer.Exit(1) from e
 
 
