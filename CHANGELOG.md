@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 🔧 Fixed
 - ✅ Version reporting accuracy in installed packages
 - 🎯 UVX compatibility for `uvx automake-cli` direct execution
+- 🔗 Corrected GitHub repository links in README badges
 
 ## v0.3.3 - Enhanced UX & Testing Improvements
 
@@ -132,6 +133,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Pre-commit hook compatibility issues
 - 📏 Code formatting and linting compliance
 
+[0.3.4]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.3.4
 [0.3.3]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.3.3
 [0.3.2]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.3.2
 [0.3.1]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.3.1
