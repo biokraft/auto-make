@@ -2,7 +2,8 @@
 *Makefiles without writing Makefiles.*
 
 [![Latest Version](https://img.shields.io/pypi/v/automake-cli?label=latest&logo=pypi&logoColor=white)](https://pypi.org/project/automake-cli/)
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Changelog](https://img.shields.io/badge/changelog-keep%20a%20changelog-blue)](CHANGELOG.md)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com/biokraft/auto-make)
 [![Build Status](https://github.com/biokraft/auto-make/actions/workflows/ci.yml/badge.svg)](https://github.com/biokraft/auto-make/actions/workflows/ci.yml)
 [![codecov](https://img.shields.io/badge/coverage->85%-brightgreen?logo=codecov)](https://codecov.io/gh/biokraft/auto-make)
@@ -140,24 +141,6 @@ or use automake: `automake "show all demos"`
 ## 🗺️ Project Roadmap
 For a detailed breakdown of the project roadmap, implementation phases, and technical specifications, see [SPECS.md](SPECS.md).
 
-## 🚀 Development & Publishing
-
-### For Contributors
-This project uses modern Python tooling and automated publishing:
-
-- **Package Management**: [UV](https://github.com/astral-sh/uv) for fast dependency management
-- **Code Quality**: Pre-commit hooks with Ruff for linting and formatting
-- **Testing**: Pytest with comprehensive test coverage
-- **CI/CD**: GitHub Actions for automated testing and publishing
-
-### Publishing Process
-The project uses **GitHub Actions with Trusted Publishing** for secure, automated releases:
-
-- **Production**: Automatically publishes to PyPI when a GitHub release is created
-- **Testing**: Manual workflow to test publishing on TestPyPI before production releases
-
-For detailed publishing instructions, see [docs/PUBLISHING.md](docs/PUBLISHING.md).
-
 ### Installation Methods
 ```bash
 # Direct execution (recommended for users)
@@ -169,3 +152,9 @@ uvx --from automake-cli automake
 # Traditional pip installation
 pip install automake-cli
 ```
+
+## 📜 Changelog
+All notable changes to this project are documented in the [CHANGELOG.md](CHANGELOG.md) file.
+
+## 📄 License
+This project is licensed under the Apache 2.0 License. See the [LICENSE](LICENSE) file for details.
