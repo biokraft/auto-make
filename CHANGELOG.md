@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.2 - Documentation & Configuration Enhancement
+
+### 🛠️ Improved
+- 📚 Enhanced README with clearer `run` command usage examples and configuration guidance
+- ⚙️ Improved configuration command error messages with better user guidance
+- 🎯 Updated configuration examples for AI model setup and parameter management
+- 📋 Enhanced help display functionality for better user experience
+
+### ✨ Added
+- 🧪 Expanded test coverage for configuration commands with success and error scenarios
+- 💡 Future enhancement suggestions for making `run` the default subcommand
+
 ## v0.4.1 - Interactive Session Enhancement
 
 ### ✨ Added
@@ -187,6 +199,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Pre-commit hook compatibility issues
 - 📏 Code formatting and linting compliance
 
+[0.4.2]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.4.2
 [0.4.1]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.4.1
 [0.4.0]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.4.0
 [0.3.5]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.3.5
