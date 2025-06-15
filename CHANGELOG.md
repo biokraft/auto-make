@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.3.5 - UI/UX Enhancement & LiveBox Integration
+
+### ✨ Added
+- 🎨 LiveBox integration for dynamic CLI output and improved visual feedback
+- 📋 Enhanced test coverage for LiveBox functionality and output consistency
+- 🤖 Autonomous agent mode specification and implementation planning
+
+### 🛠️ Improved
+- 🎯 CLI help handling with cleaner user experience for subcommands
+- 📊 Consistent emoji formatting across error, success, and informational messages
+- 📚 Updated project specifications reflecting completion of Phase 1 UI components
+- 🔧 Output consistency improvements across different CLI scenarios
+
+### 🔧 Fixed
+- ✅ Test assertions updated for improved clarity and accuracy
+- 🎨 Help command display consistency across logs and config subcommands
+
 ## v0.3.4 - UVX Distribution Enhancement
 
 ### ✨ Added
@@ -133,6 +150,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Pre-commit hook compatibility issues
 - 📏 Code formatting and linting compliance
 
+[0.3.5]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.3.5
 [0.3.4]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.3.4
 [0.3.3]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.3.3
 [0.3.2]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.3.2
