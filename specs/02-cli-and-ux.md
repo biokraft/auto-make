@@ -1,37 +1,43 @@
 # CLI and User Experience Specification
 
 ## 1. Purpose
-This document outlines the command-line interface (CLI), user interaction patterns, and overall user experience for the AutoMake tool.
+This document outlines the command-line interface (CLI), user interaction patterns, and overall user experience for AutoMake, designed as an agent-first application.
 
-## 2. Functional Requirements
-- The tool must be invocable from the command line via an executable named `automake`.
-- It must accept a single positional argument: a string containing the natural language command to be interpreted.
-- The command string must be enclosed in quotes to be treated as a single argument by the shell.
-- The tool should stream the output of the executed `make` command directly to the standard output/error streams of the user's terminal in real-time.
+## 2. CLI Commands
+
+### 2.1. Main Command: `automake "<prompt>"`
+- The primary way to interact with the tool is via `automake "<prompt>"`.
+- This command invokes the Manager Agent to interpret and execute the user's natural language request non-interactively.
+- The agent's output and the results of any executed tools are streamed to the terminal.
+- **Usage Examples**:
+  ```bash
+  # Execute a make target
+  automake "build the project"
+
+  # Run a general terminal command
+  automake "list all the python files in this directory"
+
+  # Ask a general question
+  automake "what is the ip address of the google dns server?"
+  ```
+
+### 2.2. Interactive Agent Mode: `automake agent`
+- For a conversational experience, users can run `automake agent`.
+- This command launches a `rich`-based interactive chat session with the Manager Agent, maintaining context throughout the conversation.
+- This mode is ideal for complex, multi-step tasks that benefit from interactive guidance.
+
+### 2.3. Other Commands
+- Other commands like `init` and `logs` will remain as standard subcommands.
 
 ## 3. Non-functional Requirements / Constraints
-- **Simplicity**: The CLI should be simple, with a single, clear purpose. No complex flags or subcommands are required for the initial version.
-- **Responsiveness**: The tool should provide immediate feedback that it has started processing. A simple "Interpreting your command..." message is sufficient before the AI/Make process begins.
-- **Framework**: The CLI will be built using the `Typer` library to ensure a modern and maintainable implementation.
+- **Responsiveness**: The tool must provide immediate feedback. A dynamic live display will show the agent's status (e.g., "Thinking...", "Executing `ls -l`...").
+- **Framework**: The CLI will continue to be built using the `Typer` library.
 
-## 4. Usage Examples
-```bash
-# Example 1: Simple command
-automake "build the project"
+## 4. Error Handling
+- **Invalid Prompt**: If the user does not provide a command string to `automake`, the CLI should exit gracefully with usage instructions.
+- **Unrecognized Command/Flag**: If the user enters an invalid command or flag (e.g., `automake --bad-flag`), the intelligent error handler specified in `specs/01-core-functionality.md` will be triggered. The agent will attempt to suggest a valid command.
+- **Execution Errors**: Errors from executed tools (e.g., a `make` command failing) will be clearly reported to the user.
 
-# Example 2: Command with parameters
-automake "deploy the grafana service to the staging environment"
-
-# Example 3: Running tests
-automake "run all the unit tests"
-```
-
-## 5. Error Handling
-- If the user does not provide a command string, the CLI should exit gracefully with a clear error message and usage instructions.
-- If no `Makefile` is found in the current directory, the tool should exit with a clear error message.
-- If the LLM is unable to interpret the user's command (i.e., it returns no primary command and no alternatives), the CLI will display the standard help/usage message and exit gracefully.
-
-## 6. Out of Scope
-- Interactive prompts.
-- Configuration via CLI flags (e.g., `--model`, `--verbose`). Configuration will be handled via a separate configuration file if needed.
+## 5. Out of Scope
+- Configuration via CLI flags (this is handled by `config.toml`).
 - Shell completions.
