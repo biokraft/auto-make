@@ -1,13 +1,14 @@
 # Logging Strategy Specification
 
 ## 1. Purpose
-This document defines the logging strategy for the AutoMake application. The goal is to capture essential information for debugging and monitoring while managing log file size and retention.
+This document defines the logging strategy for the AutoMake application. The goal is to capture essential information for debugging and monitoring while ensuring robust support for concurrent application instances.
 
 ## 2. Functional Requirements
 - The application must log events to a file.
 - Log files will be stored in a platform-specific user log directory (e.g., `~/.local/state/automake/logs` on Linux, `~/Library/Logs/automake` on macOS).
-- Logging should be configured with a rotation policy: a new log file is created for each day.
-- Log files older than 7 days must be automatically deleted.
+- **Concurrent Session Support**: To prevent conflicts when multiple instances of AutoMake run simultaneously, each session will generate a unique log file.
+  - Log filenames will be based on the process ID (PID) and the current date, following the pattern: `automake_YYYY-MM-DD_PID.log`.
+- **Log Retention**: Log files older than 7 days must be automatically deleted. This cleanup process will run at application startup.
 
 ## 3. Log Levels and Content
 The application will use standard log levels (`DEBUG`, `INFO`, `WARNING`, `ERROR`).
@@ -18,27 +19,27 @@ The application will use standard log levels (`DEBUG`, `INFO`, `WARNING`, `ERROR
     - Example: "Could not connect to Ollama server at ...", "Makefile not found".
 
 ## 4. Implementation Notes
-- The standard Python `logging` module should be used.
-- The `logging.handlers.TimedRotatingFileHandler` is perfectly suited for implementing the daily rotation and backup count (which directly translates to the retention period).
-- The `appdirs` library or a similar utility can be used to reliably determine the correct cross-platform log directory.
-- A configuration setting in `config.toml` should allow the user to enable `DEBUG` level logging for troubleshooting.
+- The standard Python `logging` module is used.
+- A custom `setup_logging` function handles the creation of PID-based log files and the startup-based cleanup of old logs.
+- The `appdirs` library is used to reliably determine the correct cross-platform log directory.
+- A configuration setting in `config.toml` allows the user to set the log level.
 
 **Example `config.toml` addition:**
 ```toml
 # ... existing config ...
 
 [logging]
-# Set log level to "DEBUG" for verbose output for troubleshooting.
+# Set log level for troubleshooting.
 # Accepted values: "INFO", "DEBUG", "WARNING", "ERROR"
 level = "INFO"
 ```
 
 ## 5. Log Format
-Logs should be structured to be easily parsable. A good default format is:
+Logs are structured to be easily parsable. The format is:
 `%(asctime)s - %(name)s - %(levelname)s - %(message)s`
 
 **Example Log Entry:**
-`2023-10-27 10:00:00,123 - automake.core - INFO - Executing command: make build`
+`2023-10-27 10:00:00,123 - automake - INFO - Executing command: make build`
 
 ## 6. Out of Scope
 - Sending logs to a remote aggregation service (e.g., Datadog, Splunk).

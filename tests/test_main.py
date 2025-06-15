@@ -109,28 +109,23 @@ deploy:
             makefile_path = temp_path / "Makefile"
             makefile_path.write_text(makefile_content)
 
-            # Mock the AI agent and command runner
+            # Mock the new agent architecture
             with (
-                patch("automake.cli.commands.run.create_ai_agent") as mock_create_agent,
-                patch("automake.cli.commands.run.CommandRunner") as mock_runner,
+                patch(
+                    "automake.cli.commands.run.ManagerAgentRunner"
+                ) as mock_runner_class,
+                patch("automake.config.get_config") as mock_config,
+                patch("automake.logging.setup_logging") as mock_logging,
                 patch("automake.core.makefile_reader.Path.cwd", return_value=temp_path),
             ):
-                # Mock AI agent response
-                mock_agent = MagicMock()
-                mock_response = MagicMock()
-                mock_response.reasoning = "The user wants to build the project"
-                mock_response.command = "build"
-                mock_response.confidence = 95
-                mock_response.alternatives = ["all"]
-                mock_agent.interpret_command.return_value = mock_response
-                mock_create_agent.return_value = (mock_agent, False)
+                # Setup mocks for new agent architecture
+                mock_config.return_value = MagicMock()
+                mock_logging.return_value = MagicMock()
 
-                # Mock command runner
-                mock_runner_instance = MagicMock()
-                mock_runner_instance.run = MagicMock(
-                    return_value=None
-                )  # Mock the run method
-                mock_runner.return_value = mock_runner_instance
+                mock_runner = MagicMock()
+                mock_runner.initialize.return_value = False
+                mock_runner.run.return_value = "Command executed successfully"
+                mock_runner_class.return_value = mock_runner
 
                 result = self.runner.invoke(app, ["run", test_command])
 
@@ -139,10 +134,9 @@ deploy:
                 print(f"Stdout: {result.stdout}")
                 print(f"Exception: {result.exception}")
             assert result.exit_code == 0
-            # Phase 1: Check for LiveBox output instead of static messages
-            assert "AI Reasoning" in result.stdout
-            assert "Command Selected" in result.stdout
-            assert "make build" in result.stdout
+            # Verify the new agent architecture was used
+            mock_runner.initialize.assert_called_once()
+            mock_runner.run.assert_called_once_with(test_command)
 
     def test_main_command_no_makefile_error(self) -> None:
         """Test main command when no Makefile exists."""

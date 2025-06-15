@@ -85,10 +85,10 @@ class TestLogUtilities:
         log_dir = tmp_path / "logs"
         log_dir.mkdir()
 
-        # Create log files with different timestamps
-        current_log = log_dir / "automake.log"
-        old_log1 = log_dir / "automake.log.2023-01-01"
-        old_log2 = log_dir / "automake.log.2023-01-02"
+        # Create log files with PID-based naming
+        current_log = log_dir / "automake_2023-12-01_12345.log"
+        old_log1 = log_dir / "automake_2023-01-01_11111.log"
+        old_log2 = log_dir / "automake_2023-01-02_22222.log"
 
         current_log.write_text("current log")
         old_log1.write_text("old log 1")
@@ -109,9 +109,9 @@ class TestLogUtilities:
 
             assert len(result) == 3
             # Should be sorted by modification time, newest first
-            assert result[0].name == "automake.log"
-            assert result[1].name == "automake.log.2023-01-02"
-            assert result[2].name == "automake.log.2023-01-01"
+            assert result[0].name == "automake_2023-12-01_12345.log"
+            assert result[1].name == "automake_2023-01-02_22222.log"
+            assert result[2].name == "automake_2023-01-01_11111.log"
 
 
 class TestLogCommands:

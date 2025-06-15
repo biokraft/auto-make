@@ -8,7 +8,7 @@ import typer
 from rich.console import Console
 
 from automake.cli.commands.init import init_command as init
-from automake.cli.commands.run import _execute_main_logic
+from automake.cli.commands.run import _execute_agent_command
 from automake.config import Config
 from automake.core.ai_agent import CommandInterpretationError
 from automake.core.makefile_reader import MakefileNotFoundError
@@ -241,7 +241,7 @@ class TestMainExecutionLiveBoxIntegration:
                 return_value=self.formatter,
             ):
                 with pytest.raises(typer.Exit):
-                    _execute_main_logic("test command")
+                    _execute_agent_command("test command")
 
             # Verify error LiveBox was used
             assert mock_live_box.call_count >= 1
@@ -278,7 +278,7 @@ class TestMainExecutionLiveBoxIntegration:
                 return_value=self.formatter,
             ):
                 with pytest.raises(typer.Exit):
-                    _execute_main_logic("test command")
+                    _execute_agent_command("test command")
 
             # Verify error LiveBox was used
             assert mock_live_box.call_count >= 1
@@ -338,7 +338,7 @@ class TestMainExecutionLiveBoxIntegration:
                 return_value=self.formatter,
             ):
                 with pytest.raises(typer.Exit):
-                    _execute_main_logic("test command")
+                    _execute_agent_command("test command")
 
             # Verify error LiveBox was used
             assert mock_live_box.call_count >= 1
@@ -408,7 +408,7 @@ class TestMainExecutionLiveBoxIntegration:
                 return_value=self.formatter,
             ):
                 with pytest.raises(typer.Exit):
-                    _execute_main_logic("test command")
+                    _execute_agent_command("test command")
 
             # Verify info LiveBox was used for cancellation message
             assert mock_live_box.call_count >= 1
@@ -472,7 +472,7 @@ class TestMainExecutionLiveBoxIntegration:
                 return_value=self.formatter,
             ):
                 with pytest.raises(typer.Exit):
-                    _execute_main_logic("test command")
+                    _execute_agent_command("test command")
 
             # Verify error LiveBox was used
             assert mock_live_box.call_count >= 1

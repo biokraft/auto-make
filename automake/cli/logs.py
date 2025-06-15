@@ -35,8 +35,8 @@ def get_log_files() -> list[Path]:
     if not log_dir.exists():
         return []
 
-    # Find all log files (current and rotated)
-    log_files = list(log_dir.glob("automake.log*"))
+    # Find all log files with PID-based naming (automake_YYYY-MM-DD_PID.log)
+    log_files = list(log_dir.glob("automake_*.log"))
 
     # Sort by modification time, newest first
     log_files.sort(key=lambda f: f.stat().st_mtime, reverse=True)
@@ -246,8 +246,8 @@ def show_log_config(console: Console, output) -> None:
 
         config_info = f"""Log Level: {config.log_level}
 Log Directory: {log_dir}
-Log File: {log_dir / "automake.log"}
-Rotation: Daily (midnight)
+Log File Pattern: automake_YYYY-MM-DD_PID.log
+Cleanup: Startup-based (7 days retention)
 Retention: 7 days
 Format: %(asctime)s - %(name)s - %(levelname)s - %(message)s"""
 

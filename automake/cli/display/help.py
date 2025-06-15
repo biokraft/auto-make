@@ -98,6 +98,8 @@ def print_help_with_ascii(show_author: bool = False) -> None:
     # Print commands
     commands_content = (
         "run                  Execute natural language commands\n"
+        "agent                Launch the AI agent in interactive or "
+        "non-interactive mode\n"
         "init                 Initialize AutoMake and ensure model is ready\n"
         "config               Manage AutoMake configuration\n"
         "help                 Show this help information\n"

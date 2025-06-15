@@ -1,23 +1,14 @@
 """Run command implementation for AutoMake CLI.
 
 This module contains the natural language command execution functionality.
+Now uses the new agent-first architecture with the ManagerAgent.
 """
 
-import time
-
 import typer
+from rich.console import Console
 
+from automake.agent.manager import ManagerAgentRunner
 from automake.config import get_config
-from automake.core.ai_agent import (
-    CommandInterpretationError,
-    create_ai_agent,
-)
-from automake.core.command_runner import CommandRunner
-from automake.core.interactive import select_command
-from automake.core.makefile_reader import (
-    MakefileNotFoundError,
-    MakefileReader,
-)
 from automake.logging import (
     get_logger,
     log_command_execution,
@@ -25,6 +16,8 @@ from automake.logging import (
     setup_logging,
 )
 from automake.utils.output import MessageType, get_formatter
+
+console = Console()
 
 
 def run_command(
@@ -34,13 +27,17 @@ def run_command(
         metavar="COMMAND",
     ),
 ) -> None:
-    """Execute a natural language command using AI to interpret Makefile targets.
+    """Execute a natural language command using the AI agent system.
+
+    This command now uses the new agent-first architecture where a ManagerAgent
+    orchestrates specialist agents to accomplish tasks.
 
     Examples:
         automake run "build the project"
         automake run "run all tests"
         automake run "deploy to staging"
-        automake run "execute the cicd pipeline"
+        automake run "list all python files"
+        automake run "create a simple hello world script"
     """
     # Handle special cases
     if command.lower() == "help":
@@ -50,14 +47,16 @@ def run_command(
         print_help_with_ascii()
         raise typer.Exit()
 
-    # Execute the main logic
-    _execute_main_logic(command)
+    # Execute using the new agent architecture
+    _execute_agent_command(command)
 
 
-def _execute_main_logic(command: str) -> None:
-    """Execute the main command logic."""
+def _execute_agent_command(command: str) -> None:
+    """Execute a command using the new agent architecture."""
     output = get_formatter()
-    # Phase 1: Setup logging
+    logger = get_logger()
+
+    # Setup logging
     try:
         config = get_config()
         logger = setup_logging(config)
@@ -70,125 +69,46 @@ def _execute_main_logic(command: str) -> None:
     with output.live_box("Command Received", MessageType.INFO) as command_box:
         command_box.update(f"[cyan]{command}[/cyan]")
 
-    # Phase 4: Makefile Reader Implementation
     try:
-        reader = MakefileReader()
-        reader.get_makefile_info()  # Validate makefile exists and is readable
-        reader.read_makefile()  # Validate makefile content
+        # Initialize the manager agent
+        runner = ManagerAgentRunner(config)
 
-    except MakefileNotFoundError as e:
-        with output.live_box("Makefile Error", MessageType.ERROR) as error_box:
-            error_box.update(
-                f"❌ {str(e)}\n\n"
-                "💡 Hint: Make sure you're in a directory with a Makefile"
-            )
-        raise typer.Exit(1) from e
-    except OSError as e:
-        with output.live_box("File System Error", MessageType.ERROR) as error_box:
-            error_box.update(f"❌ Error reading Makefile: {e}")
-        raise typer.Exit(1) from e
-    except Exception as e:
-        with output.live_box("Unexpected Error", MessageType.ERROR) as error_box:
-            error_box.update(f"❌ Unexpected error: {e}")
-        raise typer.Exit(1) from e
+        with output.live_box("Agent Initialization", MessageType.INFO) as init_box:
+            init_box.update("🤖 Initializing AI agent system...")
+            ollama_was_started = runner.initialize()
 
-    # Phase 2: AI Core
-    try:
-        config = get_config()
-        logger = get_logger()
-        agent, ollama_was_started = create_ai_agent(config)
-
-        # Show notice if Ollama was started automatically
-        if ollama_was_started:
-            with output.live_box("Notice", MessageType.INFO) as notice_box:
-                notice_box.update(
-                    "ℹ️ Ollama server was not running and has been started "
-                    "automatically."
+            if ollama_was_started:
+                init_box.update(
+                    "🤖 AI agent system initialized\n"
+                    "✅ Ollama server started automatically"
                 )
+            else:
+                init_box.update("🤖 AI agent system initialized")
 
-        # Use the new AI thinking box for better UX
-        with output.ai_thinking_box("AI Command Analysis") as thinking_box:
-            # The first message is already animated by ai_thinking_box
+        # Execute the command through the manager agent
+        with output.live_box("Agent Processing", MessageType.INFO) as processing_box:
+            processing_box.update(f"🧠 Processing: [cyan]{command}[/cyan]")
 
-            thinking_box.update("🧠 Processing Makefile targets...")
+            try:
+                # Run the agent
+                result = runner.run(command)
 
-            # Log target descriptions for debugging
-            targets_with_desc = reader.targets_with_descriptions
-            logger.debug(f"Found {len(targets_with_desc)} targets in Makefile")
-            for target, desc in targets_with_desc.items():
-                if desc:
-                    logger.debug(f"Target '{target}': {desc}")
-                else:
-                    logger.debug(f"Target '{target}': (no description)")
+                # Display the result
+                processing_box.update("✅ Task completed")
 
-            time.sleep(0.2)
+            except Exception as e:
+                logger.error(f"Agent execution failed: {e}")
+                processing_box.update(f"❌ Agent execution failed: {e}")
+                raise typer.Exit(1) from e
 
-            thinking_box.update("🔍 Finding best match...")
-            response = agent.interpret_command(command, reader)
-
-        # Show AI reasoning with streaming effect
-        output.print_ai_reasoning_streaming(response.reasoning, response.confidence)
-
-        # Show which command was chosen with animation
-        output.print_command_chosen_animated(response.command, response.confidence)
-
-        final_command = response.command
-        # Phase 3: Interactive session
-        if response.confidence < config.interactive_threshold:
-            with output.live_box("Interaction", MessageType.WARNING) as warning_box:
-                warning_box.update(
-                    f"⚠️ Confidence is below threshold "
-                    f"({config.interactive_threshold}%), starting interactive session."
-                )
-            command_options = (
-                [response.command] if response.command else []
-            ) + response.alternatives
-            if not command_options:
-                with output.live_box(
-                    "AI Analysis Error", MessageType.ERROR
-                ) as error_box:
-                    error_box.update(
-                        "❌ AI could not determine a command and provided no "
-                        "alternatives.\n\n"
-                        "💡 Hint: Try rephrasing your command or checking your "
-                        "Makefile."
-                    )
-                raise typer.Exit()
-
-            final_command = select_command(command_options, output)
-            if final_command is None:
-                with output.live_box(
-                    "Operation Cancelled", MessageType.INFO
-                ) as info_box:
-                    info_box.update("🚫 Operation cancelled by user.")
-                raise typer.Exit()
-
-        if not final_command:
-            with output.live_box("AI Analysis Error", MessageType.ERROR) as error_box:
-                error_box.update(
-                    "❌ AI could not determine a command to run.\n\n"
-                    "💡 Hint: Try rephrasing your command."
-                )
-            raise typer.Exit()
-
-        # Log the final command that will be executed
-        logger.info(f"Final command selected: '{final_command}'")
-
-        # Phase 2: Execution Engine with LiveBox
-        runner = CommandRunner()
-        with output.command_execution_box(final_command) as execution_box:
-            runner.run(final_command, live_box=execution_box)
+        # Print the result
+        console.print("\n[bold green]Agent Response:[/bold green]")
+        console.print(result)
 
     except typer.Exit:
         # Re-raise typer.Exit without modification
         raise
-    except CommandInterpretationError as e:
-        with output.live_box("AI Interpretation Error", MessageType.ERROR) as error_box:
-            error_box.update(
-                f"❌ {str(e)}\n\n💡 Hint: Check your Ollama setup and configuration."
-            )
-        raise typer.Exit(1) from e
     except Exception as e:
-        with output.live_box("AI Core Error", MessageType.ERROR) as error_box:
-            error_box.update(f"❌ An unexpected error occurred in the AI core: {e}")
+        with output.live_box("Agent Error", MessageType.ERROR) as error_box:
+            error_box.update(f"❌ Failed to execute command: {e}")
         raise typer.Exit(1) from e

@@ -1,11 +1,13 @@
 """Logging setup for AutoMake.
 
-This module configures file-based logging with daily rotation and 7-day retention
-according to the logging strategy specification.
+This module configures file-based logging with PID-based unique filenames
+and startup-based cleanup for concurrent session support.
 """
 
 import logging
-import logging.handlers
+import os
+import time
+from datetime import datetime
 from pathlib import Path
 
 import appdirs
@@ -19,10 +21,50 @@ class LoggingSetupError(Exception):
     pass
 
 
+def cleanup_old_log_files(log_dir: Path, retention_days: int = 7) -> None:
+    """Clean up log files older than the retention period.
+
+    This function is called on startup to remove old log files from previous
+    sessions, supporting concurrent execution by cleaning up based on file
+    modification time.
+
+    Args:
+        log_dir: Directory containing log files
+        retention_days: Number of days to retain log files (default: 7)
+    """
+    if not log_dir.exists():
+        return
+
+    cutoff_time = time.time() - (retention_days * 24 * 60 * 60)
+
+    # Find all automake log files
+    log_pattern = "automake_*.log"
+    for log_file in log_dir.glob(log_pattern):
+        try:
+            # Use modification time for cross-platform compatibility
+            file_time = log_file.stat().st_mtime
+            if file_time < cutoff_time:
+                log_file.unlink()
+        except OSError:
+            # Ignore errors when deleting files (e.g., permission issues)
+            pass
+
+
+def _generate_log_filename() -> str:
+    """Generate a unique log filename with PID and date.
+
+    Returns:
+        Log filename in format: automake_YYYY-MM-DD_PID.log
+    """
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    pid = os.getpid()
+    return f"automake_{current_date}_{pid}.log"
+
+
 def setup_logging(
     config: Config | None = None, log_dir: Path | None = None
 ) -> logging.Logger:
-    """Set up file-based logging with rotation.
+    """Set up file-based logging with PID-based unique filenames.
 
     Args:
         config: Optional Config instance. If None, creates a new one.
@@ -54,6 +96,9 @@ def setup_logging(
     except OSError as e:
         raise LoggingSetupError(f"Failed to create log directory {log_dir}: {e}") from e
 
+    # Clean up old log files before setting up new logging
+    cleanup_old_log_files(log_dir)
+
     # Configure root logger
     logger = logging.getLogger("automake")
 
@@ -64,17 +109,14 @@ def setup_logging(
     log_level = getattr(logging, config.log_level.upper(), logging.INFO)
     logger.setLevel(log_level)
 
-    # Create log file path
-    log_file = log_dir / "automake.log"
+    # Create unique log file path with PID
+    log_filename = _generate_log_filename()
+    log_file = log_dir / log_filename
 
     try:
-        # Create rotating file handler
-        # Daily rotation with 7-day retention (backupCount=7)
-        file_handler = logging.handlers.TimedRotatingFileHandler(
+        # Create standard file handler (no rotation needed with unique filenames)
+        file_handler = logging.FileHandler(
             filename=str(log_file),
-            when="midnight",
-            interval=1,
-            backupCount=7,
             encoding="utf-8",
         )
 

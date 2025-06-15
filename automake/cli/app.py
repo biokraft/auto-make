@@ -6,6 +6,7 @@ Individual command implementations are in the commands/ package.
 
 import typer
 
+from automake.cli.commands.agent import agent_command
 from automake.cli.commands.config import (
     config_edit_command,
     config_reset_command,
@@ -51,7 +52,7 @@ app.add_typer(logs_app, name="logs")
 app.add_typer(config_app, name="config")
 
 
-# Main callback - handles global options only
+# Main callback - handles global options
 @app.callback(invoke_without_command=True)
 def main(
     ctx: typer.Context,
@@ -72,7 +73,18 @@ def main(
         help="Show this message and exit.",
     ),
 ) -> None:
-    """AI-powered Makefile command execution."""
+    """AI-powered command-line assistant.
+
+    AutoMake uses AI agents to interpret and execute natural language commands.
+    Use specific subcommands for different features.
+
+    Examples:
+        automake agent "install python v3.13"
+        automake agent "build the project"
+        automake agent "list all python files"
+        automake agent  # Interactive mode
+        automake run "deploy to staging"
+    """
     # If no command is provided, show welcome message
     if ctx.invoked_subcommand is None:
         print_welcome()
@@ -97,6 +109,7 @@ def config_main(ctx: typer.Context) -> None:
 
 # Register main commands
 app.command("run")(run_command)
+app.command("agent")(agent_command)
 app.command("init")(init_command)
 app.command("help")(help_command)
 

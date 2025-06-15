@@ -36,6 +36,7 @@ dependencies = [
     "appdirs>=1.4.4",
     "ollama>=0.5.1",
     "questionary>=2.0.1",
+    "duckduckgo-search>=8.0.4",
 ]
 
 [project.optional-dependencies]
