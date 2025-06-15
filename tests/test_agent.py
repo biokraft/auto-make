@@ -245,9 +245,17 @@ class TestSpecialistAgents:
 class TestManagerAgent:
     """Test the manager agent functionality."""
 
-    def test_create_manager_agent_success(self):
+    @patch("automake.agent.manager.LiteLLMModel")
+    @patch("automake.agent.manager.ToolCallingAgent")
+    def test_create_manager_agent_success(self, mock_agent_class, mock_model_class):
         """Test successful manager agent creation."""
         config = create_test_config()
+
+        # Mock the model and agent
+        mock_model = Mock()
+        mock_model_class.return_value = mock_model
+        mock_agent = Mock()
+        mock_agent_class.return_value = mock_agent
 
         # This test just verifies that the function can be called without errors
         # and returns the expected types
@@ -261,9 +269,25 @@ class TestManagerAgent:
             assert isinstance(ollama_started, bool)
             assert ollama_started is False
 
-    def test_create_manager_agent_ollama_started(self):
+            # Verify the model was created with correct parameters
+            mock_model_class.assert_called_once_with(
+                model_id=f"ollama/{config.ollama_model}",
+                base_url=config.ollama_base_url,
+            )
+
+    @patch("automake.agent.manager.LiteLLMModel")
+    @patch("automake.agent.manager.ToolCallingAgent")
+    def test_create_manager_agent_ollama_started(
+        self, mock_agent_class, mock_model_class
+    ):
         """Test manager agent creation when Ollama needs to be started."""
         config = create_test_config()
+
+        # Mock the model and agent
+        mock_model = Mock()
+        mock_model_class.return_value = mock_model
+        mock_agent = Mock()
+        mock_agent_class.return_value = mock_agent
 
         with patch("automake.agent.manager.ensure_ollama_running") as mock_ollama:
             mock_ollama.return_value = (True, True)  # (is_running, was_started)
@@ -454,8 +478,12 @@ class TestCLIIntegration:
 class TestErrorHandling:
     """Test error handling in the agent system."""
 
+    @patch("automake.agent.manager.LiteLLMModel")
+    @patch("automake.agent.manager.ToolCallingAgent")
     @patch("automake.agent.manager.ensure_ollama_running")
-    def test_manager_agent_creation_failure(self, mock_ollama):
+    def test_manager_agent_creation_failure(
+        self, mock_ollama, mock_agent_class, mock_model_class
+    ):
         """Test manager agent creation failure."""
         mock_ollama.side_effect = Exception("Ollama connection failed")
 
