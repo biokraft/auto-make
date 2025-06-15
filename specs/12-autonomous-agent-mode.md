@@ -21,9 +21,10 @@ AutoMake will adopt a multi-agent architecture, a pattern that yields better per
 The agent ecosystem, powered by `smolagents`, will be comprised of:
 - **Manager Agent**: The primary `CodeAgent` that interacts with the user. It analyzes requests and orchestrates the specialist agents to fulfill the user's goal. It does not execute tasks directly.
 - **Terminal Agent**: A `ManagedAgent` equipped with tools to run arbitrary shell commands (e.g., `ls`, `git status`).
-- **Coding Agent**: A `ManagedAgent` with a sandboxed Python environment to execute generated code for calculations, file I/O, or scripting tasks.
+- **Coding Agent**: A `ManagedAgent` with a sandboxed Python environment to execute generated code for calculations, file I/O, or scripting tasks. This sandbox will be created on-the-fly using `uv`.
 - **Web Agent**: A `ManagedAgent` that uses the `DuckDuckGoSearchTool` to query the internet.
 - **Makefile Agent**: A `ManagedAgent` with tools to list and execute `Makefile` targets, preserving AutoMake's core function.
+- **File System Agent**: A `ManagedAgent` with tools to read and edit files on the local file system.
 
 ### 2.4. Core Logic: Code Agents & the ReAct Loop
 - The system will be built on `smolagents.CodeAgent`. This approach, where the LLM writes actions as Python code snippets, is more natural and flexible than JSON-based tool calling. It provides superior composability, object management, and generality.
@@ -33,8 +34,10 @@ The agent ecosystem, powered by `smolagents`, will be comprised of:
 - The agent's thought process and the actions it takes will be streamed to the user for full transparency.
 
 ## 3. Non-functional Requirements / Constraints
-- **Security**: Code execution must be strictly sandboxed. The `Coding Agent` will be configured with `executor_type="docker"` to isolate file system and network access from the host machine. This is a core security feature of `smolagents`.
-- **Performance**: Agent response time should be optimized for a fluid conversational experience.
+- **Security**:
+  - **Python Code Execution**: The `Coding Agent` must execute code in a sandboxed environment. The primary method will be to create a temporary virtual environment using `uv`. This provides strong isolation for Python dependencies and prevents unintended interactions with the user's global or project environments.
+  - **Shell Command Execution**: The `TerminalAgent` may still leverage `executor_type="docker"` for running arbitrary shell commands if maximum security and isolation from the host system are required. Using `uv` for Python and Docker for general shell commands provides a flexible, tiered security model.
+- **Performance**: Agent response time should be optimized for a fluid conversational experience. The use of `uv` for sandboxing is expected to be significantly faster than spinning up a Docker container for each code execution.
 - **UI/UX**: The chat interface must be intuitive and visually consistent with the AutoMake CLI. It must not rely on external web UIs like Gradio.
 
 ## 4. Architecture & Data Flow
@@ -71,8 +74,56 @@ The agent ecosystem, powered by `smolagents`, will be comprised of:
       name="terminal_agent",
       description="Use this agent to execute shell commands in the user's terminal."
   )
+
+  @tool
+  def python_interpreter(code: str, dependencies: list[str] = None) -> str:
+      """
+      Executes a Python code snippet in a temporary, isolated `uv` environment.
+
+      This tool creates a new virtual environment for each execution, installs any
+      specified dependencies, runs the code, captures the output, and tears down
+      the environment, ensuring a clean and secure execution context.
+
+      :param code: The Python code to execute.
+      :param dependencies: A list of pip packages to install before execution.
+      :return: The standard output and standard error of the executed code.
+      """
+      # 1. Create a secure temporary directory using Python's `tempfile` module.
+      # 2. Programmatically run `uv venv` to create a virtual environment inside the directory.
+      # 3. If dependencies are provided, run `uv pip install --python <venv_python>` for each.
+      # 4. Write the user's `code` to a temporary `script.py` file.
+      # 5. Execute the script using the venv's python: `<venv_python> script.py`.
+      # 6. Capture and combine stdout/stderr from the execution.
+      # 7. Use a `try...finally` block to ensure the temporary directory is always deleted.
+      # 8. Return the captured output as a string.
+      # ... implementation ...
+
+  coding_agent_logic = CodeAgent(tools=[python_interpreter])
+  coding_agent = ManagedAgent(
+      agent=coding_agent_logic,
+      name="coding_agent",
+      description="Use this agent to execute Python code. You can specify a list of pip packages to install."
+  )
+
+  @tool
+  def read_file(path: str) -> str:
+      """Reads the entire content of a file and returns it as a string."""
+      # ... implementation ...
+
+  @tool
+  def edit_file(path: str, new_content: str) -> str:
+      """Overwrites a file with new content. Use with extreme caution."""
+      # ... implementation ...
+
+  filesystem_agent_logic = CodeAgent(tools=[read_file, edit_file])
+  filesystem_agent = ManagedAgent(
+      agent=filesystem_agent_logic,
+      name="filesystem_agent",
+      description="Use this agent to read from and write to files on the local filesystem."
+  )
   ```
 - The main `ManagerAgent` will be initialized with a list of these `ManagedAgent` instances in its `managed_agents` parameter.
+- **Security Note**: The `edit_file` tool is extremely powerful. Its use *must* be gated by the user confirmation flow (`specs/14-agent-interaction-scaffolding.md`) when `agent.require_confirmation` is enabled in the config.
 
 ## 6. Acceptance Criteria
 - Running `automake agent` opens a `rich`-based chat window.
@@ -80,6 +131,8 @@ The agent ecosystem, powered by `smolagents`, will be comprised of:
 - The manager agent correctly delegates the task to the `terminal_agent`, which executes `ls` and displays the output.
 - The agent can answer a web-based question by delegating to the `web_agent`.
 - The agent can execute a `Makefile` target by delegating to the `makefile_agent`.
+- The agent can read a file when asked (e.g., `automake "what are the contents of README.md"`).
+- The agent can edit a file when asked and after user confirmation.
 - Running `automake agent "create a file named test.txt"` delegates to the `coding_agent` to create the file, then exits.
 
 ## 7. Out of Scope

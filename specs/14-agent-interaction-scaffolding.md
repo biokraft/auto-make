@@ -12,6 +12,7 @@ The `InteractiveSession` ABC will define the following:
 - **`start(self)`**: The main entry point to begin the interactive session. It will manage the main conversation loop.
 - **`render(self, content: Any)` (abstract)**: A method responsible for rendering agent output (thoughts, tool calls, final answers) and user input within the `LiveBox` UI.
 - **`get_user_input(self)` (abstract)**: A method to capture input from the user.
+- **`get_confirmation(self, action: dict)` (abstract)**: A method to display the confirmation UI and return `True` or `False`.
 - **`update_state(self, new_state: str, tool_call: dict = None)` (abstract)**: A method to update and render the agent's current status (e.g., "Thinking...", "Executing tool...").
 
 ### 2.2. Concrete Implementation: `RichInteractiveSession`
@@ -19,6 +20,7 @@ A concrete class, `RichInteractiveSession`, will implement the `InteractiveSessi
 - It will use `rich.live.Live` to manage the dynamic display area.
 - `render()` will update the `Live` display with formatted agent output, conversation history, and status updates.
 - `get_user_input()` will use `rich.prompt.Prompt` to capture user input seamlessly within the live display.
+- `get_confirmation()` will render a custom horizontal layout with two selectable boxes: a green "[Confirm]" and a red "[Cancel]", allowing navigation with arrow keys.
 
 ## 3. Architecture & Data Flow
 1.  **Instantiation**: An instance of `RichInteractiveSession` is created, linked to the `ManagerAgent`.
@@ -26,7 +28,11 @@ A concrete class, `RichInteractiveSession`, will implement the `InteractiveSessi
 3.  **User Input**: The loop waits for user input via `get_user_input()`.
 4.  **Agent Invocation**: The user's prompt is passed to `agent.run(prompt, stream=True)`.
 5.  **Streaming & Rendering**: The session manager iterates through the generator returned by `agent.run()`:
-    - For each item yielded by the agent (e.g., `Thought`, `Action`, `Observation`), it calls `update_state()` and `render()` to update the `LiveBox` in real-time. This provides a transparent view into the agent's process.
+    - For each `Action` yielded by the agent, the session checks the `agent.require_confirmation` config flag.
+        - If `true`, it calls `get_confirmation()` to ask the user for approval.
+        - If the user cancels, the action is aborted, and the agent is informed of the cancellation.
+        - If the user confirms (or if confirmation is disabled), the action is executed.
+    - For all other items (`Thought`, `Observation`), it calls `update_state()` and `render()` to update the `LiveBox` in real-time. This provides a transparent view into the agent's process.
 6.  **Loop Continuation**: After the agent finishes and the final output is rendered, the loop returns to step 3, waiting for the next user input.
 7.  **Session End**: The loop terminates when the user types `exit` or `quit`.
 

@@ -25,6 +25,10 @@ base_url = "http://localhost:11434"
 # The model to use for interpreting commands.
 # The user must ensure this model is available on their Ollama server.
 model = "qwen3:0.6b"
+
+[agent]
+# If true, require user confirmation before every action.
+require_confirmation = true
 ```
 
 ## 4. Default Behavior
@@ -58,6 +62,24 @@ model = "qwen3:0.6b"
 - Once a model is selected (either from the local list or the online search), its identifier will be written to the `model` key in the `config.toml` file.
 - The tool will inform the user that the configuration has been updated and remind them to run `automake init` if they selected a new model that needs to be downloaded.
 
-## 7. Out of Scope
+## 7. Agent Behavior Configuration
+
+### 7.1. Action Confirmation
+- A new section, `[agent]`, will be added to the `config.toml` file.
+- It will contain a boolean key, `require_confirmation`, which defaults to `true`.
+- When `true`, the agent will always ask for user confirmation before executing any action (e.g., running a terminal command, executing a `Makefile` target).
+
+**Example `config.toml` with agent settings:**
+```toml
+[ollama]
+base_url = "http://localhost:11434"
+model = "qwen3:0.6b"
+
+[agent]
+# If true, require user confirmation before every action.
+require_confirmation = true
+```
+
+## 8. Out of Scope
 - A CLI command to directly edit other configuration values like the `base_url`.
 - Per-project configuration files. The configuration remains global for the user.
