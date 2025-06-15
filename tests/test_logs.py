@@ -287,9 +287,10 @@ class TestLogsCLI:
     def test_logs_clear_command_default(self):
         """Test the 'automake logs clear' command with default behavior."""
         # When there are no log files, it should return early with a message
-        result = self.runner.invoke(app, ["logs", "clear"])
-        assert result.exit_code == 0
-        assert "No log files found to clear" in result.output
+        with patch("automake.cli.logs.get_log_files", return_value=[]):
+            result = self.runner.invoke(app, ["logs", "clear"])
+            assert result.exit_code == 0
+            assert "No log files found to clear" in result.output
 
     def test_logs_clear_command_with_yes(self):
         """Test the 'automake logs clear' command with --yes flag."""
