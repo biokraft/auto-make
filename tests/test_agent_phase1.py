@@ -247,9 +247,9 @@ class TestManagerAgent:
 
     @patch("automake.agent.manager.ensure_ollama_running")
     @patch("automake.agent.manager.LiteLLMModel")
-    @patch("automake.agent.manager.CodeAgent")
+    @patch("automake.agent.manager.ToolCallingAgent")
     def test_create_manager_agent_success(
-        self, mock_code_agent, mock_model, mock_ollama
+        self, mock_tool_calling_agent, mock_model, mock_ollama
     ):
         """Test successful manager agent creation."""
         # Setup mocks
@@ -257,7 +257,7 @@ class TestManagerAgent:
         mock_model_instance = Mock()
         mock_model.return_value = mock_model_instance
         mock_agent_instance = Mock()
-        mock_code_agent.return_value = mock_agent_instance
+        mock_tool_calling_agent.return_value = mock_agent_instance
 
         config = create_test_config()
 
@@ -277,7 +277,7 @@ class TestManagerAgent:
 
         config = create_test_config()
 
-        with patch("smolagents.LiteLLMModel"), patch("smolagents.CodeAgent"):
+        with patch("smolagents.LiteLLMModel"), patch("smolagents.ToolCallingAgent"):
             agent, ollama_started = create_manager_agent(config)
 
             assert ollama_started is True

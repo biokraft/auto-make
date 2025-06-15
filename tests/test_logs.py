@@ -385,7 +385,10 @@ class TestLogCommandsIntegration:
                 assert result.exit_code == 0
 
             # Test clear command with confirmation
-            with patch("typer.confirm", return_value=True):
+            with (
+                patch("typer.confirm", return_value=True),
+                patch("automake.cli.logs.get_log_files", return_value=[log_file]),
+            ):
                 result = self.runner.invoke(app, ["logs", "clear"])
                 assert result.exit_code == 0
                 assert not log_file.exists()
