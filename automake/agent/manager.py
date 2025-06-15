@@ -6,7 +6,7 @@ using the smolagents framework.
 
 from collections.abc import Generator
 
-from smolagents import CodeAgent, LiteLLMModel
+from smolagents import LiteLLMModel, ToolCallingAgent
 
 from ..config import Config
 from ..logging import get_logger
@@ -16,7 +16,7 @@ from .specialists import get_all_specialist_tools
 logger = get_logger()
 
 
-def create_manager_agent(config: Config) -> tuple[CodeAgent, bool]:
+def create_manager_agent(config: Config) -> tuple[ToolCallingAgent, bool]:
     """Create and configure the manager agent with all specialist agents.
 
     Args:
@@ -43,7 +43,7 @@ def create_manager_agent(config: Config) -> tuple[CodeAgent, bool]:
         specialist_tools = get_all_specialist_tools()
 
         # Create the manager agent with all specialist tools
-        manager_agent = CodeAgent(
+        manager_agent = ToolCallingAgent(
             tools=specialist_tools,
             model=model,
         )
