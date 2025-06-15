@@ -359,24 +359,36 @@ def read_ascii_art() -> str:
 
 
 def print_welcome() -> None:
-    """Print ASCII art and simple usage info."""
-    # Print ASCII art first
+    """Print ASCII art with version and author credit and simple usage info."""
+    # Print ASCII art with version and author credit
     ascii_art = read_ascii_art()
     if ascii_art:
-        output.print_rainbow_ascii_art(ascii_art, duration=1.5)
+        # Combine ASCII art with version and author credit for unified rainbow animation
+        combined_art = ascii_art + f"\nversion {__version__}\n- by Seán Baufeld"
+        output.print_rainbow_ascii_art(combined_art, duration=1.5)
         console.print()  # Add blank line after ASCII art
+        console.print()  # Add extra blank line for better spacing
 
     # Print simple usage info
     usage_info = 'Run "automake help" for detailed usage information.'
     output.print_box(usage_info, MessageType.INFO, "Welcome")
 
 
-def print_help_with_ascii() -> None:
-    """Print ASCII art followed by help information."""
-    # Print ASCII art first
+def print_help_with_ascii(show_author: bool = False) -> None:
+    """Print ASCII art followed by help information.
+
+    Args:
+        show_author: Whether to include the author credit in the ASCII art
+    """
+    # Print ASCII art
     ascii_art = read_ascii_art()
     if ascii_art:
-        output.print_rainbow_ascii_art(ascii_art, duration=0)
+        if show_author:
+            # Combine ASCII art with author credit for unified rainbow animation
+            combined_art = ascii_art + "\n- by Seán Baufeld"
+            output.print_rainbow_ascii_art(combined_art, duration=0)
+        else:
+            output.print_rainbow_ascii_art(ascii_art, duration=0)
         console.print()  # Add blank line after ASCII art
 
     # Create help content

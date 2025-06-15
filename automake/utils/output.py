@@ -6,12 +6,16 @@ that matches the style of Typer's error boxes.
 
 import threading
 import time
+from collections.abc import Generator
 from colorsys import hsv_to_rgb
+from contextlib import contextmanager
 from enum import Enum
+from typing import Any
 
-from rich.console import Console
+from rich.console import Console, RenderableType
 from rich.live import Live
 from rich.panel import Panel
+from rich.text import Text
 
 
 class MessageType(Enum):
@@ -22,6 +26,143 @@ class MessageType(Enum):
     WARNING = "warning"
     ERROR = "error"
     HINT = "hint"
+
+
+class LiveBox:
+    """A real-time, updatable box for displaying streaming content.
+
+    This component provides a rich.live instance that can be updated in real time,
+    styled as a box consistent with the existing print_box function. It supports
+    streaming text content and other rich renderables with thread safety.
+    """
+
+    def __init__(
+        self,
+        console: Console,
+        title: str = "Live Output",
+        border_style: str = "blue",
+        refresh_per_second: float = 4.0,
+        transient: bool = True,
+    ) -> None:
+        """Initialize the LiveBox.
+
+        Args:
+            console: Rich console instance to use for display
+            title: Title for the live box
+            border_style: Border style for the panel
+            refresh_per_second: Refresh rate for the live display
+            transient: Whether the box should disappear when done
+        """
+        self.console = console
+        self.title = title
+        self.border_style = border_style
+        self.refresh_per_second = refresh_per_second
+        self.transient = transient
+
+        # Thread safety
+        self._lock = threading.Lock()
+        self._content = Text("")
+        self._live: Live | None = None
+        self._is_active = False
+
+    def _create_panel(self) -> Panel:
+        """Create a panel with current content.
+
+        Returns:
+            Panel with current content and styling
+        """
+        with self._lock:
+            content = self._content.copy()
+
+        return Panel(
+            content,
+            title=self.title,
+            title_align="left",
+            border_style=self.border_style,
+            padding=(0, 1),
+            expand=False,
+        )
+
+    def start(self) -> None:
+        """Start the live display."""
+        if self._is_active:
+            return
+
+        self._live = Live(
+            self._create_panel(),
+            console=self.console,
+            refresh_per_second=self.refresh_per_second,
+            transient=self.transient,
+        )
+        self._live.start()
+        self._is_active = True
+
+    def stop(self) -> None:
+        """Stop the live display."""
+        if not self._is_active or self._live is None:
+            return
+
+        self._live.stop()
+        self._live = None
+        self._is_active = False
+
+    def update(self, content: RenderableType | str) -> None:
+        """Update the content of the live box.
+
+        Args:
+            content: New content to display (Text, str, or other renderable)
+        """
+        with self._lock:
+            if isinstance(content, str):
+                self._content = Text(content)
+            elif isinstance(content, Text):
+                self._content = content
+            else:
+                # For other renderables, convert to text representation
+                self._content = Text(str(content))
+
+        if self._is_active and self._live is not None:
+            self._live.update(self._create_panel())
+
+    def append_text(self, text: str, style: str | None = None) -> None:
+        """Append text to the current content.
+
+        Args:
+            text: Text to append
+            style: Optional style to apply to the appended text
+        """
+        with self._lock:
+            self._content.append(text, style=style)
+
+        if self._is_active and self._live is not None:
+            self._live.update(self._create_panel())
+
+    def clear(self) -> None:
+        """Clear the current content."""
+        with self._lock:
+            self._content = Text("")
+
+        if self._is_active and self._live is not None:
+            self._live.update(self._create_panel())
+
+    def set_title(self, title: str) -> None:
+        """Update the title of the live box.
+
+        Args:
+            title: New title for the box
+        """
+        self.title = title
+        if self._is_active and self._live is not None:
+            self._live.update(self._create_panel())
+
+    def __enter__(self) -> "LiveBox":
+        """Context manager entry."""
+        self.start()
+        return self
+
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        """Context manager exit."""
+        self.stop()
 
 
 class OutputFormatter:
@@ -68,6 +209,72 @@ class OutputFormatter:
                 "emoji": "💡",
             },
         }
+
+    @contextmanager
+    def live_box(
+        self,
+        title: str = "Live Output",
+        message_type: MessageType = MessageType.INFO,
+        refresh_per_second: float = 4.0,
+        transient: bool = True,
+    ) -> Generator[LiveBox, None, None]:
+        """Create and manage a LiveBox context manager.
+
+        Args:
+            title: Title for the live box
+            message_type: Type of message (affects border styling)
+            refresh_per_second: Refresh rate for the live display
+            transient: Whether the box should disappear when done
+
+        Yields:
+            LiveBox instance for updating content
+        """
+        style_config = self._styles[message_type]
+        border_style = style_config["border_style"]
+
+        live_box = LiveBox(
+            console=self.console,
+            title=title,
+            border_style=border_style,
+            refresh_per_second=refresh_per_second,
+            transient=transient,
+        )
+
+        try:
+            with live_box:
+                yield live_box
+        finally:
+            # Ensure cleanup even if exception occurs
+            pass
+
+    def create_live_box(
+        self,
+        title: str = "Live Output",
+        message_type: MessageType = MessageType.INFO,
+        refresh_per_second: float = 4.0,
+        transient: bool = True,
+    ) -> LiveBox:
+        """Create a LiveBox instance (not started).
+
+        Args:
+            title: Title for the live box
+            message_type: Type of message (affects border styling)
+            refresh_per_second: Refresh rate for the live display
+            transient: Whether the box should disappear when done
+
+        Returns:
+            LiveBox instance (call start() to begin display)
+        """
+        style_config = self._styles[message_type]
+        border_style = style_config["border_style"]
+
+        return LiveBox(
+            console=self.console,
+            title=title,
+            border_style=border_style,
+            refresh_per_second=refresh_per_second,
+            transient=transient,
+        )
 
     def print_box(
         self,
