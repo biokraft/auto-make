@@ -28,19 +28,27 @@ The agent, powered by `smolagents`, will be equipped with the following core too
 - The agent's thought process and tool usage will be displayed to the user for transparency, likely within a collapsible or verbose-mode-gated section of the UI.
 
 ## 3. Non-functional Requirements / Constraints
-- **Security**: All code and command execution must be sandboxed to prevent malicious or accidental damage to the user's system. The use of Docker or E2B for sandboxing is strongly recommended.
+- **Security**: All code and command execution must be sandboxed. The primary recommended method is using Docker via the `smolagents` `executor_type="docker"` parameter. This isolates file system and network access from the host machine, relying on a common developer tool. E2B is a viable but secondary alternative due to its external dependency.
 - **Performance**: The agent's response time should be optimized for a fluid conversational experience. LLM and tool execution latency should be minimized.
 - **UI/UX**: The chat interface must be intuitive, responsive, and visually consistent with the rest of the AutoMake CLI. It should not rely on web-based UIs like Gradio.
 
 ## 4. Architecture & Data Flow
-- The feature will be built on the `smolagents` library, utilizing a `CodeAgent`.
-- The CLI will be updated in `automake.cli.main` to include the `agent` command.
-- A new module, `automake.agent`, will house the agent's core logic, tool definitions, and the `rich`-based UI components.
-- The agent will maintain a memory of the conversation to handle multi-turn interactions.
+- The feature will be built on the `smolagents` library, utilizing a `smolagents.CodeAgent`.
+- The CLI will be updated in `automake/cli/main.py` to include the `agent` command with interactive and non-interactive invocation logic.
+- A new module, `automake.agent`, will be created with the following structure:
+  - `core.py`: Contains the factory function to initialize the `CodeAgent`.
+  - `tools.py`: Defines custom tools for terminal and Makefile interaction using the `@tool` decorator.
+  - `ui.py`: Manages the `rich`-based interactive session, handling user input and rendering agent output.
+- The `smolagents` instance will inherently maintain the conversation memory for multi-turn interactions within a single session.
 
 ## 5. Implementation Notes
-- The `rich.live` feature is a strong candidate for rendering the dynamic chat interface.
-- Custom tools for terminal and Makefile interaction will need to be created, decorated with `@tool` from `smolagents`.
+- The interactive UI in `automake/agent/ui.py` will be built using `rich.live.Live` for dynamic updates and `rich.prompt.Prompt` for user input.
+- The core of the UI loop will iterate over the `agent.run(prompt, stream=True)` generator to display the agent's step-by-step reasoning and tool usage.
+- Custom tools in `automake/agent/tools.py` will include:
+  - `terminal_tool(command: str) -> str`: Executes a shell command and returns its output.
+  - `makefile_tool(target: str = "") -> str`: Lists available `Makefile` targets or executes a specific one.
+- The web search capability will be provided by importing and using the built-in `smolagents.DuckDuckGoSearchTool`.
+- Security will be enforced by initializing the `CodeAgent` with `executor_type="docker"`.
 
 ## 6. Acceptance Criteria
 - Running `automake agent` opens a `rich`-based chat window.
