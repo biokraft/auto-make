@@ -1,25 +1,23 @@
-"""Logging setup and configuration for AutoMake.
+"""Logging package for AutoMake.
 
-This package handles logging configuration, setup, and custom handlers
-for AutoMake's file-based logging with rotation and retention policies.
+This package configures file-based logging with daily rotation and 7-day retention
+according to the logging strategy specification.
 """
 
-# Logging modules will be imported here as they are created
-# from .setup import (
-#     LoggingSetupError,
-#     setup_logging,
-#     get_logger,
-#     log_config_info,
-#     log_command_execution,
-#     log_error,
-# )
+from .setup import (
+    LoggingSetupError,
+    get_logger,
+    log_command_execution,
+    log_config_info,
+    log_error,
+    setup_logging,
+)
 
 __all__ = [
-    # Logging exports will be added as modules are created
-    # "LoggingSetupError",
-    # "setup_logging",
-    # "get_logger",
-    # "log_config_info",
-    # "log_command_execution",
-    # "log_error",
+    "LoggingSetupError",
+    "setup_logging",
+    "get_logger",
+    "log_config_info",
+    "log_command_execution",
+    "log_error",
 ]

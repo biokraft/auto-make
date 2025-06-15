@@ -1,22 +1,25 @@
-"""Output formatting and display utilities for AutoMake.
+"""Output formatting utilities for AutoMake.
 
 This package provides consistent, beautiful console output formatting
-including live boxes, message types, and formatting utilities.
+that matches the style of Typer's error boxes.
 """
 
-# Output modules will be imported here as they are created
-# from .types import MessageType
-# from .live_box import LiveBox
-# from .formatter import OutputFormatter, get_formatter
-# from .formatter import print_box, print_error_box, print_status
+from .formatter import (
+    OutputFormatter,
+    get_formatter,
+    print_box,
+    print_error_box,
+    print_status,
+)
+from .live_box import LiveBox
+from .types import MessageType
 
 __all__ = [
-    # Output exports will be added as modules are created
-    # "MessageType",
-    # "LiveBox",
-    # "OutputFormatter",
-    # "get_formatter",
-    # "print_box",
-    # "print_error_box",
-    # "print_status",
+    "MessageType",
+    "LiveBox",
+    "OutputFormatter",
+    "get_formatter",
+    "print_box",
+    "print_error_box",
+    "print_status",
 ]

@@ -8,12 +8,12 @@ import tomllib  # noqa: UP036
 import warnings
 from pathlib import Path
 
-# Configuration and logging exports
-from automake.config import Config, ConfigError, get_config
+# Configuration and logging exports - using new modules
+from automake.config_new import Config, ConfigError, get_config
 
 # Core functionality exports
 from automake.core.makefile_reader import MakefileNotFoundError, MakefileReader
-from automake.logging_setup import (
+from automake.logging_new import (
     LoggingSetupError,
     get_logger,
     log_command_execution,
@@ -21,7 +21,7 @@ from automake.logging_setup import (
     log_error,
     setup_logging,
 )
-from automake.utils.output import MessageType, OutputFormatter, get_formatter
+from automake.utils.output_new import MessageType, OutputFormatter, get_formatter
 
 # Suppress Pydantic serialization warnings from dependencies
 warnings.filterwarnings(

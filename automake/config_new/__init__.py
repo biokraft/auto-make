@@ -1,18 +1,9 @@
-"""Configuration management for AutoMake.
+"""Configuration management package for AutoMake.
 
-This package handles reading, writing, and managing AutoMake configuration
-from config.toml files, with support for default values and validation.
+This package handles reading and creating the config.toml file for user-specific
+settings like Ollama server configuration and logging preferences.
 """
 
-# Configuration modules will be imported here as they are created
-# from .manager import Config, ConfigError
-# from .defaults import get_default_config
-# from .manager import get_config
+from .manager import Config, ConfigError, get_config
 
-__all__ = [
-    # Configuration exports will be added as modules are created
-    # "Config",
-    # "ConfigError",
-    # "get_config",
-    # "get_default_config",
-]
+__all__ = ["Config", "ConfigError", "get_config"]
