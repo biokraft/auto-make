@@ -46,7 +46,8 @@ class CommandRunner:
         logger.info("Running command: %s", full_command)
 
         if live_box:
-            live_box.update(f"🚀 Executing: [cyan]{full_command}[/cyan]")
+            # Start with empty content, will be filled with command output
+            live_box.update("")
 
         try:
             # Use Popen for real-time output streaming
@@ -68,7 +69,8 @@ class CommandRunner:
                 for line in iter(process.stdout.readline, ""):
                     if line:
                         output_lines.append(line.rstrip())
-                        if not capture_output:
+                        # Only print to console if no live_box and not capturing output
+                        if not capture_output and not live_box:
                             print(line.rstrip())
 
                         # Update live box if provided
@@ -80,10 +82,8 @@ class CommandRunner:
                                 lines = lines[-20:]
                                 output_buffer = "\n".join(lines)
 
-                            live_box.update(
-                                f"🚀 Executing: [cyan]{full_command}[/cyan]\n\n"
-                                f"[dim]{output_buffer}[/dim]"
-                            )
+                            # Show only the command output, dimmed
+                            live_box.update(f"[dim]{output_buffer.rstrip()}[/dim]")
 
             # Wait for process to complete
             process.wait()
@@ -93,13 +93,6 @@ class CommandRunner:
 
             if process.returncode == 0:
                 logger.info(f"Command '{command}' completed successfully")
-                if live_box:
-                    success_msg = (
-                        f"✅ Command completed successfully: "
-                        f"[green]{full_command}[/green]\n\n"
-                        f"[dim]{output_buffer}[/dim]"
-                    )
-                    live_box.update(success_msg)
                 return full_output
             else:
                 error_msg = (
@@ -109,7 +102,7 @@ class CommandRunner:
                 if live_box:
                     live_box.update(
                         f"❌ Command failed with exit code {process.returncode}\n\n"
-                        f"[red]{output_buffer}[/red]"
+                        f"{output_buffer.rstrip()}"
                     )
                 raise CommandRunnerError(error_msg)
 

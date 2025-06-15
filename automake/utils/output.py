@@ -114,7 +114,8 @@ class LiveBox:
         """
         with self._lock:
             if isinstance(content, str):
-                self._content = Text(content)
+                # Parse Rich markup in strings
+                self._content = Text.from_markup(content)
             elif isinstance(content, Text):
                 self._content = content
             else:

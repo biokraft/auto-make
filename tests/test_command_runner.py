@@ -57,16 +57,16 @@ class TestCommandRunner:
         self.runner.run("build", live_box=mock_live_box)
 
         # Verify LiveBox was updated
-        assert mock_live_box.update.call_count >= 2  # Initial + final updates
+        assert mock_live_box.update.call_count >= 2  # Initial + output updates
 
-        # Check that the initial execution message was shown
+        # Check that the initial update starts with empty content
         initial_call = mock_live_box.update.call_args_list[0]
-        assert "🚀 Executing" in initial_call[0][0]
-        assert "make build" in initial_call[0][0]
+        assert initial_call[0][0] == ""
 
-        # Check that success message was shown
+        # Check that the final update contains the command output
         final_call = mock_live_box.update.call_args_list[-1]
-        assert "✅ Command completed successfully" in final_call[0][0]
+        assert "Building..." in final_call[0][0]
+        assert "Done!" in final_call[0][0]
 
     @patch("subprocess.Popen")
     def test_run_failure(self, mock_popen: MagicMock) -> None:
