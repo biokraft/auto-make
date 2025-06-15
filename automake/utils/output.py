@@ -666,8 +666,10 @@ class OutputFormatter:
             LiveBox instance for updating execution progress
         """
         title = f"Executing: make {command}"
-        with self.live_box(title, MessageType.INFO, transient=False) as live_box:
-            live_box.update(f"🚀 Starting execution of make {command}...")
+        # Use higher refresh rate for smoother streaming of command output
+        with self.live_box(
+            title, MessageType.INFO, refresh_per_second=10.0, transient=False
+        ) as live_box:
             yield live_box
 
     @contextmanager

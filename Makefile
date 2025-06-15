@@ -69,6 +69,29 @@ test: ## Run all tests
 	@echo "   ✓ Coverage: 94.2%"
 	@echo "✅ All tests passed!"
 
+test-streaming: ## Test real-time output streaming
+	@python3 demos/test_streaming.py
+
+demo-enhanced-ux: ## Demo enhanced AutoMake UX with LiveBox integration
+	@python3 demos/demo_enhanced_ux.py
+
+demo-livebox: ## Demo LiveBox component for real-time streaming output
+	@python3 demos/demo_livebox.py
+
+demo-rainbow: ## Demo rainbow ASCII art animation
+	@python3 demos/test_rainbow.py
+
+demo-all: ## Run all demo scripts
+	@echo "🎭 Running all AutoMake demos..."
+	@python3 demos/demo_enhanced_ux.py
+	@echo ""
+	@python3 demos/demo_livebox.py
+	@echo ""
+	@python3 demos/test_rainbow.py
+	@echo ""
+	@python3 demos/test_streaming.py
+	@echo "✅ All demos completed!"
+
 test-unit: ## Run unit tests only
 	@echo "🧪 Running unit tests..."
 	@echo "   ✓ Testing core modules"
