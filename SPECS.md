@@ -20,6 +20,7 @@ The following table links to the detailed specifications for each domain and tec
 | `specs/10-interactive-sessions.md`                   | Specifies the interactive session for resolving ambiguous commands based on LLM confidence scores. |
 | `specs/11-live-output-component.md`                  | Defines a real-time, updatable box for streaming content like AI model tokens. |
 | `specs/12-autonomous-agent-mode.md`                  | Defines the CLI-based autonomous agent mode for interactive task execution. |
+| `specs/13-intelligent-command-assistance.md`         | Defines agent-driven handling of general commands and intelligent CLI error correction. |
 
 ## 3. Future Work
 This section captures features and ideas that are currently out of scope but are being considered for future versions:
@@ -28,6 +29,8 @@ This section captures features and ideas that are currently out of scope but are
 - **Configuration File**: Allow users to configure the LLM model and other settings via a project-level configuration file.
 - **Makefile Generation**: Add a new command, `automake makefile`, that intelligently scans the repository for DevOps patterns (e.g., `Dockerfile`, CI scripts) and generates a comprehensive `Makefile` using the configured LLM.
 - **Multi-Provider LLM Support**: Extend `automake init` to support configuring major LLM providers like OpenAI and Anthropic via API keys, in addition to the default Ollama integration.
+- **Agent-Driven Command Execution**: Route general-purpose natural language commands (e.g., "list all folders") to the autonomous agent instead of the `Makefile` interpreter.
+- **Intelligent CLI Error Handling**: When an invalid CLI command is entered, use the agent to analyze the error and suggest a valid command to the user for confirmation.
 
 ## 4. Implementation Plan
 This plan outlines the steps to implement the features defined in the specification library, including the adoption of a universal live output component.
@@ -40,3 +43,4 @@ This plan outlines the steps to implement the features defined in the specificat
 | 4     | Documentation Overhaul      | - Update `README.md` to reflect the project's evolution into an agentic tool.<br>- Revise the project overview and all specifications to align with the new capabilities.<br>- Create a comprehensive user guide for the new agent mode. | `README.md`<br>All `specs/*.md` files                                                                       | TBD    |
 | 5     | Core Feature Implementation | - Implement dry-run mode (`--dry-run` flag).<br>- Implement failure detection for LLM and command execution.                                                                     | `specs/01-core-functionality.md`                                                                            | TBD    |
 | 6     | Advanced Features           | - Implement `automake makefile` for intelligent `Makefile` generation.<br>- Add support for multiple LLM providers (OpenAI, Anthropic).                                        | `specs/01-core-functionality.md`<br>`specs/04-configuration-management.md`                                   | TBD    |
+| 7     | Intelligent Command Assistance | - Implement logic to route non-Makefile commands to the agent.<br>- Integrate agent-based error suggestion for invalid CLI commands.                                         | `specs/13-intelligent-command-assistance.md`                                                                | TBD    |
