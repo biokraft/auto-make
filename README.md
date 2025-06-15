@@ -79,19 +79,25 @@ automake help
 ```
 
 ## 🛠️ Configuration
-On first run, `auto-make` will create a `config.toml` file in your user configuration directory. You can edit this file to change the default Ollama model or other settings.
+`auto-make` features a modern, user-friendly configuration system with beautiful UI/UX. On first run, it creates a `config.toml` file in your user configuration directory with sensible defaults.
 
-Example `config.toml`:
-```toml
-# Default configuration for auto-make
-[ollama]
-model = "qwen3:0.6b" # Specify the Ollama model you want to use
+### View Configuration
+See your current configuration with a beautifully formatted display:
+```bash
+automake config show
 ```
 
-### Changing Models
-You can change the Ollama model using the configuration command:
+You can also view specific sections:
+```bash
+automake config show --section ollama
+```
+
+### Modify Configuration
+Change settings easily with the intuitive set command:
 ```bash
 automake config set ollama model "qwen3:1.7b"
+automake config set logging level "DEBUG"
+automake config set ai interactive_threshold 70
 ```
 
 **Important**: After changing the model, you must run the initialization command to download the new model:
@@ -99,7 +105,30 @@ automake config set ollama model "qwen3:1.7b"
 automake init
 ```
 
-This ensures the new model is available and ready for use.
+### Additional Configuration Commands
+- **Edit directly**: `automake config edit` - Opens the config file in your default editor
+- **Reset to defaults**: `automake config reset` - Restores all settings to defaults (with confirmation)
+
+### Configuration Structure
+
+Run `automake config show` to see the current configuration.
+```bash
+❯ automake config show
+╭─ Configuration ─────────────────────╮
+│ [ollama]                            │
+│ base_url = "http://localhost:11434" │
+│ model = "qwen3:1.7b"                │
+│                                     │
+│ [logging]                           │
+│ level = "DEBUG"                     │
+│                                     │
+│ [ai]                                │
+│ interactive_threshold = 80          │
+╰─────────────────────────────────────╯
+╭─ Location ───────────────────────────────────────────────────────────────────────╮
+│ Config file: /Users/seanbaufeld/Library/Application Support/automake/config.toml │
+╰──────────────────────────────────────────────────────────────────────────────────╯
+```
 
 ## 🎬 Demos
 Want to see some UI/UX demos?
