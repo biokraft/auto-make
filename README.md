@@ -65,7 +65,7 @@ Install the very latest version directly from this repository:
 uv tool install git+https://github.com/biokraft/auto-make.git
 
 # You can also install a specific tag or branch
-uv tool install git+https://github.com/biokraft/auto-make.git@v0.4.2
+uv tool install git+https://github.com/biokraft/auto-make.git@v0.4.3
 ```
 
 **2. From PyPI (Stable)**

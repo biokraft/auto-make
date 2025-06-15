@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.3 - Non-Interactive Agent Mode & CLI Enhancement
+
+### ✨ Added
+- 🤖 Primary interface `automake "prompt"` for direct natural language command execution
+- 📦 LiveBox integration for real-time feedback during command execution and agent initialization
+- 🧪 Comprehensive test coverage for non-interactive mode and CLI behavior
+- 📚 Phase 4 implementation documentation with detailed technical specifications
+
+### 🛠️ Improved
+- 🎯 Enhanced CLI architecture maintaining backward compatibility while improving user experience
+- 📋 Updated help system to prominently feature new usage patterns and examples
+- 🔧 Streamlined command execution flow with better real-time feedback
+
 ## v0.4.2 - Documentation & Configuration Enhancement
 
 ### 🛠️ Improved
@@ -199,6 +212,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Pre-commit hook compatibility issues
 - 📏 Code formatting and linting compliance
 
+[0.4.3]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.4.3
 [0.4.2]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.4.2
 [0.4.1]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.4.1
 [0.4.0]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.4.0
