@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.0 - Major Architecture Refactoring & Modular Design
+
+### ✨ Added
+- 🏗️ Complete modular CLI architecture with organized command structure
+- 🤖 Enhanced agent specifications with multi-agent system design
+- 📚 Comprehensive refactoring documentation in `/docs/refactoring-vibes/`
+- 🔧 Interactive model configuration command for easier setup
+- 🧪 Expanded test coverage with improved mocking and CLI command testing
+- 📋 New agent specifications: RAG, Project Init, Codebase Exploration, and Concurrent Sessions
+
+### 🛠️ Improved
+- 🎯 Decomposed monolithic CLI into modular command structure (`commands/`, `display/`, `config/`, `logging/`)
+- 📦 Reorganized project structure for better maintainability and future extensibility
+- 🔄 Enhanced configuration management with better defaults and organization
+- 📖 Updated README with comprehensive installation and usage guidelines
+- 🎨 Improved output formatting and display handling with dedicated modules
+
+### 🔧 Fixed
+- ✅ Removed obsolete test files and updated project configuration
+- 🧹 Cleaned up migration artifacts and phase completion documents
+- 🔗 Updated specifications to reflect new modular architecture
+
 ## v0.3.5 - UI/UX Enhancement & LiveBox Integration
 
 ### ✨ Added
@@ -150,6 +172,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Pre-commit hook compatibility issues
 - 📏 Code formatting and linting compliance
 
+[0.4.0]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.4.0
 [0.3.5]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.3.5
 [0.3.4]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.3.4
 [0.3.3]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.3.3
