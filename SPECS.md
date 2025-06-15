@@ -28,6 +28,7 @@ The following table links to the detailed specifications for each domain and tec
 
 ## 3. Implementation Summaries
 - **Phase 2**: [Concurrent Session Support](./docs/PHASE2_IMPLEMENTATION_SUMMARY.md)
+- **Phase 4**: [Non-Interactive Agent Mode](./docs/PHASE4_IMPLEMENTATION_SUMMARY.md)
 
 ## 4. Future Work
 This section captures features and ideas that are currently out of scope but are being considered for future versions:
@@ -46,7 +47,7 @@ This plan outlines the steps to implement the agent-first architecture for AutoM
 | 1     | Foundational Agent Setup    | - Implement the core `ManagerAgent` and specialist `ManagedAgent` instances.<br>- Create the `FileSystemAgent` and `CodingAgent` with `uv`-based sandboxing.<br>- Refactor the main CLI entry point to invoke the `ManagerAgent`. | `specs/01-core-functionality.md`<br>`specs/12-autonomous-agent-mode.md`                                    | ✅ Done    |
 | 2     | Concurrent Session Support  | - Implement PID-based unique log filenames.<br>- Replace timed rotation with a startup-based cleanup mechanism for old log files.                                           | `specs/06-logging-strategy.md`<br>`specs/18-concurrent-sessions.md`                                        | ✅ Done   |
 | 3     | Agent Scaffolding           | - Implement the `InteractiveSession` ABC and the `RichInteractiveSession` concrete class for managing the chat UI.                                                             | `specs/14-agent-interaction-scaffolding.md`                                                                 | TBD    |
-| 4     | Non-Interactive Agent Mode  | - Implement the `automake "<prompt>"` flow.<br>- Ensure agent output is streamed correctly to the terminal using the `LiveBox` component.                                      | `specs/02-cli-and-ux.md`<br>`specs/11-live-output-component.md`                                            | TBD    |
+| 4     | Non-Interactive Agent Mode  | - Implement the `automake "<prompt>"` flow.<br>- Ensure agent output is streamed correctly to the terminal using the `LiveBox` component.                                      | `specs/02-cli-and-ux.md`<br>`specs/11-live-output-component.md`                                            | ✅ Done    |
 | 5     | Interactive Agent Mode      | - Implement the `automake agent` command to launch the `rich`-based interactive chat UI, using the new `RichInteractiveSession`.                                               | `specs/02-cli-and-ux.md`<br>`specs/12-autonomous-agent-mode.md`                                            | TBD    |
 | 6     | Intelligent Error Handling  | - Implement the `try/except` wrapper around the CLI to capture errors.<br>- Create the agent prompt for suggesting corrections and implement the user confirmation flow.       | `specs/01-core-functionality.md`                                                                            | TBD    |
 | 7     | Action Confirmation         | - Add `agent.require_confirmation` to config.<br>- Implement the `get_confirmation` UI component in the `RichInteractiveSession`.<br>- Integrate the confirmation check before executing agent actions. | `specs/04-configuration-management.md`<br>`specs/14-agent-interaction-scaffolding.md`                      | TBD    |

@@ -73,16 +73,17 @@ def print_help_with_ascii(show_author: bool = False) -> None:
         console.print()  # Add blank line after ASCII art
 
     # Create help content
-    usage_text = "automake [OPTIONS] COMMAND [ARGS]..."
+    usage_text = 'automake "PROMPT" | automake [COMMAND] [ARGS]...'
     description = (
-        "AI-powered Makefile command execution with natural language processing."
+        "AI-powered command-line assistant that interprets natural language commands.\n"
+        'The primary interface is direct prompts: automake "your command here"'
     )
 
     examples = [
-        'automake run "build the project"',
-        'automake run "run all tests"',
-        'automake run "deploy to staging"',
-        'automake run "execute the cicd pipeline"',
+        'automake "build the project"',
+        'automake "list all python files"',
+        'automake "run all tests"',
+        'automake "what is the ip address of google dns?"',
     ]
 
     # Print usage
@@ -93,19 +94,25 @@ def print_help_with_ascii(show_author: bool = False) -> None:
 
     # Print examples
     examples_content = "\n".join(examples)
-    output.print_box(examples_content, MessageType.INFO, "Examples")
+    output.print_box(examples_content, MessageType.INFO, "Primary Examples")
 
     # Print commands
     commands_content = (
-        "run                  Execute natural language commands\n"
-        "agent                Launch the AI agent in interactive or "
-        "non-interactive mode\n"
+        "agent                Launch the AI agent\n"
+        "run                  Execute natural language commands (legacy)\n"
         "init                 Initialize AutoMake and ensure model is ready\n"
         "config               Manage AutoMake configuration\n"
         "help                 Show this help information\n"
         "logs                 Manage AutoMake logs"
     )
     output.print_box(commands_content, MessageType.INFO, "Commands")
+
+    # Print agent examples
+    agent_examples_content = (
+        'automake agent "create a new python file"  # Single command\n'
+        "automake agent                             # Interactive chat mode"
+    )
+    output.print_box(agent_examples_content, MessageType.INFO, "Agent Examples")
 
     # Print options
     options_content = (

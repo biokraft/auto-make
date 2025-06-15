@@ -27,7 +27,7 @@ def run_command(
         metavar="COMMAND",
     ),
 ) -> None:
-    """Execute a natural language command using the AI agent system.
+    """Execute natural language commands using the AI agent system.
 
     This command now uses the new agent-first architecture where a ManagerAgent
     orchestrates specialist agents to accomplish tasks.

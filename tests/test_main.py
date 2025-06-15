@@ -78,9 +78,11 @@ class TestMainCLI:
         )
 
     def test_help_command_case_insensitive(self) -> None:
-        """Test that help command is case sensitive (HELP should fail)."""
+        """Test that HELP is treated as a prompt in Phase 4 implementation."""
         result = self.runner.invoke(app, ["HELP"])
-        assert result.exit_code != 0  # Should fail because commands are case sensitive
+        # With Phase 4, unrecognized commands like "HELP" are treated as prompts
+        # This should succeed (exit code 0) as it gets passed to the agent
+        assert result.exit_code == 0
 
     @patch("automake.cli.commands.run.ManagerAgentRunner")
     @patch("automake.cli.commands.run.get_config")
