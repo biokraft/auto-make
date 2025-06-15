@@ -50,11 +50,39 @@ Forget remembering complex flags or exact `Makefile` targets. Just tell `automak
 - An active [Ollama](https://ollama.ai/) server with a running model (e.g., `ollama run qwen3:0.6b`).
 
 ### Installation
-Install `auto-make` using `uvx` (the `uv` equivalent of `npx`):
+
+There are several ways to install and run `automake`.
+
+#### Recommended: `uv tool install`
+For a permanent installation, we recommend using `uv tool install`. This makes the `automake` command available globally in a dedicated environment.
+
+**1. From Git (Bleeding Edge)**
+Install the very latest version directly from this repository:
 ```bash
-uvx automake-cli
+# Install the latest version from the main branch
+uv tool install git+https://github.com/biokraft/auto-make.git
+
+# You can also install a specific tag or branch
+uv tool install git+https://github.com/biokraft/auto-make.git@v0.3.5
 ```
-This command temporarily installs and runs the `automake` CLI tool in an isolated environment.
+
+**2. From PyPI (Stable)**
+Install the latest stable release from PyPI:
+```bash
+uv tool install automake-cli
+```
+
+#### Temporary Execution: `uvx`
+If you prefer not to install the tool, you can run it directly using `uvx` (similar to `npx`). This downloads and runs the package in a temporary environment.
+```bash
+uvx automake-cli "your command here"
+```
+
+#### Traditional `pip`
+You can also use `pip` for a standard installation:
+```bash
+pip install automake-cli
+```
 
 ### First-Time Setup
 After installation, run the initialization command once to set up Ollama and download the required model:
@@ -134,18 +162,6 @@ or use automake: `automake "show all demos"`
 
 ## 🗺️ Project Roadmap
 For a detailed breakdown of the project roadmap, implementation phases, and technical specifications, see [SPECS.md](SPECS.md).
-
-### Installation Methods
-```bash
-# Direct execution (recommended for users)
-uvx automake-cli
-
-# Alternative with explicit package name
-uvx --from automake-cli automake
-
-# Traditional pip installation
-pip install automake-cli
-```
 
 ## 📜 Changelog
 All notable changes to this project are documented in the [CHANGELOG.md](CHANGELOG.md) file.
