@@ -3,9 +3,9 @@
 
 [![Latest Version](https://img.shields.io/pypi/v/automake-cli?label=latest&logo=pypi&logoColor=white)](https://pypi.org/project/automake-cli/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
-[![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com/seanbaufeld/auto-make)
-[![Build Status](https://github.com/seanbaufeld/auto-make/actions/workflows/ci.yml/badge.svg)](https://github.com/seanbaufeld/auto-make/actions/workflows/ci.yml)
-[![codecov](https://img.shields.io/badge/coverage->85%-brightgreen?logo=codecov)](https://codecov.io/gh/seanbaufeld/auto-make)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com/biokraft/auto-make)
+[![Build Status](https://github.com/biokraft/auto-make/actions/workflows/ci.yml/badge.svg)](https://github.com/biokraft/auto-make/actions/workflows/ci.yml)
+[![codecov](https://img.shields.io/badge/coverage->85%-brightgreen?logo=codecov)](https://codecov.io/gh/biokraft/auto-make)
 [![PyPI version](https://badge.fury.io/py/automake-cli.svg)](https://badge.fury.io/py/automake-cli)
 
 
