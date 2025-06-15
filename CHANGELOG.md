@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.1 - Interactive Session Enhancement
+
+### ✨ Added
+- 🎯 `RichInteractiveSession` class for improved user interaction in agent commands
+- ⚙️ Agent confirmation configuration options for enhanced user control
+- 🧪 Comprehensive test coverage for new session architecture with timeout support
+
+### 🛠️ Improved
+- 🤖 Streamlined agent command execution process with better session management
+- 📋 Enhanced test infrastructure with `pytest-timeout` for custom test timeouts
+- 🔧 Refined agent UI components for better user experience
+
+### 🔧 Fixed
+- ✅ Robust error handling in interactive session functionality
+
 ## v0.4.0 - Major Architecture Refactoring & Modular Design
 
 ### ✨ Added
@@ -172,6 +187,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Pre-commit hook compatibility issues
 - 📏 Code formatting and linting compliance
 
+[0.4.1]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.4.1
 [0.4.0]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.4.0
 [0.3.5]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.3.5
 [0.3.4]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.3.4
