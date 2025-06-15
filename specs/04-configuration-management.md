@@ -37,6 +37,27 @@ model = "qwen3:0.6b"
 - The popular `tomli` library can be used for parsing the TOML file in Python < 3.11, while the standard library `tomllib` is available in Python 3.11+. Given our stack, `tomllib` is preferred.
 - The application should provide a clear message to the user about where the configuration file is located.
 
-## 6. Out of Scope
-- A CLI command to directly edit the configuration (e.g., `automake config set model=phi3`). Users will edit the file manually.
-- Per-project configuration files. The configuration is global for the user.
+## 6. Interactive Model Configuration
+
+### 6.1. Command: `automake config model`
+- A new CLI command, `automake config model`, will be introduced to provide a user-friendly way to set the Ollama model.
+- This command removes the need for users to manually edit the `config.toml` file for model selection.
+
+### 6.2. Interactive UI
+- Upon running the command, the tool will query the local Ollama API to get a list of all downloaded models.
+- It will then present an interactive selection list using a `rich`-based component (similar to `specs/10-interactive-sessions.md`).
+- The list of models will be appended with a final option: "Search for a new model online...".
+
+### 6.3. Online Model Search
+- If the user selects the "Search..." option, they will be prompted to enter a search query.
+- The tool will then query the Ollama online model registry (or a suitable API) to find matching models.
+- The search results will be presented in a new interactive list.
+- Upon selection, the chosen model name (e.g., `llama3:8b`) will be captured.
+
+### 6.4. Configuration Update
+- Once a model is selected (either from the local list or the online search), its identifier will be written to the `model` key in the `config.toml` file.
+- The tool will inform the user that the configuration has been updated and remind them to run `automake init` if they selected a new model that needs to be downloaded.
+
+## 7. Out of Scope
+- A CLI command to directly edit other configuration values like the `base_url`.
+- Per-project configuration files. The configuration remains global for the user.

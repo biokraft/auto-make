@@ -26,7 +26,11 @@ This document outlines the command-line interface (CLI), user interaction patter
 - This command launches a `rich`-based interactive chat session with the Manager Agent, maintaining context throughout the conversation.
 - This mode is ideal for complex, multi-step tasks that benefit from interactive guidance.
 
-### 2.3. Other Commands
+### 2.3. Configuration Command: `automake config model`
+- To provide a guided setup experience, users can run `automake config model`.
+- This command launches the interactive model selection UI as defined in `specs/04-configuration-management.md`.
+
+### 2.4. Other Commands
 - Other commands like `init` and `logs` will remain as standard subcommands.
 
 ## 3. Non-functional Requirements / Constraints
