@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.3.3 - Enhanced UX & Testing Improvements
+
+### ✨ Added
+- 🎬 Comprehensive UX demonstration scripts for better user experience showcase
+- 📊 Enhanced demo scripts with streaming capabilities and improved output handling
+- 🧪 Improved test coverage for logs and command runner functionality
+
+### 🛠️ Improved
+- 🤖 Enhanced AI agent with better command interpretation and logging capabilities
+- 📋 Makefile reader with improved functionality and error handling
+- 🎯 LiveBox integration with better output handling and real-time updates
+- 🔧 CommandRunner refactoring for cleaner output management
+
+### 🔧 Fixed
+- ✅ Test reliability improvements with better mocking for log file operations
+- 🎨 Output handling consistency across different components
+
 ## v0.3.2 - Documentation & Demo Enhancements
 
 ### ✨ Added
@@ -101,6 +118,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Pre-commit hook compatibility issues
 - 📏 Code formatting and linting compliance
 
+[0.3.3]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.3.3
 [0.3.2]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.3.2
 [0.3.1]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.3.1
 [0.3.0]: https://github.com/seanbaufeld/auto-make/releases/tag/v0.3.0
