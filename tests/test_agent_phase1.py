@@ -270,17 +270,32 @@ class TestManagerAgent:
             model_id="ollama/llama3.2:3b", base_url="http://localhost:11434"
         )
 
+    @patch("automake.agent.manager.LiteLLMModel")
+    @patch("automake.agent.manager.ToolCallingAgent")
     @patch("automake.agent.manager.ensure_ollama_running")
-    def test_create_manager_agent_ollama_started(self, mock_ollama):
+    def test_create_manager_agent_ollama_started(
+        self, mock_ollama, mock_agent_class, mock_model_class
+    ):
         """Test manager agent creation when Ollama needs to be started."""
         mock_ollama.return_value = (True, True)  # (is_running, was_started)
 
+        # Mock the model and agent instances
+        mock_model_instance = Mock()
+        mock_model_class.return_value = mock_model_instance
+
+        mock_agent_instance = Mock()
+        mock_agent_class.return_value = mock_agent_instance
+
         config = create_test_config()
 
-        with patch("smolagents.LiteLLMModel"), patch("smolagents.ToolCallingAgent"):
-            agent, ollama_started = create_manager_agent(config)
+        agent, ollama_started = create_manager_agent(config)
 
-            assert ollama_started is True
+        assert agent == mock_agent_instance
+        assert ollama_started is True
+        mock_ollama.assert_called_once()
+        mock_model_class.assert_called_once_with(
+            model_id="ollama/llama3.2:3b", base_url="http://localhost:11434"
+        )
 
     def test_manager_agent_runner_initialization(self):
         """Test ManagerAgentRunner initialization."""
