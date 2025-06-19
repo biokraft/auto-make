@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.4 - Enhanced Model Management & Python 3.13 Support
+
+### ✨ Added
+- 🧠 Hardware-aware model recommendation system for optimal performance based on user hardware capabilities
+- 🛡️ Graceful shutdown procedures for agent operations with improved signal handling
+- 📋 Enhanced first-time setup guidance with better model selection instructions
+- 🔧 New specifications for hardware-aware model recommendation and signal handling
+
+### 🛠️ Improved
+- ⚡ Enhanced model management and initialization process with better error handling
+- 🎯 Improved user experience during agent initialization with clearer feedback
+- 📚 Updated help command image to reflect recent CLI enhancements
+- 🧪 Expanded test coverage for help display and agent functionality
+
+### 🔧 Fixed
+- ✅ Better error handling in agent manager for model availability checks
+- 🔄 Improved subprocess management for cleaner agent operations
+
+### ⚠️ Breaking Changes
+- 🐍 **Python 3.13+ now required** - Updated minimum Python version requirement from 3.11+ to 3.13+
+
 ## v0.4.3 - Non-Interactive Agent Mode & CLI Enhancement
 
 ### ✨ Added

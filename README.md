@@ -10,7 +10,7 @@
 [![PyPI version](https://badge.fury.io/py/automake-cli.svg)](https://badge.fury.io/py/automake-cli)
 
 
-[![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/downloads/)
+[![Python 3.13+](https://img.shields.io/badge/Python-3.13+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/downloads/)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-black.svg)](https://github.com/astral-sh/ruff)
 [![tested with pytest](https://img.shields.io/badge/tested%20with-pytest-0A9B7B.svg?logo=pytest)](https://pytest.org)
@@ -47,7 +47,7 @@ This entire workflow is triggered by the `run` command. For example: `automake r
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Python 3.11+
+- Python 3.13+
 - [uv](https://github.com/astral-sh/uv) (recommended for installation)
 - An active [Ollama](https://ollama.ai/) server with a running model (e.g., `ollama run qwen3:0.6b`).
 
@@ -65,7 +65,7 @@ Install the very latest version directly from this repository:
 uv tool install git+https://github.com/biokraft/auto-make.git
 
 # You can also install a specific tag or branch
-uv tool install git+https://github.com/biokraft/auto-make.git@v0.4.3
+uv tool install git+https://github.com/biokraft/auto-make.git@v0.4.4
 ```
 
 **2. From PyPI (Stable)**
