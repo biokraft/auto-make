@@ -36,14 +36,14 @@ def read_ascii_art() -> str:
 
 
 def print_welcome() -> None:
-    """Print ASCII art with version and author credit and simple usage info."""
+    """Print ASCII art with version and simple usage info."""
     console = Console()
     output = get_formatter(console)
-    # Print ASCII art with version and author credit
+    # Print ASCII art with version
     ascii_art = read_ascii_art()
     if ascii_art:
-        # Combine ASCII art with version and author credit for unified rainbow animation
-        combined_art = ascii_art + f"\nversion {__version__}\n- by Seán Baufeld"
+        # Combine ASCII art with version for unified rainbow animation
+        combined_art = ascii_art + f"\nversion {__version__}"
         output.print_rainbow_ascii_art(combined_art, duration=1.5)
         console.print()  # Add blank line after ASCII art
         console.print()  # Add extra blank line for better spacing

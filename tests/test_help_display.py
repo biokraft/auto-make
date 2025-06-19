@@ -45,7 +45,6 @@ class TestPrintWelcome:
         call_args = mock_formatter.print_rainbow_ascii_art.call_args[0][0]
         assert mock_ascii_art in call_args
         assert "version" in call_args
-        assert "by Seán Baufeld" in call_args
 
         # Verify both boxes were printed
         assert mock_formatter.print_box.call_count == 2
