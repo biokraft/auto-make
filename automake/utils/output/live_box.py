@@ -27,9 +27,9 @@ def _get_animation_config() -> tuple[bool, float]:
     """
     import os
 
-    # Check for CI environment variables - disable animations in CI
+    # Check for specific CI environment variables - disable animations in CI
+    # Don't use generic 'CI' as it might be set in tests
     ci_env_vars = [
-        "CI",
         "GITHUB_ACTIONS",
         "GITLAB_CI",
         "TRAVIS",
