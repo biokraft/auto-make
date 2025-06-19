@@ -29,16 +29,13 @@ class TestAnimatedLiveBox:
         assert callable(live_box.animate_text)
 
     @patch("automake.utils.output.live_box.animate_text")
-    @patch("automake.config.manager.get_config")
+    @patch("automake.utils.output.live_box._get_animation_config")
     def test_animate_text_with_animation_enabled(
         self, mock_get_config, mock_animate_text
     ):
         """Test animate_text method when animation is enabled."""
-        # Setup mock config
-        mock_config = Mock()
-        mock_config.ui_animation_enabled = True
-        mock_config.ui_animation_speed = 75.0
-        mock_get_config.return_value = mock_config
+        # Mock the animation config directly to bypass CI detection
+        mock_get_config.return_value = (True, 75.0)
 
         console = Mock(spec=Console)
         live_box = LiveBox(console=console, title="Test")
@@ -58,16 +55,13 @@ class TestAnimatedLiveBox:
         assert call_args[1]["enabled"] is True  # enabled parameter
 
     @patch("automake.utils.output.live_box.animate_text")
-    @patch("automake.config.manager.get_config")
+    @patch("automake.utils.output.live_box._get_animation_config")
     def test_animate_text_with_animation_disabled(
         self, mock_get_config, mock_animate_text
     ):
         """Test animate_text method when animation is disabled."""
-        # Setup mock config
-        mock_config = Mock()
-        mock_config.ui_animation_enabled = False
-        mock_config.ui_animation_speed = 50.0
-        mock_get_config.return_value = mock_config
+        # Mock the animation config directly to bypass CI detection
+        mock_get_config.return_value = (False, 50.0)
 
         console = Mock(spec=Console)
         live_box = LiveBox(console=console, title="Test")
@@ -81,14 +75,11 @@ class TestAnimatedLiveBox:
         assert call_args[1]["enabled"] is False
 
     @patch("automake.utils.output.live_box.animate_text")
-    @patch("automake.config.manager.get_config")
+    @patch("automake.utils.output.live_box._get_animation_config")
     def test_animate_text_panel_factory(self, mock_get_config, mock_animate_text):
         """Test that animate_text creates correct panel factory."""
-        # Setup mock config
-        mock_config = Mock()
-        mock_config.ui_animation_enabled = True
-        mock_config.ui_animation_speed = 50.0
-        mock_get_config.return_value = mock_config
+        # Mock the animation config directly to bypass CI detection
+        mock_get_config.return_value = (True, 50.0)
 
         console = Mock(spec=Console)
         live_box = LiveBox(console=console, title="Test Title", border_style="green")
@@ -109,14 +100,11 @@ class TestAnimatedLiveBox:
         assert panel.border_style == "green"
 
     @patch("automake.utils.output.live_box.animate_text")
-    @patch("automake.config.manager.get_config")
+    @patch("automake.utils.output.live_box._get_animation_config")
     def test_animate_text_thread_safety(self, mock_get_config, mock_animate_text):
         """Test that animate_text is thread-safe."""
-        # Setup mock config
-        mock_config = Mock()
-        mock_config.ui_animation_enabled = True
-        mock_config.ui_animation_speed = 50.0
-        mock_get_config.return_value = mock_config
+        # Mock the animation config directly to bypass CI detection
+        mock_get_config.return_value = (True, 50.0)
 
         console = Mock(spec=Console)
         live_box = LiveBox(console=console, title="Test")
@@ -159,14 +147,11 @@ class TestAnimatedLiveBox:
         live_box.update.assert_called_once_with("Test message")
 
     @patch("automake.utils.output.live_box.animate_text")
-    @patch("automake.config.manager.get_config")
+    @patch("automake.utils.output.live_box._get_animation_config")
     def test_update_method_compatibility(self, mock_get_config, mock_animate_text):
         """Test that existing update method still works."""
-        # Setup mock config
-        mock_config = Mock()
-        mock_config.ui_animation_enabled = True
-        mock_config.ui_animation_speed = 50.0
-        mock_get_config.return_value = mock_config
+        # Mock the animation config directly to bypass CI detection
+        mock_get_config.return_value = (True, 50.0)
 
         console = Mock(spec=Console)
         live_box = LiveBox(console=console, title="Test")
@@ -182,14 +167,11 @@ class TestAnimatedLiveBox:
         live_box._live.update.assert_called_once()
 
     @patch("automake.utils.output.live_box.animate_text")
-    @patch("automake.config.manager.get_config")
+    @patch("automake.utils.output.live_box._get_animation_config")
     def test_animate_text_with_custom_title(self, mock_get_config, mock_animate_text):
         """Test animate_text with custom title parameter."""
-        # Setup mock config
-        mock_config = Mock()
-        mock_config.ui_animation_enabled = True
-        mock_config.ui_animation_speed = 50.0
-        mock_get_config.return_value = mock_config
+        # Mock the animation config directly to bypass CI detection
+        mock_get_config.return_value = (True, 50.0)
 
         console = Mock(spec=Console)
         live_box = LiveBox(console=console, title="Default Title")

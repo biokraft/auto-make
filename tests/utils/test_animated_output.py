@@ -13,14 +13,11 @@ class TestAnimatedPrintBox:
     """Test animated print_box functionality."""
 
     @patch("automake.utils.output.formatter.animate_text")
-    @patch("automake.config.manager.get_config")
+    @patch("automake.utils.output.formatter._get_animation_config")
     def test_print_box_with_animation_enabled(self, mock_get_config, mock_animate_text):
         """Test print_box uses animation when enabled in config."""
-        # Setup mock config
-        mock_config = Mock()
-        mock_config.ui_animation_enabled = True
-        mock_config.ui_animation_speed = 50.0
-        mock_get_config.return_value = mock_config
+        # Mock the animation config directly to bypass CI detection
+        mock_get_config.return_value = (True, 50.0)
 
         console = Mock(spec=Console)
         formatter = OutputFormatter(console=console)
@@ -40,16 +37,13 @@ class TestAnimatedPrintBox:
         assert call_args[1]["enabled"] is True  # enabled parameter
 
     @patch("automake.utils.output.formatter.animate_text")
-    @patch("automake.config.manager.get_config")
+    @patch("automake.utils.output.formatter._get_animation_config")
     def test_print_box_with_animation_disabled(
         self, mock_get_config, mock_animate_text
     ):
         """Test print_box uses direct print when animation disabled."""
-        # Setup mock config
-        mock_config = Mock()
-        mock_config.ui_animation_enabled = False
-        mock_config.ui_animation_speed = 50.0
-        mock_get_config.return_value = mock_config
+        # Mock the animation config directly to bypass CI detection
+        mock_get_config.return_value = (False, 50.0)
 
         console = Mock(spec=Console)
         formatter = OutputFormatter(console=console)
@@ -64,14 +58,11 @@ class TestAnimatedPrintBox:
         assert call_args[1]["enabled"] is False
 
     @patch("automake.utils.output.formatter.animate_text")
-    @patch("automake.config.manager.get_config")
+    @patch("automake.utils.output.formatter._get_animation_config")
     def test_print_box_panel_factory(self, mock_get_config, mock_animate_text):
         """Test that panel_factory creates correct panel."""
-        # Setup mock config
-        mock_config = Mock()
-        mock_config.ui_animation_enabled = True
-        mock_config.ui_animation_speed = 75.0
-        mock_get_config.return_value = mock_config
+        # Mock the animation config directly to bypass CI detection
+        mock_get_config.return_value = (True, 75.0)
 
         console = Mock(spec=Console)
         formatter = OutputFormatter(console=console)
@@ -90,14 +81,11 @@ class TestAnimatedPrintBox:
         assert panel.border_style == "red"  # Error message type style
 
     @patch("automake.utils.output.formatter.animate_text")
-    @patch("automake.config.manager.get_config")
+    @patch("automake.utils.output.formatter._get_animation_config")
     def test_print_error_box_animated(self, mock_get_config, mock_animate_text):
         """Test print_error_box uses animation."""
-        # Setup mock config
-        mock_config = Mock()
-        mock_config.ui_animation_enabled = True
-        mock_config.ui_animation_speed = 50.0
-        mock_get_config.return_value = mock_config
+        # Mock the animation config directly to bypass CI detection
+        mock_get_config.return_value = (True, 50.0)
 
         console = Mock(spec=Console)
         formatter = OutputFormatter(console=console)
@@ -111,14 +99,11 @@ class TestAnimatedPrintBox:
         console.print.assert_called_once()
 
     @patch("automake.utils.output.formatter.animate_text")
-    @patch("automake.config.manager.get_config")
+    @patch("automake.utils.output.formatter._get_animation_config")
     def test_print_status_animated(self, mock_get_config, mock_animate_text):
         """Test print_status uses animation."""
-        # Setup mock config
-        mock_config = Mock()
-        mock_config.ui_animation_enabled = True
-        mock_config.ui_animation_speed = 50.0
-        mock_get_config.return_value = mock_config
+        # Mock the animation config directly to bypass CI detection
+        mock_get_config.return_value = (True, 50.0)
 
         console = Mock(spec=Console)
         formatter = OutputFormatter(console=console)
