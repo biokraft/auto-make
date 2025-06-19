@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.5 - Agent System Enhancement & User Safety
+
+### ✨ Added
+- 🛡️ Action confirmation feature for enhanced user safety during agent operations
+- 🤖 AutoMakeAgent specification for natural language command interpretation
+- 📊 MermaidAgent specification for diagram generation from source code
+- 🔧 Intelligent CLI error handling with AI-powered correction suggestions
+- ⚙️ Configurable confirmation prompts via `agent.require_confirmation` setting
+
+### 🛠️ Improved
+- 🎯 Interactive agent mode with comprehensive session management
+- 📚 Enhanced documentation with future considerations for third-party agent ecosystem
+- 🔄 Agent routing logic for better task delegation and execution
+- 🧪 Expanded test coverage for agent functionality and error handling scenarios
+
+### 🔧 Fixed
+- ✅ Enhanced error management across CLI operations with robust handling
+- 🎨 Help display improvements with cleaner ASCII art presentation
+
 ## v0.4.4 - Enhanced Model Management & Python 3.13 Support
 
 ### ✨ Added
