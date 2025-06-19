@@ -25,14 +25,29 @@ def _get_animation_config() -> tuple[bool, float]:
     Returns:
         Tuple of (enabled, speed) with fallback defaults if config unavailable
     """
+    import os
+
+    # Check for CI environment variables - disable animations in CI
+    ci_env_vars = [
+        "CI",
+        "GITHUB_ACTIONS",
+        "GITLAB_CI",
+        "TRAVIS",
+        "CIRCLECI",
+        "JENKINS_URL",
+    ]
+    is_ci = any(os.getenv(var) for var in ci_env_vars)
+
     try:
         from ...config.manager import get_config
 
         config = get_config()
-        return config.ui_animation_enabled, config.ui_animation_speed
+        # Disable animations in CI environments regardless of config
+        animation_enabled = config.ui_animation_enabled and not is_ci
+        return animation_enabled, config.ui_animation_speed
     except Exception:
-        # Fallback to defaults if config is unavailable
-        return False, 50.0
+        # Fallback to defaults if config is unavailable, but still respect CI detection
+        return not is_ci, 50.0
 
 
 class LiveBox:
