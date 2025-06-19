@@ -20,6 +20,7 @@ AutoMake will adopt a multi-agent architecture, a pattern that yields better per
 
 The agent ecosystem, powered by `smolagents`, will be comprised of:
 - **Manager Agent**: The primary `CodeAgent` that interacts with the user. It analyzes requests and orchestrates the specialist agents to fulfill the user's goal. It does not execute tasks directly.
+- **AutoMake Agent**: A `ManagedAgent` responsible for interpreting natural language commands that target the `automake` tool itself (e.g., "check the logs," "configure the model"). Its context is dynamically populated with the output of `automake --help` to ensure it can generate valid and up-to-date commands.
 - **Terminal Agent**: A `ManagedAgent` equipped with tools to run arbitrary shell commands (e.g., `ls`, `git status`).
 - **Coding Agent**: A `ManagedAgent` with a sandboxed Python environment to execute generated code for calculations, file I/O, or scripting tasks. This sandbox will be created on-the-fly using `uv`.
 - **Web Agent**: A `ManagedAgent` that uses the `DuckDuckGoSearchTool` to query the internet.
@@ -48,8 +49,9 @@ The agent ecosystem, powered by `smolagents`, will be comprised of:
   - `specialists.py`: Defines the specialist agents (`TerminalAgent`, `CodingAgent`, etc.) as `ManagedAgent` instances, encapsulating their respective tools.
   - `ui.py`: Manages the `rich`-based interactive session.
 - The `smolagents` framework follows a clear execution cycle:
-    1. **Initialization**: The system prompt is stored in a `SystemPromptStep` and the user query in a `TaskStep`.
-    2. **ReAct Loop**:
+    1. **Intent Routing**: Before the main ReAct loop, the `ManagerAgent` performs an initial classification of the user's prompt. It uses a preliminary LLM call to determine if the user's intent is to execute an `automake` command. If so, it delegates directly to the `AutoMakeAgent`, which returns a single command for execution. Otherwise, it proceeds to the general ReAct loop with the other specialists.
+    2. **Initialization**: The system prompt is stored in a `SystemPromptStep` and the user query in a `TaskStep`.
+    3. **ReAct Loop**:
         - The agent's memory (a log of all previous steps) is written to a list of messages via `agent.write_memory_to_messages()`.
         - These messages are sent to the LLM.
         - The LLM's response (a code snippet) is parsed into an `ActionStep`.

@@ -27,6 +27,7 @@ The following table links to the detailed specifications for each domain and tec
 | `specs/18-concurrent-sessions.md` | Defines the process-isolated logging mechanism to enable multiple, simultaneous agent sessions. |
 | `specs/19-hardware-aware-model-recommendation.md`    | Specifies an interactive, hardware-aware model recommender for `automake init`. |
 | `specs/20-signal-handling.md`                        | Defines graceful shutdown procedures for `Ctrl+C` and `Ctrl+D`. |
+| `specs/21-automake-agent.md`                         | Defines a specialist agent for interpreting `automake`'s own commands. |
 
 ## 3. Implementation Summaries
 - **Phase 2**: [Concurrent Session Support](./docs/PHASE2_IMPLEMENTATION_SUMMARY.md)
@@ -58,3 +59,4 @@ This plan outlines the steps to implement the agent-first architecture for AutoM
 | 10    | Codebase Exploration Agent  | - Implement the `CodebaseExplorationAgent` with tools for dynamic file system and code analysis.<br>- Develop tools for AST parsing and dependency tracing.             | `specs/17-codebase-exploration-agent.md`                                                                    | TBD    |
 | 11    | Project Init Agent          | - Implement the `
 | 12    | Robust Signal Handling      | - Implement a global signal handler for `SIGINT` (Ctrl+C).<br>- Ensure graceful shutdown of agent processes.<br>- Handle `EOFError` (Ctrl+D) in interactive sessions to exit cleanly.<br>- Prevent zombie processes on abrupt termination. | `specs/20-signal-handling.md`                                                                               | TBD    |
+| 13    | AutoMake Agent              | - Implement the `AutoMakeAgent` with context from `automake --help`.<br>- Update `ManagerAgent` to route `automake`-specific commands. | `specs/21-automake-agent.md`<br>`specs/12-autonomous-agent-mode.md`                                        | TBD    |
