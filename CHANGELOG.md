@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.8 - Refined CI Detection & Test Compatibility
+
+### 🔧 Fixed
+- 🎯 Refined CI environment detection to only disable animations for specific CI platforms (GitHub Actions, GitLab CI, Travis, CircleCI, Jenkins)
+- 🧪 Fixed test compatibility issues where animation tests were incorrectly failing due to overly broad CI detection
+- ⚡ Improved animation behavior consistency between local development and CI environments
+
+### 🛠️ Improved
+- 🔍 More precise CI environment detection that preserves animation functionality in test environments
+- 📦 Enhanced deployment reliability with better test coverage validation
+
 ## v0.4.7 - CI Compatibility & Animation Fixes
 
 ### 🔧 Fixed
