@@ -42,6 +42,7 @@ class Config:
             "logging": {"level": "INFO"},
             "ai": {"interactive_threshold": 80},
             "agent": {"require_confirmation": True},
+            "ui": {"animation_enabled": True, "animation_speed": 50.0},
         }
 
     def _create_default_config(self) -> None:
@@ -73,6 +74,13 @@ interactive_threshold = 80
 [agent]
 # Whether to require confirmation before executing agent actions
 require_confirmation = true
+
+[ui]
+# Enable/disable typewriter animation for text boxes
+animation_enabled = true
+
+# Animation speed in characters per second
+animation_speed = 50.0
 """
 
         # Write the config file
@@ -125,6 +133,16 @@ require_confirmation = true
     def agent_require_confirmation(self) -> bool:
         """Get agent require confirmation setting."""
         return self._config_data["agent"]["require_confirmation"]
+
+    @property
+    def ui_animation_enabled(self) -> bool:
+        """Get UI animation enabled setting."""
+        return self._config_data["ui"]["animation_enabled"]
+
+    @property
+    def ui_animation_speed(self) -> float:
+        """Get UI animation speed setting."""
+        return self._config_data["ui"]["animation_speed"]
 
     @property
     def config_file_path(self) -> Path:

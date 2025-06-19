@@ -62,6 +62,7 @@ class TestConfig:
             "logging": {"level": "INFO"},
             "ai": {"interactive_threshold": 80},
             "agent": {"require_confirmation": True},
+            "ui": {"animation_enabled": True, "animation_speed": 50.0},
         }
 
         # Read the config file directly to verify content
@@ -262,6 +263,7 @@ level = "INFO"
             "logging": {"level": "INFO"},
             "ai": {"interactive_threshold": 80},
             "agent": {"require_confirmation": True},
+            "ui": {"animation_enabled": True, "animation_speed": 50.0},
         }
 
         assert result == expected

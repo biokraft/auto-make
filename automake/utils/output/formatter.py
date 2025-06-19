@@ -15,8 +15,25 @@ from rich.live import Live
 from rich.panel import Panel
 from rich.text import Text
 
+from ..animation import animate_text
 from .live_box import LiveBox
 from .types import MessageType
+
+
+def _get_animation_config() -> tuple[bool, float]:
+    """Get animation configuration settings.
+
+    Returns:
+        Tuple of (enabled, speed) with fallback defaults if config unavailable
+    """
+    try:
+        from ...config.manager import get_config
+
+        config = get_config()
+        return config.ui_animation_enabled, config.ui_animation_speed
+    except Exception:
+        # Fallback to defaults if config is unavailable
+        return False, 50.0
 
 
 class OutputFormatter:
@@ -148,17 +165,32 @@ class OutputFormatter:
         # Use custom title or default from style config
         box_title = title or style_config["title"]
 
-        # Create the panel with consistent styling
-        panel = Panel(
-            message,
-            title=box_title,
-            title_align="left",
-            border_style=style_config["border_style"],
-            padding=(0, 1),
-            expand=False,
-        )
+        # Create panel factory function for animation
+        def panel_factory(text: str) -> Panel:
+            return Panel(
+                text,
+                title=box_title,
+                title_align="left",
+                border_style=style_config["border_style"],
+                padding=(0, 1),
+                expand=False,
+            )
 
-        self.console.print(panel)
+        # Try to use animation, fallback to direct print if any issues
+        try:
+            # Get animation configuration
+            animation_enabled, animation_speed = _get_animation_config()
+
+            animate_text(
+                self.console,
+                message,
+                panel_factory,
+                speed=animation_speed,
+                enabled=animation_enabled,
+            )
+        except Exception:
+            # Fallback to direct print if animation or config fails
+            self.console.print(panel_factory(message))
 
     def print_simple(
         self,

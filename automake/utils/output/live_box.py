@@ -16,6 +16,24 @@ from rich.live import Live
 from rich.panel import Panel
 from rich.text import Text
 
+from ..animation import animate_text
+
+
+def _get_animation_config() -> tuple[bool, float]:
+    """Get animation configuration settings.
+
+    Returns:
+        Tuple of (enabled, speed) with fallback defaults if config unavailable
+    """
+    try:
+        from ...config.manager import get_config
+
+        config = get_config()
+        return config.ui_animation_enabled, config.ui_animation_speed
+    except Exception:
+        # Fallback to defaults if config is unavailable
+        return False, 50.0
+
 
 class LiveBox:
     """A real-time, updatable box for displaying streaming content.
@@ -144,6 +162,50 @@ class LiveBox:
         self.title = title
         if self._is_active and self._live is not None:
             self._live.update(self._create_panel())
+
+    def animate_text(self, text: str, title: str | None = None) -> None:
+        """Animate text with typewriter effect in the live box.
+
+        Args:
+            text: Text to animate
+            title: Optional custom title (overrides instance title)
+        """
+        try:
+            # Get animation configuration
+            animation_enabled, animation_speed = _get_animation_config()
+
+            # Use custom title or instance title
+            display_title = title or self.title
+
+            # Create panel factory function for animation
+            def panel_factory(animated_text: str) -> Panel:
+                return Panel(
+                    animated_text,
+                    title=display_title,
+                    title_align="left",
+                    border_style=self.border_style,
+                    padding=(0, 1),
+                    expand=False,
+                )
+
+            # Use animation
+            animate_text(
+                self.console,
+                text,
+                panel_factory,
+                speed=animation_speed,
+                enabled=animation_enabled,
+            )
+
+        except Exception:
+            # Fallback to direct update if animation fails
+            if title:
+                old_title = self.title
+                self.set_title(title)
+                self.update(text)
+                self.set_title(old_title)
+            else:
+                self.update(text)
 
     def __enter__(self) -> "LiveBox":
         """Context manager entry."""

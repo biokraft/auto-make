@@ -34,7 +34,11 @@ class TestConfigCommands:
         """Create a mock config instance."""
         config = Mock()
         config.get_all_sections.return_value = {
-            "ollama": {"base_url": "http://localhost:11434", "model": "llama2:7b"}
+            "ollama": {"base_url": "http://localhost:11434", "model": "llama2:7b"},
+            "logging": {"level": "INFO"},
+            "ai": {"interactive_threshold": 80},
+            "agent": {"require_confirmation": True},
+            "ui": {"animation_enabled": True, "animation_speed": 50.0},
         }
         return config
 
@@ -47,7 +51,7 @@ class TestConfigCommands:
         mock_get_config.return_value = mock_config
         mock_get_formatter.return_value = mock_output
 
-        config_show_command()
+        config_show_command(section=None)
 
         mock_get_config.assert_called_once()
         mock_output.live_box.assert_called()

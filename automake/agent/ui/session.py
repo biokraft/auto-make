@@ -17,6 +17,7 @@ from rich.text import Text
 from smolagents import ToolCallingAgent
 
 from ...logging import get_logger
+from ...utils.output.formatter import get_formatter
 
 logger = get_logger()
 
@@ -416,3 +417,67 @@ class RichInteractiveSession(InteractiveSession):
             and "tool_name" in chunk
             and chunk.get("tool_name") is not None
         )
+
+    def display_thinking_animation(self, message: str) -> None:
+        """Display thinking animation with typewriter effect.
+
+        Args:
+            message: Message to display with animation
+        """
+        try:
+            formatter = get_formatter(self.console)
+            live_box = formatter.create_live_box(
+                title="AI Processing", refresh_per_second=4.0, transient=False
+            )
+            live_box.animate_text(message)
+        except Exception:
+            # Fallback to regular display
+            try:
+                formatter = get_formatter(self.console)
+                formatter.print_box(message, title="AI Processing")
+            except Exception:
+                # Ultimate fallback
+                self.console.print(f"🤖 {message}")
+
+    def display_streaming_response(
+        self, response_chunks: list[str], title: str = "AI Response"
+    ) -> None:
+        """Display streaming response with animation.
+
+        Args:
+            response_chunks: List of response chunks to animate
+            title: Title for the response box
+        """
+        try:
+            formatter = get_formatter(self.console)
+            live_box = formatter.create_live_box(
+                title=title, refresh_per_second=8.0, transient=False
+            )
+            full_response = "".join(response_chunks)
+            live_box.animate_text(full_response)
+        except Exception:
+            # Fallback to regular display
+            try:
+                formatter = get_formatter(self.console)
+                full_response = "".join(response_chunks)
+                formatter.print_box(full_response, title=title)
+            except Exception:
+                # Ultimate fallback
+                full_response = "".join(response_chunks)
+                self.console.print(f"🤖 {full_response}")
+
+    def display_animated_response(
+        self, message: str, title: str = "Agent Response"
+    ) -> None:
+        """Display response with typewriter animation.
+
+        Args:
+            message: Message to display with animation
+            title: Title for the response box
+        """
+        try:
+            formatter = get_formatter(self.console)
+            formatter.print_box(message, title=title)
+        except Exception:
+            # Fallback to regular display
+            self.console.print(f"🤖 {message}")
