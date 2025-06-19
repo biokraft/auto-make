@@ -9,6 +9,7 @@ import subprocess
 import typer
 
 from automake.config import get_config
+from automake.utils.model_selector import ModelSelector
 from automake.utils.output import MessageType, get_formatter
 
 
@@ -271,6 +272,69 @@ def config_edit_command() -> None:
     except Exception as e:
         with output.live_box("Configuration Error", MessageType.ERROR) as error_box:
             error_box.update(f"❌ Error accessing configuration file: {e}")
+        raise typer.Exit(1) from e
+
+
+def config_model_command() -> None:
+    """Interactive model configuration."""
+    output = get_formatter()
+
+    try:
+        # Load configuration
+        config = get_config()
+        current_model = config.get("ollama", "model")
+
+        # Display current configuration
+        with output.live_box(
+            "Interactive Model Configuration", MessageType.INFO
+        ) as info_box:
+            info_box.update(
+                "🤖 Interactive Model Configuration\n\n"
+                "This will help you select and configure your Ollama model.\n"
+                f"Current model: {current_model or 'None'}\n\n"
+                "📋 You can choose from locally available models or search for "
+                "new ones online."
+            )
+
+        # Initialize model selector
+        selector = ModelSelector(config)
+
+        # Get user's model selection
+        selected_model = selector.select_model()
+
+        # Check if model changed
+        if selected_model == current_model:
+            with output.live_box("No Changes", MessageType.INFO) as info_box:
+                info_box.update(
+                    f"✅ Selected model: {selected_model}\n\n"
+                    "No changes made - you selected the same model that's already "
+                    "configured."
+                )
+        else:
+            # Update configuration
+            config.set("ollama", "model", selected_model)
+
+            with output.live_box(
+                "Configuration Updated", MessageType.SUCCESS
+            ) as success_box:
+                success_box.update(
+                    f"✅ Model configuration updated successfully!\n\n"
+                    f"Current model: {current_model or 'None'}\n"
+                    f"Selected model: {selected_model}\n\n"
+                    "💡 Configuration has been saved to file.\n\n"
+                    "🚀 You can now use the selected model with commands like:\n"
+                    "   • automake run\n"
+                    "   • automake agent\n\n"
+                    "⚠️  Note: Make sure the model is downloaded in Ollama before "
+                    "using it."
+                )
+
+    except Exception as e:
+        with output.live_box("Configuration Error", MessageType.ERROR) as error_box:
+            error_box.update(
+                f"❌ Error during model configuration: {e}\n\n"
+                "💡 Please try again or check your Ollama installation."
+            )
         raise typer.Exit(1) from e
 
 

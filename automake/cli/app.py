@@ -12,6 +12,7 @@ from automake.agent.manager import ManagerAgentRunner
 from automake.cli.commands.agent import _run_non_interactive, agent_command
 from automake.cli.commands.config import (
     config_edit_command,
+    config_model_command,
     config_reset_command,
     config_set_command,
     config_show_command,
@@ -202,3 +203,4 @@ config_app.command("show")(config_show_command)
 config_app.command("set")(config_set_command)
 config_app.command("reset")(config_reset_command)
 config_app.command("edit")(config_edit_command)
+config_app.command("model")(config_model_command)
