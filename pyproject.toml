@@ -8,7 +8,7 @@ version = "0.4.3"
 description = "AI-powered Makefile command execution"
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.11"
+requires-python = ">=3.13"
 authors = [
     { name = "Sean Baufeld", email = "sean.baufeld@protonmail.com" },
 ]
@@ -20,8 +20,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Build Tools",
     "Topic :: Utilities",
 ]
@@ -31,7 +30,6 @@ dependencies = [
     "rich>=13.0.0", # For rich output support
     "smolagents[litellm]>=0.1.0",
     "requests>=2.31.0",
-    "tomli>=2.0.1; python_version < '3.11'",
     "tomli-w>=1.0.0", # For writing TOML files
     "appdirs>=1.4.4",
     "ollama>=0.5.1",
@@ -65,7 +63,7 @@ packages = ["automake"]
 
 [tool.ruff]
 line-length = 88
-target-version = "py311"
+target-version = "py313"
 extend-include = ["*.ipynb"]
 fix = true
 
