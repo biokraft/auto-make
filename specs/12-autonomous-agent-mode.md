@@ -26,6 +26,7 @@ The agent ecosystem, powered by `smolagents`, will be comprised of:
 - **Web Agent**: A `ManagedAgent` that uses the `DuckDuckGoSearchTool` to query the internet.
 - **Makefile Agent**: A `ManagedAgent` with tools to list and execute `Makefile` targets, preserving AutoMake's core function.
 - **File System Agent**: A `ManagedAgent` with tools to read and edit files on the local file system.
+- **Mermaid Agent**: A `ManagedAgent` that reads source files and generates Mermaid diagrams to document code structure and logic in `.mmd` files.
 
 ### 2.4. Core Logic: Code Agents & the ReAct Loop
 - The system will be built on `smolagents.CodeAgent`. This approach, where the LLM writes actions as Python code snippets, is more natural and flexible than JSON-based tool calling. It provides superior composability, object management, and generality.
