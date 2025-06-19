@@ -34,3 +34,6 @@ The project will adhere to the structure defined in `.cursor/rules/python/02-pro
 - Any web-based or API component.
 - A graphical user interface (GUI).
 - Persistent storage or databases.
+
+## 8. Future Considerations
+- **Third-Party Agent Ecosystem**: Explore supporting a framework like Google's Agent-to-Agent (A2A) communication protocol to allow external developers to create and integrate their own specialist agents into the AutoMake ecosystem. This would enable a plug-and-play architecture, expanding the tool's capabilities beyond the core set of agents.
