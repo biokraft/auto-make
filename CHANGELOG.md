@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.7 - CI Compatibility & Animation Fixes
+
+### 🔧 Fixed
+- 🐛 Resolved CI environment animation timeout issues by automatically disabling animations in CI/CD pipelines
+- 🧪 Enhanced test compatibility across GitHub Actions, GitLab CI, Travis, CircleCI, and Jenkins environments
+- ⚡ Improved deployment reliability for automated publishing workflows
+
+### 🛠️ Improved
+- 🎯 Smarter animation detection that respects CI environment variables
+- 📦 More robust package publishing process with better error handling
+
 ## v0.4.6 - Enhanced User Experience & Interactive Configuration
 
 ### ✨ Added
