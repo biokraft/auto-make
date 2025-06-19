@@ -99,7 +99,11 @@ def config_show_command(
 
 def config_set_command(
     key_path: str = typer.Argument(
-        ..., help="Configuration key path (e.g., 'ollama.model', 'logging.level')"
+        ...,
+        help=(
+            "Configuration key path "
+            "(e.g., 'ollama.model', 'agent.require_confirmation')"
+        ),
     ),
     value: str = typer.Argument(..., help="Value to set"),
 ) -> None:
@@ -117,12 +121,14 @@ def config_set_command(
                     f"Use format 'section.key', for example:\n"
                     f"  • 'ollama.model' to set the AI model\n"
                     f"  • 'ollama.base_url' to set the Ollama server URL\n"
-                    f"  • 'logging.level' to set the log level"
+                    f"  • 'logging.level' to set the log level\n"
+                    f"  • 'agent.require_confirmation' to enable/disable "
+                    f"action confirmation"
                 )
             else:
                 raise ValueError(
                     f"Invalid key path '{key_path}'. Use format 'section.key' "
-                    "(e.g., 'ollama.model', 'logging.level')"
+                    "(e.g., 'ollama.model', 'agent.require_confirmation')"
                 )
 
         section, key = key_path.split(".", 1)

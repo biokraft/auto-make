@@ -41,7 +41,7 @@ class Config:
             "ollama": {"base_url": "http://localhost:11434", "model": "qwen3:0.6b"},
             "logging": {"level": "INFO"},
             "ai": {"interactive_threshold": 80},
-            "agent": {"require_confirmation": False},
+            "agent": {"require_confirmation": True},
         }
 
     def _create_default_config(self) -> None:
@@ -72,7 +72,7 @@ interactive_threshold = 80
 
 [agent]
 # Whether to require confirmation before executing agent actions
-require_confirmation = false
+require_confirmation = true
 """
 
         # Write the config file

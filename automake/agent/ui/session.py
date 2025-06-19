@@ -209,16 +209,60 @@ class RichInteractiveSession(InteractiveSession):
         Returns:
             True if user confirms, False if user cancels
         """
-        # Display the action details
-        action_text = f"[yellow]Action:[/yellow] {action.get('tool_name', 'Unknown')}"
-        if action.get("arguments"):
-            action_text += f"\n[yellow]Arguments:[/yellow] {action['arguments']}"
+        import json
 
-        self.console.print(f"\n{action_text}")
+        from rich.panel import Panel
 
-        # Get confirmation
+        # Create a detailed action display
+        tool_name = action.get("tool_name", "Unknown")
+        arguments = action.get("arguments", {})
+
+        # Create main content
+        content_lines = []
+        content_lines.append(
+            f"[bold cyan]🔧 Tool:[/bold cyan] [yellow]{tool_name}[/yellow]"
+        )
+
+        if arguments:
+            content_lines.append("\n[bold cyan]📋 Arguments:[/bold cyan]")
+
+            # Format arguments nicely
+            if isinstance(arguments, dict):
+                for key, value in arguments.items():
+                    # Handle different value types
+                    if isinstance(value, str) and len(value) > 50:
+                        # Truncate long strings
+                        display_value = f"{value[:47]}..."
+                    elif isinstance(value, list | dict):
+                        # Format complex structures
+                        display_value = json.dumps(value, indent=2)[:100]
+                        if len(json.dumps(value)) > 100:
+                            display_value += "..."
+                    else:
+                        display_value = str(value)
+
+                    content_lines.append(
+                        f"  • [green]{key}:[/green] [white]{display_value}[/white]"
+                    )
+            else:
+                content_lines.append(f"  [white]{arguments}[/white]")
+
+        # Create the confirmation panel
+        content = "\n".join(content_lines)
+        panel = Panel(
+            content,
+            title="[bold red]⚠️  Action Confirmation Required[/bold red]",
+            title_align="center",
+            border_style="yellow",
+            padding=(1, 2),
+        )
+
+        self.console.print("\n")
+        self.console.print(panel)
+
+        # Get confirmation with enhanced prompt
         confirm = Prompt.ask(
-            "[bold yellow]Do you want to proceed?[/bold yellow]",
+            "\n[bold yellow]❓ Do you want to proceed with this action?[/bold yellow]",
             choices=["y", "n", "yes", "no"],
             default="y",
         )
@@ -295,11 +339,41 @@ class RichInteractiveSession(InteractiveSession):
                 if hasattr(result_stream, "__iter__"):
                     accumulated_response = ""
 
-                    # Stream the response
+                    # Stream the response and handle confirmations
                     for chunk in result_stream:
                         if chunk:
-                            accumulated_response += str(chunk)
-                            self.render(accumulated_response)
+                            # Check if chunk is an action that needs confirmation
+                            if self._is_action(chunk) and self.require_confirmation:
+                                # Temporarily exit live mode for confirmation
+                                self._live = None
+                                live.stop()
+
+                                # Request confirmation
+                                if not self.get_confirmation(chunk):
+                                    # User cancelled the action
+                                    self.render("❌ Action cancelled by user")
+                                    self.update_state(SessionStatus.COMPLETED)
+                                    return
+
+                                # Resume live mode
+                                live.start()
+                                self._live = live
+
+                                # Update status to executing tool
+                                self.update_state(SessionStatus.EXECUTING_TOOL, chunk)
+
+                            # Continue processing the chunk
+                            if isinstance(chunk, str):
+                                accumulated_response += chunk
+                                self.render(accumulated_response)
+                            else:
+                                # For action objects, show execution status
+                                if isinstance(chunk, dict):
+                                    tool_name = chunk.get("tool_name", "Unknown")
+                                else:
+                                    tool_name = "Unknown"
+                                accumulated_response += f"\n🔧 Executed: {tool_name}"
+                                self.render(accumulated_response)
 
                     # Add final response to history
                     if accumulated_response:
@@ -326,3 +400,19 @@ class RichInteractiveSession(InteractiveSession):
 
         # Add some spacing after response
         self.console.print()
+
+    def _is_action(self, chunk: Any) -> bool:
+        """Check if a chunk represents an action that needs confirmation.
+
+        Args:
+            chunk: The chunk to check
+
+        Returns:
+            True if the chunk is an action, False otherwise
+        """
+        # An action is typically a dictionary with tool_name
+        return (
+            isinstance(chunk, dict)
+            and "tool_name" in chunk
+            and chunk.get("tool_name") is not None
+        )

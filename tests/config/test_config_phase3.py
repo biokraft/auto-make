@@ -25,14 +25,14 @@ class TestConfigPhase3:
         defaults = config._get_default_config()
         assert "agent" in defaults
         assert "require_confirmation" in defaults["agent"]
-        assert defaults["agent"]["require_confirmation"] is False
+        assert defaults["agent"]["require_confirmation"] is True
 
     def test_agent_require_confirmation_property(self, temp_config_dir):
         """Test the agent_require_confirmation property."""
         config = Config(temp_config_dir)
 
         # Should return default value
-        assert config.agent_require_confirmation is False
+        assert config.agent_require_confirmation is True
 
     def test_agent_require_confirmation_from_file(self, temp_config_dir):
         """Test reading agent_require_confirmation from config file."""
@@ -86,7 +86,7 @@ require_confirmation = true
 
         # Verify agent section is present
         assert "[agent]" in config_content
-        assert "require_confirmation = false" in config_content
+        assert "require_confirmation = true" in config_content
 
     def test_config_migration_adds_missing_agent_section(self, temp_config_dir):
         """Test that missing agent section is added during config load."""
@@ -109,7 +109,7 @@ interactive_threshold = 80
         config = Config(temp_config_dir)
 
         # Verify agent section is available
-        assert config.agent_require_confirmation is False
+        assert config.agent_require_confirmation is True
 
         # Verify it's in the internal config data
         assert "agent" in config._config_data
@@ -123,7 +123,7 @@ interactive_threshold = 80
 
         assert "agent" in all_sections
         assert "require_confirmation" in all_sections["agent"]
-        assert all_sections["agent"]["require_confirmation"] is False
+        assert all_sections["agent"]["require_confirmation"] is True
 
     def test_reset_to_defaults_includes_agent_section(self, temp_config_dir):
         """Test that reset_to_defaults includes agent section."""
@@ -137,7 +137,7 @@ interactive_threshold = 80
         config.reset_to_defaults()
 
         # Verify agent section is reset
-        assert config.agent_require_confirmation is False
+        assert config.agent_require_confirmation is True
         assert config.log_level == "INFO"
 
     def test_get_method_with_agent_section(self, temp_config_dir):
@@ -146,7 +146,7 @@ interactive_threshold = 80
 
         # Test getting existing value
         value = config.get("agent", "require_confirmation")
-        assert value is False
+        assert value is True
 
         # Test getting non-existent value with default
         value = config.get("agent", "non_existent", "default_value")

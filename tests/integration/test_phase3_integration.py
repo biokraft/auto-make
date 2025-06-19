@@ -33,7 +33,7 @@ class TestPhase3Integration:
         config = Config(temp_config_dir)
 
         # Verify default value
-        assert config.agent_require_confirmation is False
+        assert config.agent_require_confirmation is True
 
         # Update the value
         config.set("agent", "require_confirmation", True)
