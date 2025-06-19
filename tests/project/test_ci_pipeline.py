@@ -10,7 +10,7 @@ class TestCIPipeline:
 
     def setup_method(self) -> None:
         """Set up test fixtures."""
-        self.project_root = Path(__file__).parent.parent
+        self.project_root = Path(__file__).parent.parent.parent
         self.workflow_file = self.project_root / ".github" / "workflows" / "ci.yml"
 
     def test_ci_workflow_file_exists(self) -> None:
