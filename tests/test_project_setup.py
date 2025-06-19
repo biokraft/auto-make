@@ -41,7 +41,7 @@ class TestProjectSetup:
         assert project["name"] == "automake-cli"
         assert project["version"]
         assert project["description"] == "AI-powered Makefile command execution"
-        assert project["requires-python"] == ">=3.11"
+        assert project["requires-python"] == ">=3.13"
 
         # Dependencies
         assert "dependencies" in project
@@ -86,7 +86,7 @@ class TestProjectSetup:
         ruff_config = config["tool"]["ruff"]
 
         assert ruff_config["line-length"] == 88
-        assert ruff_config["target-version"] == "py311"
+        assert ruff_config["target-version"] == "py313"
         assert ruff_config["fix"] is True
 
     def test_pyproject_pytest_configuration(self) -> None:

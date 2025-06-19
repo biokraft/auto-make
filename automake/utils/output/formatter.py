@@ -71,7 +71,7 @@ class OutputFormatter:
         message_type: MessageType = MessageType.INFO,
         refresh_per_second: float = 4.0,
         transient: bool = True,
-    ) -> Generator[LiveBox, None, None]:
+    ) -> Generator[LiveBox]:
         """Create and manage a LiveBox context manager.
 
         Args:
@@ -491,9 +491,7 @@ class OutputFormatter:
         time.sleep(0.5)
 
     @contextmanager
-    def ai_thinking_box(
-        self, title: str = "AI Processing"
-    ) -> Generator[LiveBox, None, None]:
+    def ai_thinking_box(self, title: str = "AI Processing") -> Generator[LiveBox]:
         """Context manager for AI thinking with LiveBox.
 
         Args:
@@ -508,7 +506,7 @@ class OutputFormatter:
             yield live_box
 
     @contextmanager
-    def command_execution_box(self, command: str) -> Generator[LiveBox, None, None]:
+    def command_execution_box(self, command: str) -> Generator[LiveBox]:
         """Context manager for command execution with LiveBox.
 
         Args:
@@ -525,9 +523,7 @@ class OutputFormatter:
             yield live_box
 
     @contextmanager
-    def model_streaming_box(
-        self, title: str = "AI Response"
-    ) -> Generator[LiveBox, None, None]:
+    def model_streaming_box(self, title: str = "AI Response") -> Generator[LiveBox]:
         """Context manager for streaming AI model responses.
 
         Args:

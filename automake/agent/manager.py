@@ -122,9 +122,7 @@ class ManagerAgentRunner:
         self.agent, self.ollama_was_started = create_manager_agent(self.config)
         return self.ollama_was_started
 
-    def run(
-        self, prompt: str, stream: bool = False
-    ) -> str | Generator[str, None, None]:
+    def run(self, prompt: str, stream: bool = False) -> str | Generator[str]:
         """Run a prompt through the manager agent.
 
         Args:
