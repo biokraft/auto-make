@@ -25,6 +25,8 @@ The following table links to the detailed specifications for each domain and tec
 | `specs/16-project-init-agent.md`                     | A high-level sketch for an agent that can scaffold new projects. |
 | `specs/17-codebase-exploration-agent.md`             | Defines a coding agent that uses dynamic codebase exploration instead of RAG. |
 | `specs/18-concurrent-sessions.md` | Defines the process-isolated logging mechanism to enable multiple, simultaneous agent sessions. |
+| `specs/19-hardware-aware-model-recommendation.md`    | Specifies an interactive, hardware-aware model recommender for `automake init`. |
+| `specs/20-signal-handling.md`                        | Defines graceful shutdown procedures for `Ctrl+C` and `Ctrl+D`. |
 
 ## 3. Implementation Summaries
 - **Phase 2**: [Concurrent Session Support](./docs/PHASE2_IMPLEMENTATION_SUMMARY.md)
@@ -55,3 +57,4 @@ This plan outlines the steps to implement the agent-first architecture for AutoM
 | 9     | Documentation Overhaul      | - Update `README.md` and all specifications to reflect the agent-first architecture.<br>- Create a comprehensive user guide for the new agent capabilities.                      | `README.md`<br>All `specs/*.md` files                                                                       | TBD    |
 | 10    | Codebase Exploration Agent  | - Implement the `CodebaseExplorationAgent` with tools for dynamic file system and code analysis.<br>- Develop tools for AST parsing and dependency tracing.             | `specs/17-codebase-exploration-agent.md`                                                                    | TBD    |
 | 11    | Project Init Agent          | - Implement the `
+| 12    | Robust Signal Handling      | - Implement a global signal handler for `SIGINT` (Ctrl+C).<br>- Ensure graceful shutdown of agent processes.<br>- Handle `EOFError` (Ctrl+D) in interactive sessions to exit cleanly.<br>- Prevent zombie processes on abrupt termination. | `specs/20-signal-handling.md`                                                                               | TBD    |

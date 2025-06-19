@@ -10,8 +10,8 @@ import typer
 from automake.config import get_config
 from automake.utils.ollama_manager import (
     OllamaManagerError,
-    ensure_model_available,
     get_available_models,
+    is_model_available,
 )
 from automake.utils.output import MessageType, get_formatter
 
@@ -25,9 +25,7 @@ def init_command() -> None:
 
         # Use LiveBox for initialization process
         with output.live_box("AutoMake Initialization", MessageType.INFO) as init_box:
-            init_box.update(
-                f"🔧 Initializing AutoMake with model: {config.ollama_model}"
-            )
+            init_box.update("🚀 Starting AutoMake initialization...")
 
             # Check if Ollama is installed by trying to run ollama --version
             try:
@@ -86,78 +84,99 @@ def init_command() -> None:
 
             # Ensure the configured model is available
             init_box.update(f"🔍 Checking model availability: {config.ollama_model}")
-            try:
-                is_available, was_pulled = ensure_model_available(config)
 
-                if was_pulled:
-                    init_box.update(
-                        f"✅ Model '{config.ollama_model}' has been pulled and is "
-                        "now ready."
-                    )
-                else:
-                    init_box.update(
-                        f"✅ Model '{config.ollama_model}' is already available and "
-                        "ready."
-                    )
+            # Check if model is already available
+            if is_model_available(config.ollama_base_url, config.ollama_model):
+                init_box.update(
+                    f"✅ Model '{config.ollama_model}' is already available and ready."
+                )
+            else:
+                # Model needs to be downloaded
+                init_box.update(f"📥 Downloading model: {config.ollama_model}")
 
-                # Show available models
                 try:
-                    init_box.update("📋 Fetching available models...")
-                    available_models = get_available_models(config.ollama_base_url)
-                    if available_models:
-                        models_text = "Available models:\n" + "\n".join(
-                            f"• {model}" for model in available_models[:10]
-                        )
-                        if len(available_models) > 10:
-                            models_text += (
-                                f"\n... and {len(available_models) - 10} more"
-                            )
+                    # Use subprocess to pull the model with better progress indication
+                    import threading
+                    import time
 
-                        init_box.update(models_text)
-                except Exception:
-                    # Don't fail if we can't list models, the main goal is achieved
-                    init_box.update("⚠️ Could not fetch available models list")
-            except OllamaManagerError as e:
-                if "model" in str(e).lower() and "not found" in str(e).lower():
-                    init_box.update(f"📥 Pulling model: {config.ollama_model}")
-                    try:
-                        # Try to pull the model
-                        result = subprocess.run(
-                            ["ollama", "pull", config.ollama_model],
-                            capture_output=True,
-                            text=True,
-                            timeout=300,  # 5 minutes timeout for model pull
-                            check=True,
-                        )
+                    # Start the ollama pull process
+                    process = subprocess.Popen(
+                        ["ollama", "pull", config.ollama_model],
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True,
+                        bufsize=1,
+                        universal_newlines=True,
+                    )
+
+                    # Show progress animation while downloading
+                    def show_progress():
+                        dots = 0
+                        while process.poll() is None:
+                            dots = (dots + 1) % 4
+                            progress_text = (
+                                "📥 Downloading model: " + "." * dots + " " * (3 - dots)
+                            )
+                            init_box.update(
+                                f"🔍 Checking model availability: {config.ollama_model}\n\n"  # noqa: E501
+                                f"{progress_text}\n\n"
+                                "💡 This may take several minutes for large models..."
+                            )
+                            time.sleep(0.5)
+
+                    # Start progress animation in background
+                    progress_thread = threading.Thread(
+                        target=show_progress, daemon=True
+                    )
+                    progress_thread.start()
+
+                    # Wait for the process to complete
+                    stdout, stderr = process.communicate()
+
+                    if process.returncode == 0:
                         init_box.update(
-                            f"✅ Model '{config.ollama_model}' pulled successfully"
+                            f"✅ Model '{config.ollama_model}' has been downloaded and is now ready."  # noqa: E501
                         )
-                    except subprocess.TimeoutExpired:
-                        with output.live_box(
-                            "Timeout Error", MessageType.ERROR
-                        ) as error_box:
-                            error_box.update(
-                                f"❌ Timeout while pulling model "
-                                f"'{config.ollama_model}'.\n\n"
-                                "💡 Hint: Large models can take time to download. "
-                                f"Try running 'ollama pull {config.ollama_model}' "
-                                "manually."
-                            )
-                        raise typer.Exit(1) from None
-                    except subprocess.CalledProcessError as e:
-                        with output.live_box(
-                            "Model Pull Error", MessageType.ERROR
-                        ) as error_box:
-                            error_box.update(
-                                f"❌ Failed to pull model "
-                                f"'{config.ollama_model}': {e.stderr}\n\n"
-                                f"💡 Hint: Check if '{config.ollama_model}' is a "
-                                f"valid model name. You can see available models at "
-                                f"https://ollama.ai/library"
-                            )
-                        raise typer.Exit(1) from e
-                else:
-                    raise
+                    else:
+                        raise subprocess.CalledProcessError(
+                            process.returncode, "ollama pull", stderr
+                        )
+
+                except subprocess.CalledProcessError as e:
+                    with output.live_box(
+                        "Model Pull Error", MessageType.ERROR
+                    ) as error_box:
+                        error_box.update(
+                            f"❌ Failed to pull model '{config.ollama_model}': {e.stderr}\n\n"  # noqa: E501
+                            f"💡 Hint: Check if '{config.ollama_model}' is a valid model name. "  # noqa: E501
+                            f"You can see available models at https://ollama.ai/library"
+                        )
+                    raise typer.Exit(1) from e
+                except Exception as e:
+                    with output.live_box(
+                        "Download Error", MessageType.ERROR
+                    ) as error_box:
+                        error_box.update(
+                            f"❌ Unexpected error during model download: {e}\n\n"
+                            f"💡 Hint: Try running 'ollama pull {config.ollama_model}' manually."  # noqa: E501
+                        )
+                    raise typer.Exit(1) from e
+
+            # Show available models
+            try:
+                init_box.update("📋 Fetching available models...")
+                available_models = get_available_models(config.ollama_base_url)
+                if available_models:
+                    models_text = "Available models:\n" + "\n".join(
+                        f"• {model}" for model in available_models[:10]
+                    )
+                    if len(available_models) > 10:
+                        models_text += f"\n... and {len(available_models) - 10} more"
+
+                    init_box.update(models_text)
+            except Exception:
+                # Don't fail if we can't list models, the main goal is achieved
+                init_box.update("⚠️ Could not fetch available models list")
 
         # Final success message with LiveBox
         with output.live_box("Ready", MessageType.SUCCESS) as success_box:

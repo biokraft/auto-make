@@ -7,6 +7,7 @@ automatically start it if needed.
 import logging
 import subprocess
 import time
+from collections.abc import Callable, Generator
 
 import ollama
 import requests
@@ -239,6 +240,80 @@ def pull_model(base_url: str, model_name: str) -> bool:
         raise OllamaManagerError(f"Failed to pull model '{model_name}': {e}") from e
 
 
+def pull_model_with_progress(
+    base_url: str,
+    model_name: str,
+    progress_callback: Callable[[dict], None] | None = None,
+) -> Generator[dict, None, bool]:
+    """Pull a model in Ollama with progress updates.
+
+    Args:
+        base_url: The Ollama server base URL
+        model_name: Name of the model to pull
+        progress_callback: Optional callback function to receive progress updates
+
+    Yields:
+        Progress dictionaries with status information
+
+    Returns:
+        True if model was pulled successfully, False otherwise
+
+    Raises:
+        OllamaManagerError: If there's an error pulling the model
+    """
+    try:
+        logger.info("Pulling model '%s' from Ollama with progress...", model_name)
+        client = ollama.Client(host=base_url)
+
+        # Pull the model with streaming progress
+        for progress in client.pull(model_name, stream=True):
+            if progress_callback:
+                progress_callback(progress)
+            yield progress
+
+        logger.info("Model '%s' pulled successfully", model_name)
+        return True
+
+    except Exception as e:
+        logger.error("Failed to pull model '%s': %s", model_name, e)
+        raise OllamaManagerError(f"Failed to pull model '{model_name}': {e}") from e
+
+
+def format_download_progress(progress: dict) -> str:
+    """Format progress information into a human-readable string.
+
+    Args:
+        progress: Progress dictionary from Ollama
+
+    Returns:
+        Formatted progress string
+    """
+    status = progress.get("status", "")
+
+    if status == "pulling manifest":
+        return "📋 Fetching model manifest..."
+    elif status == "downloading":
+        completed = progress.get("completed", 0)
+        total = progress.get("total", 0)
+        if total > 0:
+            percentage = (completed / total) * 100
+            completed_mb = completed / (1024 * 1024)
+            total_mb = total / (1024 * 1024)
+            return f"📥 Downloading: {percentage:.1f}% ({completed_mb:.1f}/{total_mb:.1f} MB)"  # noqa: E501
+        else:
+            return "📥 Downloading model..."
+    elif status == "verifying sha256 digest":
+        return "🔍 Verifying download integrity..."
+    elif status == "writing manifest":
+        return "📝 Writing model manifest..."
+    elif status == "removing any unused layers":
+        return "🧹 Cleaning up unused layers..."
+    elif status == "success":
+        return "✅ Model download completed!"
+    else:
+        return f"🔄 {status}..."
+
+
 def ensure_model_available(config: Config) -> tuple[bool, bool]:
     """Ensure the configured model is available in Ollama, pulling it if necessary.
 
@@ -282,3 +357,66 @@ def ensure_model_available(config: Config) -> tuple[bool, bool]:
 
     logger.info("Model '%s' is now available", model_name)
     return True, True
+
+
+def ensure_model_available_with_progress(
+    config: Config, progress_callback: Callable[[dict], None] | None = None
+) -> Generator[dict, None, tuple[bool, bool]]:
+    """Ensure the configured model is available with progress updates.
+
+    Args:
+        config: Configuration object containing Ollama settings
+        progress_callback: Optional callback function to receive progress updates
+
+    Yields:
+        Progress dictionaries with status information
+
+    Returns:
+        Tuple of (is_available, was_pulled)
+        - is_available: True if model is now available
+        - was_pulled: True if we pulled the model
+
+    Raises:
+        OllamaManagerError: If model cannot be made available
+    """
+    base_url = config.ollama_base_url
+    model_name = config.ollama_model
+
+    # First ensure Ollama is running
+    is_running, was_started = ensure_ollama_running(config)
+    if not is_running:
+        raise OllamaManagerError(
+            "Ollama server is not running and could not be started"
+        )
+
+    # Check if model is already available
+    if is_model_available(base_url, model_name):
+        logger.debug("Model '%s' is already available", model_name)
+        return (True, False)
+
+    logger.info("Model '%s' not found, attempting to pull...", model_name)
+
+    # Try to pull the model with progress
+    try:
+        progress_generator = pull_model_with_progress(
+            base_url, model_name, progress_callback
+        )
+        yield from progress_generator
+        # Get the return value from the generator
+        try:
+            next(progress_generator)
+        except StopIteration as e:
+            _ = e.value if e.value is not None else True  # Result not used
+    except OllamaManagerError:
+        raise
+    except Exception as e:
+        raise OllamaManagerError(f"Failed to pull model '{model_name}': {e}") from e
+
+    # Verify the model is now available
+    if not is_model_available(base_url, model_name):
+        raise OllamaManagerError(
+            f"Model '{model_name}' was pulled but is not showing as available"
+        )
+
+    logger.info("Model '%s' is now available", model_name)
+    return (True, True)

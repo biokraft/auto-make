@@ -129,6 +129,12 @@ class TestPhase4Implementation:
         result = self.runner.invoke(app, [])
         assert result.exit_code == 0
         assert "Welcome" in result.output
+        # Check for first-time user guidance
+        assert "First time user?" in result.output
+        assert "Set your preferred model (default: qwen3:0.6b)" in result.output
+        assert "automake config set ollama.model <model_name>" in result.output
+        assert "Initialize and fetch the model:" in result.output
+        assert "automake init" in result.output
 
     @patch("automake.cli.app.ManagerAgentRunner")
     @patch("automake.cli.app.get_config")

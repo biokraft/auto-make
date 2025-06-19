@@ -52,6 +52,15 @@ def print_welcome() -> None:
     usage_info = 'Run "automake help" for detailed usage information.'
     output.print_box(usage_info, MessageType.INFO, "Welcome")
 
+    # Print first-time user setup info
+    first_time_info = (
+        "1. Set your preferred model (default: qwen3:0.6b):\n"
+        "   automake config set ollama.model <model_name>\n\n"
+        "2. Initialize and fetch the model:\n"
+        "   automake init"
+    )
+    output.print_box(first_time_info, MessageType.INFO, "First time user?")
+
 
 def print_help_with_ascii(show_author: bool = False) -> None:
     """Print ASCII art followed by help information.

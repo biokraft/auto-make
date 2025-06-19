@@ -10,7 +10,12 @@ from smolagents import LiteLLMModel, ToolCallingAgent
 
 from ..config import Config
 from ..logging import get_logger
-from ..utils.ollama_manager import ensure_ollama_running
+from ..utils.ollama_manager import (
+    OllamaManagerError,
+    ensure_ollama_running,
+    get_available_models,
+    is_model_available,
+)
 from .specialists import get_all_specialist_tools
 
 logger = get_logger()
@@ -32,6 +37,38 @@ def create_manager_agent(config: Config) -> tuple[ToolCallingAgent, bool]:
         # Ensure Ollama is running
         is_running, ollama_was_started = ensure_ollama_running(config)
 
+        # Check if the configured model is available
+        if not is_model_available(config.ollama_base_url, config.ollama_model):
+            try:
+                available_models = get_available_models(config.ollama_base_url)
+                if available_models:
+                    available_models_str = "\n".join(
+                        f"  • {model}" for model in available_models
+                    )
+                else:
+                    available_models_str = "  • none"
+
+                raise OllamaManagerError(
+                    f"Model '{config.ollama_model}' is not available in Ollama.\n"
+                    f"Available models:\n{available_models_str}\n\n"
+                    f"To fix this, either:\n"
+                    f"1. Pull the model: ollama pull {config.ollama_model}\n"
+                    f"2. Or change your configuration to use an available model:\n"
+                    f"   automake config set ollama.model <model_name>"
+                )
+            except OllamaManagerError:
+                # Re-raise the model availability error
+                raise
+            except Exception as e:
+                # If we can't get available models, still show the main error
+                raise OllamaManagerError(
+                    f"Model '{config.ollama_model}' is not available in Ollama.\n"
+                    f"Could not retrieve available models: {e}\n\n"
+                    f"To fix this, try:\n"
+                    f"1. Pull the model: ollama pull {config.ollama_model}\n"
+                    f"2. Check if Ollama is running: ollama list"
+                ) from e
+
         # Create the LLM model
         model_name = f"ollama/{config.ollama_model}"
         model = LiteLLMModel(
@@ -51,9 +88,13 @@ def create_manager_agent(config: Config) -> tuple[ToolCallingAgent, bool]:
         logger.info("Manager agent created successfully")
         return manager_agent, ollama_was_started
 
+    except OllamaManagerError:
+        # Re-raise Ollama-specific errors with their detailed messages
+        raise
     except Exception as e:
         logger.error(f"Failed to create manager agent: {e}")
-        raise
+        # Wrap other exceptions with a more generic message
+        raise OllamaManagerError(f"Failed to create manager agent: {e}") from e
 
 
 class ManagerAgentRunner:

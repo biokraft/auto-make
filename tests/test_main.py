@@ -288,6 +288,12 @@ class TestMainCLI:
         assert result.exit_code == 0  # Should show welcome and exit cleanly
         assert "Welcome" in result.output
         assert 'Run "automake help" for detailed usage information.' in result.output
+        # Check for first-time user guidance
+        assert "First time user?" in result.output
+        assert "Set your preferred model (default: qwen3:0.6b)" in result.output
+        assert "automake config set ollama.model <model_name>" in result.output
+        assert "Initialize and fetch the model:" in result.output
+        assert "automake init" in result.output
 
     @patch("automake.cli.commands.run.ManagerAgentRunner")
     @patch("automake.cli.commands.run.get_config")

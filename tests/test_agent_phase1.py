@@ -37,7 +37,7 @@ def create_test_config():
     config = Config()
     # Override the properties for testing
     config._config_data = {
-        "ollama": {"model": "llama3.2:3b", "base_url": "http://localhost:11434"},
+        "ollama": {"model": "qwen3:8b", "base_url": "http://localhost:11434"},
         "ai": {"interactive_threshold": 70},
         "logging": {"level": "INFO"},
     }
@@ -267,7 +267,7 @@ class TestManagerAgent:
         assert ollama_started is False
         mock_ollama.assert_called_once()
         mock_model.assert_called_once_with(
-            model_id="ollama/llama3.2:3b", base_url="http://localhost:11434"
+            model_id="ollama/qwen3:8b", base_url="http://localhost:11434"
         )
 
     @patch("automake.agent.manager.LiteLLMModel")
@@ -294,7 +294,7 @@ class TestManagerAgent:
         assert ollama_started is True
         mock_ollama.assert_called_once()
         mock_model_class.assert_called_once_with(
-            model_id="ollama/llama3.2:3b", base_url="http://localhost:11434"
+            model_id="ollama/qwen3:8b", base_url="http://localhost:11434"
         )
 
     def test_manager_agent_runner_initialization(self):
