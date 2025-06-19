@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "automake-cli"
 version = "0.4.5"
-description = "AI-powered Makefile command execution"
+description = "The AI-native shell that turns natural language into actions."
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.13"
