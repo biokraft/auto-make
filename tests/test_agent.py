@@ -247,7 +247,17 @@ class TestManagerAgent:
 
     @patch("automake.agent.manager.LiteLLMModel")
     @patch("automake.agent.manager.ToolCallingAgent")
-    def test_create_manager_agent_success(self, mock_agent_class, mock_model_class):
+    @patch("automake.agent.manager.get_available_models")
+    @patch("automake.agent.manager.is_model_available")
+    @patch("automake.agent.manager.ensure_ollama_running")
+    def test_create_manager_agent_success(
+        self,
+        mock_ensure_ollama,
+        mock_is_model_available,
+        mock_get_models,
+        mock_agent_class,
+        mock_model_class,
+    ):
         """Test successful manager agent creation."""
         config = create_test_config()
 
@@ -257,28 +267,36 @@ class TestManagerAgent:
         mock_agent = Mock()
         mock_agent_class.return_value = mock_agent
 
-        # This test just verifies that the function can be called without errors
-        # and returns the expected types
-        with patch("automake.agent.manager.ensure_ollama_running") as mock_ollama:
-            mock_ollama.return_value = (True, False)  # (is_running, was_started)
+        # Mock Ollama functions
+        mock_ensure_ollama.return_value = (True, False)  # (is_running, was_started)
+        mock_is_model_available.return_value = True
+        mock_get_models.return_value = ["qwen3:0.6b", "llama2:7b"]
 
-            agent, ollama_started = create_manager_agent(config)
+        agent, ollama_started = create_manager_agent(config)
 
-            # Verify return types
-            assert agent is not None
-            assert isinstance(ollama_started, bool)
-            assert ollama_started is False
+        # Verify return types
+        assert agent is not None
+        assert isinstance(ollama_started, bool)
+        assert ollama_started is False
 
-            # Verify the model was created with correct parameters
-            mock_model_class.assert_called_once_with(
-                model_id=f"ollama/{config.ollama_model}",
-                base_url=config.ollama_base_url,
-            )
+        # Verify the model was created with correct parameters
+        mock_model_class.assert_called_once_with(
+            model_id=f"ollama/{config.ollama_model}",
+            base_url=config.ollama_base_url,
+        )
 
     @patch("automake.agent.manager.LiteLLMModel")
     @patch("automake.agent.manager.ToolCallingAgent")
+    @patch("automake.agent.manager.get_available_models")
+    @patch("automake.agent.manager.is_model_available")
+    @patch("automake.agent.manager.ensure_ollama_running")
     def test_create_manager_agent_ollama_started(
-        self, mock_agent_class, mock_model_class
+        self,
+        mock_ensure_ollama,
+        mock_is_model_available,
+        mock_get_models,
+        mock_agent_class,
+        mock_model_class,
     ):
         """Test manager agent creation when Ollama needs to be started."""
         config = create_test_config()
@@ -289,15 +307,17 @@ class TestManagerAgent:
         mock_agent = Mock()
         mock_agent_class.return_value = mock_agent
 
-        with patch("automake.agent.manager.ensure_ollama_running") as mock_ollama:
-            mock_ollama.return_value = (True, True)  # (is_running, was_started)
+        # Mock Ollama functions
+        mock_ensure_ollama.return_value = (True, True)  # (is_running, was_started)
+        mock_is_model_available.return_value = True
+        mock_get_models.return_value = ["qwen3:0.6b", "llama2:7b"]
 
-            agent, ollama_started = create_manager_agent(config)
+        agent, ollama_started = create_manager_agent(config)
 
-            # Verify return types
-            assert agent is not None
-            assert isinstance(ollama_started, bool)
-            assert ollama_started is True
+        # Verify return types
+        assert agent is not None
+        assert isinstance(ollama_started, bool)
+        assert ollama_started is True
 
     def test_manager_agent_runner_initialization(self):
         """Test ManagerAgentRunner initialization."""

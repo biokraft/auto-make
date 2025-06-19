@@ -29,10 +29,12 @@ class TestInitCommandLiveBoxIntegration:
     @patch("automake.utils.ollama_manager.ensure_ollama_running")
     @patch("automake.utils.ollama_manager.is_model_available")
     @patch("automake.utils.ollama_manager.get_available_models")
+    @patch("subprocess.Popen")
     @patch("subprocess.run")
     def test_init_success_with_livebox(
         self,
-        mock_subprocess: MagicMock,
+        mock_subprocess_run: MagicMock,
+        mock_subprocess_popen: MagicMock,
         mock_get_models: MagicMock,
         mock_is_model_available: MagicMock,
         mock_ensure_ollama_running: MagicMock,
@@ -45,7 +47,14 @@ class TestInitCommandLiveBoxIntegration:
         mock_config.ollama_base_url = "http://localhost:11434"
         mock_get_config.return_value = mock_config
 
-        mock_subprocess.return_value = Mock(returncode=0)
+        mock_subprocess_run.return_value = Mock(returncode=0)
+        # Mock Popen for any subprocess.Popen calls (like ollama serve)
+        mock_process = Mock()
+        mock_process.poll.return_value = 0
+        mock_process.communicate.return_value = ("", "")
+        mock_process.returncode = 0
+        mock_subprocess_popen.return_value = mock_process
+
         mock_ensure_ollama_running.return_value = (True, False)  # Running, not started
         mock_is_model_available.return_value = True  # Model is available
         mock_get_models.return_value = ["llama2", "codellama", "mistral"]

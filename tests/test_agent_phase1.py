@@ -246,14 +246,23 @@ class TestManagerAgent:
     """Test the manager agent functionality."""
 
     @patch("automake.agent.manager.ensure_ollama_running")
+    @patch("automake.agent.manager.is_model_available")
+    @patch("automake.agent.manager.get_available_models")
     @patch("automake.agent.manager.LiteLLMModel")
     @patch("automake.agent.manager.ToolCallingAgent")
     def test_create_manager_agent_success(
-        self, mock_tool_calling_agent, mock_model, mock_ollama
+        self,
+        mock_tool_calling_agent,
+        mock_model,
+        mock_get_models,
+        mock_is_model_available,
+        mock_ollama,
     ):
         """Test successful manager agent creation."""
         # Setup mocks
         mock_ollama.return_value = (True, False)  # (is_running, was_started)
+        mock_is_model_available.return_value = True
+        mock_get_models.return_value = ["qwen3:8b", "llama2:7b"]
         mock_model_instance = Mock()
         mock_model.return_value = mock_model_instance
         mock_agent_instance = Mock()
@@ -272,12 +281,21 @@ class TestManagerAgent:
 
     @patch("automake.agent.manager.LiteLLMModel")
     @patch("automake.agent.manager.ToolCallingAgent")
+    @patch("automake.agent.manager.get_available_models")
+    @patch("automake.agent.manager.is_model_available")
     @patch("automake.agent.manager.ensure_ollama_running")
     def test_create_manager_agent_ollama_started(
-        self, mock_ollama, mock_agent_class, mock_model_class
+        self,
+        mock_ollama,
+        mock_is_model_available,
+        mock_get_models,
+        mock_agent_class,
+        mock_model_class,
     ):
         """Test manager agent creation when Ollama needs to be started."""
         mock_ollama.return_value = (True, True)  # (is_running, was_started)
+        mock_is_model_available.return_value = True
+        mock_get_models.return_value = ["qwen3:8b", "llama2:7b"]
 
         # Mock the model and agent instances
         mock_model_instance = Mock()
