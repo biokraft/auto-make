@@ -34,6 +34,7 @@ The following table links to the detailed specifications for each domain and tec
 ## 3. Implementation Summaries
 - **Phase 2**: [Concurrent Session Support](./docs/PHASE2_IMPLEMENTATION_SUMMARY.md)
 - **Phase 4**: [Non-Interactive Agent Mode](./docs/PHASE4_IMPLEMENTATION_SUMMARY.md)
+- **Phase 10**: [Documentation Overhaul](./docs/PHASE10_IMPLEMENTATION_SUMMARY.md)
 
 ## 4. Future Work
 This section captures features and ideas that are currently out of scope but are being considered for future versions:
@@ -58,7 +59,7 @@ This plan outlines the steps to implement the agent-first architecture for AutoM
 | 7     | Action Confirmation         | - Add `agent.require_confirmation` to config.<br>- Implement the `get_confirmation` UI component in the `RichInteractiveSession`.<br>- Integrate the confirmation check before executing agent actions. | `specs/04-configuration-management.md`<br>`specs/14-agent-interaction-scaffolding.md`                      | ✅ Done    |
 | 8     | Interactive Model Config    | - Implement `automake config model` command.<br>- Build the `rich`-based UI to list local Ollama models.<br>- Add online search and selection functionality.                   | `specs/04-configuration-management.md`<br>`specs/02-cli-and-ux.md`                                         | ✅ Done    |
 | 9     | Animated Text Display       | - Create a utility function for typewriter-style text animation in `rich` boxes.<br>- Refactor existing UI components to use the new animation utility.<br>- Add a configuration option to enable/disable the animation. | `specs/23-animated-text-display.md`                                                                       | ✅ Done    |
-| 10    | Documentation Overhaul      | - Update `README.md` and all specifications to reflect the agent-first architecture.<br>- Create a comprehensive user guide for the new agent capabilities.                      | `README.md`<br>All `specs/*.md` files                                                                       | TBD    |
+| 10    | Documentation Overhaul      | - Update `README.md` and all specifications to reflect the agent-first architecture.<br>- Create a comprehensive user guide for the new agent capabilities.                      | `README.md`<br>All `specs/*.md` files                                                                       | ✅ Done    |
 | 11    | Robust Signal Handling      | - Implement a global signal handler for `SIGINT` (Ctrl+C).<br>- Ensure graceful shutdown of agent processes.<br>- Handle `EOFError` (Ctrl+D) in interactive sessions to exit cleanly.<br>- Prevent zombie processes on abrupt termination. | `specs/20-signal-handling.md`                                                                               | TBD    |
 | 12    | Codebase Exploration Agent  | - Implement the `CodebaseExplorationAgent` with tools for dynamic file system and code analysis.<br>- Develop tools for AST parsing and dependency tracing.             | `specs/17-codebase-exploration-agent.md`                                                                    | TBD    |
 | 13    | Project Init Agent          | - Implement the `

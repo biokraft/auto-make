@@ -1,7 +1,7 @@
 # CLI and User Experience Specification
 
 ## 1. Purpose
-This document outlines the command-line interface (CLI), user interaction patterns, and overall user experience for AutoMake, designed as an agent-first application.
+This document outlines the command-line interface (CLI), user interaction patterns, and overall user experience for AutoMake, designed as an agent-first application. The implementation leverages the `smolagents` framework with a Manager Agent orchestrating specialist agents for task execution.
 
 ## 2. CLI Commands
 

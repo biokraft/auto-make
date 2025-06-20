@@ -1,7 +1,7 @@
 # 14. Agent Interaction Scaffolding Specification
 
 ## 1. Purpose
-This document specifies the design for a standardized scaffolding to manage interactive, multi-turn agent sessions. The goal is to create a reusable, maintainable, and consistent framework for handling the UI/UX of conversations between the user and the agent, including the complexities of streaming thoughts, tool calls, and results.
+This document specifies the design for a standardized scaffolding to manage interactive, multi-turn agent sessions. The goal is to create a reusable, maintainable, and consistent framework for handling the UI/UX of conversations between the user and the Manager Agent, including the complexities of streaming thoughts, tool calls, and results. This implementation has been completed using the `smolagents` framework with specialist agents for task delegation.
 
 ## 2. Core Component: `InteractiveSession` ABC
 The heart of this scaffolding will be an Abstract Base Class (ABC) named `InteractiveSession`. This class will define the contract for any component that manages a live, interactive agent conversation.
