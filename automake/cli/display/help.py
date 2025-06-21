@@ -126,7 +126,8 @@ def print_help_with_ascii(show_author: bool = False) -> None:
     # Print options
     options_content = (
         "--version  -v        Show version and exit\n"
-        "--help     -h        Show this message and exit."
+        "--help     -h        Show this message and exit\n\n"
+        "💡 AutoMake handles Ctrl+C (SIGINT) gracefully for clean shutdown."
     )
     output.print_box(options_content, MessageType.INFO, "Options")
 

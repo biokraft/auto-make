@@ -43,6 +43,11 @@ class Config:
             "ai": {"interactive_threshold": 80},
             "agent": {"require_confirmation": True},
             "ui": {"animation_enabled": True, "animation_speed": 50.0},
+            "signal": {
+                "enabled": True,
+                "cleanup_timeout": 10.0,
+                "force_kill_timeout": 3.0,
+            },
         }
 
     def _create_default_config(self) -> None:
@@ -81,6 +86,16 @@ animation_enabled = true
 
 # Animation speed in characters per second
 animation_speed = 50.0
+
+[signal]
+# Enable/disable signal handling for graceful shutdown
+enabled = true
+
+# Timeout in seconds for cleanup operations during shutdown
+cleanup_timeout = 10.0
+
+# Timeout in seconds before force-killing processes
+force_kill_timeout = 3.0
 """
 
         # Write the config file
@@ -143,6 +158,21 @@ animation_speed = 50.0
     def ui_animation_speed(self) -> float:
         """Get UI animation speed setting."""
         return self._config_data["ui"]["animation_speed"]
+
+    @property
+    def signal_handling_enabled(self) -> bool:
+        """Get signal handling enabled setting."""
+        return self._config_data["signal"]["enabled"]
+
+    @property
+    def signal_cleanup_timeout(self) -> float:
+        """Get signal cleanup timeout setting."""
+        return self._config_data["signal"]["cleanup_timeout"]
+
+    @property
+    def signal_force_kill_timeout(self) -> float:
+        """Get signal force kill timeout setting."""
+        return self._config_data["signal"]["force_kill_timeout"]
 
     @property
     def config_file_path(self) -> Path:

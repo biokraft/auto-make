@@ -110,8 +110,10 @@ class TestAnimatedInteractiveSession:
     @patch("automake.agent.ui.session.get_formatter")
     def test_display_animated_response_uses_animation(self, mock_get_formatter):
         """Test display_animated_response uses animation for responses."""
-        # Setup mock formatter
+        # Setup mock formatter with live box capabilities
         mock_formatter = Mock()
+        mock_live_box = Mock()
+        mock_formatter.create_live_box.return_value = mock_live_box
         mock_get_formatter.return_value = mock_formatter
 
         console = Mock(spec=Console)
@@ -123,10 +125,13 @@ class TestAnimatedInteractiveSession:
             "Test response from agent", title="Agent Response"
         )
 
-        # Should call print_box with animation (through formatter)
-        mock_formatter.print_box.assert_called_once_with(
-            "Test response from agent", title="Agent Response"
+        # Should create a live box
+        mock_formatter.create_live_box.assert_called_once_with(
+            title="Agent Response", refresh_per_second=4.0, transient=False
         )
+
+        # Should call animate_text on the live box
+        mock_live_box.animate_text.assert_called_once_with("Test response from agent")
 
     @patch("automake.agent.ui.session.get_formatter")
     def test_animated_methods_error_handling(self, mock_get_formatter):

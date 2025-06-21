@@ -6,6 +6,7 @@ for managing interactive, multi-turn agent sessions with rich UI.
 
 import threading
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from enum import Enum
 from typing import Any
 
@@ -16,6 +17,7 @@ from rich.prompt import Prompt
 from rich.text import Text
 from smolagents import ToolCallingAgent
 
+from ...core.signal_handler import SignalHandler
 from ...logging import get_logger
 from ...utils.output.formatter import get_formatter
 
@@ -50,6 +52,8 @@ class InteractiveSession(ABC):
         self.history: list[dict[str, Any]] = []
         self.status = SessionStatus.WAITING_FOR_INPUT
         self.last_tool_call: dict[str, Any] | None = None
+        self.cleanup_functions: list[Callable[[], None]] = []
+        self.signal_handler = SignalHandler.get_instance()
 
     @abstractmethod
     def start(self) -> None:
@@ -98,6 +102,18 @@ class InteractiveSession(ABC):
         """
         pass
 
+    def register_cleanup(self, cleanup_func: Callable[[], None]) -> None:
+        """Register a cleanup function to be called on session end."""
+        self.cleanup_functions.append(cleanup_func)
+
+    def _cleanup_session(self) -> None:
+        """Clean up session resources."""
+        for cleanup_func in self.cleanup_functions:
+            try:
+                cleanup_func()
+            except Exception:
+                pass  # Ignore cleanup errors during shutdown
+
 
 class RichInteractiveSession(InteractiveSession):
     """Rich-based implementation of InteractiveSession.
@@ -125,10 +141,18 @@ class RichInteractiveSession(InteractiveSession):
         self._live: Live | None = None
         self._current_content = Text("")
         self._lock = threading.Lock()
+        # Support both cleanup_functions and _cleanup_functions for compatibility
+        self._cleanup_functions: list[Callable[[], None]] = []
+        self._signal_cleanup_id: str | None = None
 
     def start(self) -> None:
         """Start the interactive session and enter the main conversation loop."""
         logger.info("Starting rich interactive session")
+
+        # Register cleanup with signal handler
+        self._signal_cleanup_id = self.signal_handler.register_cleanup(
+            self._cleanup_session, "Interactive session cleanup"
+        )
 
         self.console.print(
             "\n[bold blue]🤖 AutoMake Agent - Interactive Mode[/bold blue]"
@@ -165,16 +189,28 @@ class RichInteractiveSession(InteractiveSession):
                     self.console.print(
                         "\n[yellow]👋 Session interrupted. Goodbye![/yellow]"
                     )
+                    self._cleanup_session()
                     break
                 except EOFError:
+                    # Handle EOF (Ctrl+D) gracefully
                     self.console.print("\n[yellow]👋 Session ended. Goodbye![/yellow]")
+                    self._cleanup_session()
+                    # Clean up live UI components if they exist
+                    if self._live:
+                        try:
+                            self._live.stop()
+                        except Exception:
+                            pass  # Ignore errors during cleanup
+                        self._live = None
                     break
 
         except Exception as e:
-            logger.error(f"Interactive session failed: {e}")
-            self.console.print(f"[red]❌ Interactive session failed: {e}[/red]")
+            logger.error(f"Session error: {e}")
+            self.console.print(f"\n[red]❌ Session error: {e}[/red]")
             self.update_state(SessionStatus.ERROR)
-            raise
+        finally:
+            # Always clean up on exit
+            self._cleanup_session()
 
     def render(self, content: Any) -> None:
         """Render agent output and conversation state.
@@ -472,12 +508,41 @@ class RichInteractiveSession(InteractiveSession):
         """Display response with typewriter animation.
 
         Args:
-            message: Message to display with animation
+            message: Message to display
             title: Title for the response box
         """
         try:
             formatter = get_formatter(self.console)
-            formatter.print_box(message, title=title)
+            live_box = formatter.create_live_box(
+                title=title, refresh_per_second=4.0, transient=False
+            )
+            live_box.animate_text(message)
         except Exception:
             # Fallback to regular display
-            self.console.print(f"🤖 {message}")
+            self.console.print(f"[bold blue]{title}:[/bold blue] {message}")
+
+    def register_cleanup(self, cleanup_func: Callable[[], None]) -> None:
+        """Register a cleanup function to be called on session end."""
+        self._cleanup_functions.append(cleanup_func)
+        # Also add to parent class for compatibility
+        super().register_cleanup(cleanup_func)
+
+    def _cleanup_session(self) -> None:
+        """Clean up session resources."""
+        # Call cleanup functions from both lists for compatibility
+        for cleanup_func in self._cleanup_functions:
+            try:
+                cleanup_func()
+            except Exception:
+                pass  # Ignore cleanup errors during shutdown
+
+        # Also call parent cleanup
+        super()._cleanup_session()
+
+        # Unregister from signal handler if we registered
+        if self._signal_cleanup_id and hasattr(self, "signal_handler"):
+            try:
+                self.signal_handler.unregister_cleanup(self._signal_cleanup_id)
+                self._signal_cleanup_id = None
+            except Exception:
+                pass

@@ -42,7 +42,8 @@ class TestProjectSetup:
         assert project["version"]
         assert (
             project["description"]
-            == "The AI-native shell that turns natural language into actions."
+            == "AI-powered command-line assistant with multi-agent system for "
+            "intelligent task execution."
         )
         assert project["requires-python"] == ">=3.13"
 

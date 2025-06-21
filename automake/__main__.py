@@ -8,10 +8,15 @@ import typer
 
 from automake.cli.app import app
 from automake.cli.error_handler import handle_cli_error
+from automake.core.signal_handler import SignalHandler
 
 
 def main() -> None:
     """Main entry point with intelligent error handling."""
+    # Register signal handler early
+    signal_handler = SignalHandler.get_instance()
+    signal_handler.register_handlers()
+
     try:
         app()
     except (click.exceptions.UsageError, click.exceptions.ClickException) as e:

@@ -4,11 +4,16 @@ This module implements the central ManagerAgent that orchestrates all specialist
 using the smolagents framework.
 """
 
-from collections.abc import Generator
+import os
+import threading
+import time
+from collections.abc import Callable, Generator
+from typing import Any
 
 from smolagents import LiteLLMModel, ToolCallingAgent
 
 from ..config import Config
+from ..core.signal_handler import SignalHandler
 from ..logging import get_logger
 from ..utils.ollama_manager import (
     OllamaManagerError,
@@ -109,6 +114,12 @@ class ManagerAgentRunner:
         self.config = config
         self.agent = None
         self.ollama_was_started = False
+        self._child_processes: list[Any] = []
+        self._temp_files: list[str] = []
+        self._cleanup_functions: list[Callable[[], None]] = []
+        self._shutdown_lock = threading.Lock()
+        self._is_shutdown = False
+        self._signal_cleanup_id = None
 
     def initialize(self) -> bool:
         """Initialize the manager agent.
@@ -120,6 +131,13 @@ class ManagerAgentRunner:
             Exception: If initialization fails
         """
         self.agent, self.ollama_was_started = create_manager_agent(self.config)
+
+        # Register shutdown with signal handler
+        signal_handler = SignalHandler.get_instance()
+        self._signal_cleanup_id = signal_handler.register_cleanup(
+            self.shutdown, "Agent manager shutdown"
+        )
+
         return self.ollama_was_started
 
     def run(self, prompt: str, stream: bool = False) -> str | Generator[str]:
@@ -149,3 +167,105 @@ class ManagerAgentRunner:
         except Exception as e:
             logger.error(f"Error running agent: {e}")
             raise
+
+    def shutdown(self, timeout: float = 3.0) -> None:
+        """Shutdown the manager agent and clean up all resources.
+
+        Args:
+            timeout: Maximum time to wait for child processes to terminate
+        """
+        with self._shutdown_lock:
+            if self._is_shutdown:
+                return
+
+            self._is_shutdown = True
+            logger.info("Shutting down agent manager...")
+
+        try:
+            # Run cleanup functions
+            for cleanup_func in self._cleanup_functions:
+                try:
+                    cleanup_func()
+                except Exception as e:
+                    logger.error(f"Error in cleanup function: {e}")
+
+            # Terminate child processes
+            self._terminate_child_processes(timeout)
+
+            # Clean up temporary files
+            self._cleanup_temp_files()
+
+            # Clear agent reference
+            self.agent = None
+
+            # Unregister from signal handler
+            if self._signal_cleanup_id:
+                signal_handler = SignalHandler.get_instance()
+                signal_handler.unregister_cleanup(self._signal_cleanup_id)
+                self._signal_cleanup_id = None
+
+            logger.info("Agent manager shutdown completed")
+
+        except Exception as e:
+            logger.error(f"Error during agent manager shutdown: {e}")
+
+    def _terminate_child_processes(self, timeout: float) -> None:
+        """Terminate all child processes with timeout.
+
+        Args:
+            timeout: Maximum time to wait for processes to terminate
+        """
+        if not self._child_processes:
+            return
+
+        logger.debug(f"Terminating {len(self._child_processes)} child processes")
+
+        # First, try graceful termination
+        for process in self._child_processes:
+            try:
+                if hasattr(process, "terminate"):
+                    process.terminate()
+            except Exception as e:
+                logger.error(f"Error terminating process: {e}")
+
+        # Wait for processes to terminate
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            remaining_processes = []
+            for process in self._child_processes:
+                try:
+                    if hasattr(process, "poll") and process.poll() is None:
+                        remaining_processes.append(process)
+                except Exception:
+                    pass
+
+            if not remaining_processes:
+                break
+
+            time.sleep(0.1)
+            self._child_processes = remaining_processes
+
+        # Force kill any remaining processes
+        for process in self._child_processes:
+            try:
+                if hasattr(process, "kill"):
+                    process.kill()
+                    logger.warning(
+                        f"Force killed process {getattr(process, 'pid', 'unknown')}"
+                    )
+            except Exception as e:
+                logger.error(f"Error force killing process: {e}")
+
+        self._child_processes.clear()
+
+    def _cleanup_temp_files(self) -> None:
+        """Clean up temporary files created during agent execution."""
+        for temp_file in self._temp_files:
+            try:
+                if os.path.exists(temp_file):
+                    os.unlink(temp_file)
+                    logger.debug(f"Cleaned up temporary file: {temp_file}")
+            except Exception as e:
+                logger.error(f"Error cleaning up temporary file {temp_file}: {e}")
+
+        self._temp_files.clear()

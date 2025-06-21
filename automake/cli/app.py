@@ -28,6 +28,7 @@ from automake.cli.commands.run import run_command
 from automake.cli.display.callbacks import help_callback, help_command, version_callback
 from automake.cli.display.help import print_welcome
 from automake.config import get_config
+from automake.core.signal_handler import SignalHandler
 from automake.logging import (
     log_command_execution,
     log_config_info,
@@ -124,7 +125,15 @@ def main(
         automake "what is the ip address of google dns?"
         automake agent  # Interactive mode
         automake run "deploy to staging"  # Legacy command
+
+    Signal Handling:
+        Ctrl+C (SIGINT): Graceful shutdown with cleanup
+        Ctrl+D (EOF): Exit interactive sessions normally
     """
+    # Register signal handler early
+    signal_handler = SignalHandler.get_instance()
+    signal_handler.register_signal_handlers("CLI main")
+
     # If no subcommand is invoked, show welcome message
     if ctx.invoked_subcommand is None:
         print_welcome()
@@ -147,6 +156,10 @@ def _execute_primary_interface(prompt: str) -> None:
     try:
         # Initialize the manager agent
         runner = ManagerAgentRunner(config)
+
+        # Register cleanup with signal handler
+        signal_handler = SignalHandler.get_instance()
+        signal_handler.register_cleanup(runner.shutdown, "Manager agent runner cleanup")
 
         with output.live_box("Agent Initialization", MessageType.INFO) as init_box:
             init_box.update("🤖 Initializing AI agent system...")

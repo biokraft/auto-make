@@ -36,6 +36,7 @@ class TestCommandRunner:
             text=True,
             bufsize=1,
             universal_newlines=True,
+            preexec_fn=self.runner._create_process_group,
         )
 
         # Check result
