@@ -30,6 +30,8 @@ The following table links to the detailed specifications for each domain and tec
 | `specs/21-automake-agent.md`                         | Defines a specialist agent for interpreting `automake`'s own commands. |
 | `specs/22-mermaid-agent.md`                          | Defines a specialist agent for generating Mermaid diagrams from source code. |
 | `specs/23-animated-text-display.md`                  | Specifies a typewriter-style animation for all `rich` box outputs. |
+| `specs/24-specsforge-agent.md` | Defines an agent to automate project specification generation. |
+| `specs/25-tdv-agent.md`        | Defines an agent for Test-Driven Development implementation.   |
 
 ## 3. Implementation Summaries
 - **Phase 2**: [Concurrent Session Support](./docs/PHASE2_IMPLEMENTATION_SUMMARY.md)
@@ -62,6 +64,8 @@ This plan outlines the steps to implement the agent-first architecture for AutoM
 | 10    | Documentation Overhaul      | - Update `README.md` and all specifications to reflect the agent-first architecture.<br>- Create a comprehensive user guide for the new agent capabilities.                      | `README.md`<br>All `specs/*.md` files                                                                       | ✅ Done    |
 | 11    | Robust Signal Handling      | - Implement a global signal handler for `SIGINT` (Ctrl+C).<br>- Ensure graceful shutdown of agent processes.<br>- Handle `EOFError` (Ctrl+D) in interactive sessions to exit cleanly.<br>- Prevent zombie processes on abrupt termination. | `specs/20-signal-handling.md`                                                                               | TBD    |
 | 12    | Codebase Exploration Agent  | - Implement the `CodebaseExplorationAgent` with tools for dynamic file system and code analysis.<br>- Develop tools for AST parsing and dependency tracing.             | `specs/17-codebase-exploration-agent.md`                                                                    | TBD    |
-| 13    | Project Init Agent          | - Implement the `
+| 13    | Project Init Agent          | - Implement the `ProjectInitAgent` for automated project scaffolding.<br>- Integrate with the ManagerAgent for intent recognition and delegation.<br>- Provide tools for project structure, config, and Dockerfile generation. | `specs/16-project-init-agent.md`                                                                    | TBD    |
 | 14    | AutoMake Agent              | - Implement the `AutoMakeAgent` with context from `automake --help`.<br>- Update `ManagerAgent` to route `automake`-specific commands. | `specs/21-automake-agent.md`<br>`specs/12-autonomous-agent-mode.md`                                        | TBD    |
 | 15    | Mermaid Agent               | - Implement the `MermaidAgent` with tools to read files and write `.mmd` files.<br>- Update `ManagerAgent` to recognize and delegate diagramming tasks. | `specs/22-mermaid-agent.md`<br>`specs/12-autonomous-agent-mode.md`                                        | TBD    |
+| 16    | SpecsForge Agent   | - Implement `SpecsForgeAgent` to generate `specs/` and `SPECS.md`.<br>- Develop tools for interactive requirement gathering.<br>- Train `ManagerAgent` to delegate project initialization tasks.                                                   | `specs/24-specsforge-agent.md`<br>`specs/12-autonomous-agent-mode.md`         | TBD    |
+| 17    | TDV Agent          | - Implement `TDVAgent` to follow a `plan.md` and execute TDD cycles.<br>- Equip the agent with tools to write tests, write code, and run test commands.<br>- Integrate with `ManagerAgent` to handle implementation tasks based on `SPECS.md` phases. | `specs/25-tdv-agent.md`<br>`specs/12-autonomous-agent-mode.md`                | TBD    |
