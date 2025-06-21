@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "automake-cli"
-version = "0.4.8"
+version = "0.4.9"
 description = "AI-powered command-line assistant with multi-agent system for intelligent task execution."
 readme = "README.md"
 license = { file = "LICENSE" }

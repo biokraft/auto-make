@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.9 - Signal Handling & Process Management Enhancement
+
+### ✨ Added
+- 🛡️ Robust signal handling system with graceful shutdown procedures for enhanced reliability
+- 🔧 Process management improvements with better resource cleanup and error handling
+- 📚 SpecsForge and TDV Agent specifications for automated project specification generation and test-driven development
+- ⚙️ Configuration support for signal handling settings and process management
+
+### 🛠️ Improved
+- 🎯 Enhanced agent lifecycle management with proper signal handling integration
+- 📋 Updated project specifications with reordered agent implementation priorities
+- 🧪 Expanded test coverage for signal handling functionality and performance under load
+- 🔄 Better resource management during agent operations and shutdowns
+
 ## v0.4.8 - Refined CI Detection & Test Compatibility
 
 ### 🔧 Fixed
